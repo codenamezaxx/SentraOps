@@ -10,12 +10,20 @@
 !.yarn/releases
 !.yarn/versions
 
+# editor
+.vscode
+
 # testing
 /coverage
 
 # next.js
 /.next/
 /out/
+
+# ai agents
+.agents
+.kiro
+.clinerules
 
 # production
 /build

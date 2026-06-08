@@ -1,0 +1,88 @@
+-- Sample Seed Data for SentraOps Development
+-- This file provides initial test data for local development
+
+-- Note: Replace these UUIDs with actual auth.users IDs after user registration
+-- For now, we'll use placeholder UUIDs that you should update after first user signup
+
+-- Sample Store (Update owner_id after user registration)
+INSERT INTO stores (id, owner_id, name) VALUES
+  ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000999', 'Toko Kopi Seduh'),
+  ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000998', 'Warung Makan Ibu Siti');
+
+-- Sample Profiles (Update auth_id after user registration)
+INSERT INTO profiles (id, auth_id, store_id, role, name) VALUES
+  ('00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000999', '00000000-0000-0000-0000-000000000001', 'owner', 'Budi Santoso'),
+  ('00000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000998', '00000000-0000-0000-0000-000000000002', 'owner', 'Siti Nurhaliza'),
+  ('00000000-0000-0000-0000-000000000013', '00000000-0000-0000-0000-000000000997', '00000000-0000-0000-0000-000000000001', 'cashier', 'Andi Wijaya');
+
+-- Sample Products for Toko Kopi Seduh
+INSERT INTO products (id, store_id, name, barcode, price, cost_price, stock_quantity, min_stock_threshold, category) VALUES
+  -- Beverages
+  ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Kopi Americano', 'BEV001', 15000, 8000, 50, 10, 'Minuman'),
+  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Kopi Latte', 'BEV002', 20000, 12000, 45, 10, 'Minuman'),
+  ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Cappuccino', 'BEV003', 22000, 13000, 40, 10, 'Minuman'),
+  ('10000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'Es Teh Manis', 'BEV004', 8000, 3000, 100, 20, 'Minuman'),
+  ('10000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'Jus Jeruk', 'BEV005', 15000, 7000, 30, 15, 'Minuman'),
+  
+  -- Snacks
+  ('10000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001', 'Croissant', 'SNK001', 12000, 6000, 25, 5, 'Makanan'),
+  ('10000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000001', 'Roti Bakar Keju', 'SNK002', 10000, 5000, 30, 10, 'Makanan'),
+  ('10000000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000001', 'Sandwich', 'SNK003', 18000, 10000, 20, 5, 'Makanan'),
+  
+  -- Low Stock Items (for testing alerts)
+  ('10000000-0000-0000-0000-000000000009', '00000000-0000-0000-0000-000000000001', 'Kopi Susu Gula Aren', 'BEV006', 25000, 15000, 4, 10, 'Minuman'),
+  ('10000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'Cake Cokelat', 'SNK004', 35000, 20000, 2, 5, 'Makanan');
+
+-- Sample Products for Warung Makan Ibu Siti
+INSERT INTO products (id, store_id, name, barcode, price, cost_price, stock_quantity, min_stock_threshold, category) VALUES
+  ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'Nasi Goreng', 'FOOD001', 18000, 10000, 50, 10, 'Makanan'),
+  ('20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 'Mie Goreng', 'FOOD002', 15000, 8000, 45, 10, 'Makanan'),
+  ('20000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000002', 'Ayam Goreng', 'FOOD003', 25000, 15000, 30, 5, 'Lauk'),
+  ('20000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000002', 'Es Teh', 'DRINK001', 5000, 2000, 100, 20, 'Minuman');
+
+-- Sample Transactions for Toko Kopi Seduh
+INSERT INTO transactions (id, store_id, cashier_id, total_amount, payment_method, status, created_at) VALUES
+  -- Today's transactions
+  ('30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 57000, 'cash', 'completed', NOW() - INTERVAL '2 hours'),
+  ('30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000013', 40000, 'qris', 'completed', NOW() - INTERVAL '1 hour'),
+  ('30000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 32000, 'cash', 'completed', NOW() - INTERVAL '30 minutes'),
+  
+  -- Yesterday's transactions
+  ('30000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 75000, 'cash', 'completed', NOW() - INTERVAL '1 day'),
+  ('30000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000013', 50000, 'qris', 'completed', NOW() - INTERVAL '1 day'),
+  
+  -- Pending WhatsApp Invoice
+  ('30000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000011', 150000, 'whatsapp_invoice', 'pending', NOW() - INTERVAL '3 days');
+
+-- Sample Transaction Items for Toko Kopi Seduh
+INSERT INTO transaction_items (transaction_id, product_id, quantity, price_at_time, cost_price_at_time) VALUES
+  -- Transaction 1 (57000)
+  ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000002', 2, 20000, 12000), -- 2x Latte
+  ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000006', 1, 12000, 6000),  -- 1x Croissant
+  ('30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000004', 1, 8000, 3000),   -- 1x Es Teh
+  
+  -- Transaction 2 (40000)
+  ('30000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000003', 1, 22000, 13000), -- 1x Cappuccino
+  ('30000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000008', 1, 18000, 10000), -- 1x Sandwich
+  
+  -- Transaction 3 (32000)
+  ('30000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000002', 1, 20000, 12000), -- 1x Latte
+  ('30000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000006', 1, 12000, 6000),  -- 1x Croissant
+  
+  -- Transaction 4 (75000)
+  ('30000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000003', 2, 22000, 13000), -- 2x Cappuccino
+  ('30000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000008', 1, 18000, 10000), -- 1x Sandwich
+  ('30000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000005', 1, 15000, 7000),  -- 1x Jus Jeruk
+  
+  -- Transaction 5 (50000)
+  ('30000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000009', 2, 25000, 15000), -- 2x Kopi Susu Gula Aren
+  
+  -- Transaction 6 - Pending (150000)
+  ('30000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000010', 3, 35000, 20000), -- 3x Cake Cokelat
+  ('30000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000005', 3, 15000, 7000);  -- 3x Jus Jeruk
+
+-- Note: To use this seed data in production, you need to:
+-- 1. Create actual users via Supabase Auth
+-- 2. Update owner_id in stores table with real auth.uid()
+-- 3. Update auth_id in profiles table with real auth.uid()
+-- 4. Update cashier_id in transactions table with real profile.id
