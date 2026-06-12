@@ -49,9 +49,10 @@ export async function middleware(request: NextRequest) {
 
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || 
                       request.nextUrl.pathname.startsWith('/auth')
+  const isAccessDeniedRoute = request.nextUrl.pathname === '/access-denied'
 
-  // Redirect unauthenticated users to login (except if already on auth routes)
-  if (!user && !isAuthRoute) {
+  // Redirect unauthenticated users to login (except if already on auth routes or access denied)
+  if (!user && !isAuthRoute && !isAccessDeniedRoute) {
     console.log('[Middleware] Redirecting to /login - no user')
     return NextResponse.redirect(new URL('/login', request.url))
   }
@@ -60,6 +61,33 @@ export async function middleware(request: NextRequest) {
   if (user && request.nextUrl.pathname === '/login') {
     console.log('[Middleware] Redirecting to / - user already logged in')
     return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // Owner-only routes - check authorization
+  const ownerOnlyRoutes = ['/inventory', '/financial']
+  const isOwnerOnlyRoute = ownerOnlyRoutes.some(route => 
+    request.nextUrl.pathname.startsWith(route)
+  )
+
+  if (user && isOwnerOnlyRoute) {
+    // Fetch user profile to check role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('auth_id', user.id)
+      .single()
+
+    console.log('[Middleware] Role check:', {
+      path: request.nextUrl.pathname,
+      role: profile?.role,
+      isOwnerOnly: isOwnerOnlyRoute
+    })
+
+    // Redirect non-owners to access denied page
+    if (profile?.role !== 'owner') {
+      console.log('[Middleware] Redirecting to /access-denied - not an owner')
+      return NextResponse.redirect(new URL('/access-denied', request.url))
+    }
   }
 
   return response
