@@ -29,8 +29,8 @@ export async function ProductGrid() {
     console.error('Error fetching products:', error)
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
-        <span className="material-symbols-outlined text-error text-5xl mb-4">error</span>
-        <p className="text-on-surface-variant dark:text-surface-variant text-center">
+        <span className="material-symbols-outlined text-destructive text-5xl mb-4">error</span>
+        <p className="text-muted-foreground text-center">
           Gagal memuat produk. Silakan refresh halaman.
         </p>
       </div>
@@ -43,13 +43,13 @@ export async function ProductGrid() {
       <>
         <CategoryFilter />
         <div className="flex flex-col items-center justify-center py-12 px-4">
-          <span className="material-symbols-outlined text-outline-variant text-6xl mb-4">
+          <span className="material-symbols-outlined text-muted-foreground text-6xl mb-4">
             inventory_2
           </span>
-          <h3 className="text-lg font-semibold text-on-surface dark:text-surface mb-2">
+          <h3 className="text-lg font-semibold text-foreground mb-2">
             Belum ada produk
           </h3>
-          <p className="text-sm text-on-surface-variant dark:text-surface-variant text-center">
+          <p className="text-sm text-muted-foreground text-center">
             Tambahkan produk pertama Anda di halaman Inventory
           </p>
         </div>

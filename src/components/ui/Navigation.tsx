@@ -35,7 +35,7 @@ export function Navigation() {
       </div>
 
       {/* Primary Action Button */}
-      <button className="mx-4 mb-4 h-12 bg-primary text-on-primary rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:bg-opacity-90 transition-colors active:scale-95">
+      <button className="mx-4 mb-4 h-12 bg-primary text-on-primary rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-colors active:scale-95">
         <span className="material-symbols-outlined">add</span>
         New Transaction
       </button>
@@ -53,7 +53,7 @@ export function Navigation() {
                 "flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ease-in-out",
                 isActive
                   ? "bg-primary-container text-on-primary-container"
-                  : "text-on-surface-variant hover:bg-surface-container-high"
+                  : "text-on-surface-variant hover:bg-surface-container"
               )}
             >
               <span className={cn("material-symbols-outlined", isActive && "icon-fill")}>
@@ -66,17 +66,17 @@ export function Navigation() {
       </nav>
 
       {/* Bottom Actions */}
-      <div className="flex flex-col gap-1 mt-auto px-2 pb-4 pt-4 border-t border-outline-variant/30">
+      <div className="flex flex-col gap-1 mt-auto px-2 pb-4 pt-4 border-t border-outline-variant">
         <Link
           href="/settings"
-          className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl font-semibold text-sm transition-all duration-200 ease-in-out"
+          className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-xl font-semibold text-sm transition-all duration-200 ease-in-out"
         >
           <span className="material-symbols-outlined">settings</span>
           Settings
         </Link>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl font-semibold text-sm transition-all duration-200 ease-in-out w-full text-left"
+          className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-xl font-semibold text-sm transition-all duration-200 ease-in-out w-full text-left"
         >
           <span className="material-symbols-outlined">logout</span>
           Keluar

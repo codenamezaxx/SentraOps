@@ -19,9 +19,9 @@ export default function PasswordToggle({ isVisible, onToggle }: PasswordTogglePr
       aria-label={isVisible ? "Hide password" : "Show password"}
     >
       {isVisible ? (
-        <EyeOff className="h-4 w-4 text-zinc-500" />
+        <EyeOff className="h-4 w-4 text-muted-foreground" />
       ) : (
-        <Eye className="h-4 w-4 text-zinc-500" />
+        <Eye className="h-4 w-4 text-muted-foreground" />
       )}
     </Button>
   )

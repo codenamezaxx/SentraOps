@@ -19,7 +19,7 @@ export interface Profile {
 
 export interface Product {
   id: string;
-  store_id: string;
+  store_id: string | null;
   name: string;
   barcode: string | null;
   price: number;
@@ -27,7 +27,9 @@ export interface Product {
   stock_quantity: number;
   min_stock_threshold: number;
   category: string | null;
-  created_at: string;
+  active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface Transaction {

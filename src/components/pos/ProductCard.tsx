@@ -47,10 +47,10 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <article className="bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl shadow-sm border border-outline-variant dark:border-none overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+    <article className="bg-card rounded-2xl shadow-sm border border-outline-variant overflow-hidden flex flex-col hover:shadow-md transition-shadow">
       {/* Product Image Placeholder */}
-      <div className="h-32 w-full bg-surface-variant relative flex items-center justify-center">
-        <span className="material-symbols-outlined text-outline-variant text-4xl">
+      <div className="h-32 w-full bg-surface-container relative flex items-center justify-center">
+        <span className="material-symbols-outlined text-on-surface-variant text-4xl">
           fastfood
         </span>
       </div>
@@ -58,10 +58,10 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Product Info */}
       <div className="p-3 flex-1 flex flex-col justify-between">
         <div>
-          <h3 className="font-semibold text-sm text-on-surface dark:text-surface line-clamp-2 mb-1">
+          <h3 className="font-semibold text-sm text-foreground line-clamp-2 mb-1">
             {product.name}
           </h3>
-          <p className="text-base font-bold text-primary dark:text-primary-fixed">
+          <p className="text-base font-bold text-primary">
             {formatCurrency(product.price)}
           </p>
         </div>
@@ -72,25 +72,25 @@ export function ProductCard({ product }: ProductCardProps) {
             // Add Button (when not in cart)
             <button
               onClick={handleAdd}
-              className="bg-primary hover:bg-primary/90 text-on-primary rounded-xl h-10 w-10 flex items-center justify-center active:scale-90 transition-transform shadow-sm"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-10 w-10 flex items-center justify-center active:scale-90 transition-transform shadow-sm"
             >
               <span className="material-symbols-outlined">add</span>
             </button>
           ) : (
             // Quantity Control (when in cart)
-            <div className="flex items-center gap-3 bg-surface-container-high dark:bg-inverse-surface rounded-xl p-1 shadow-sm">
+            <div className="flex items-center gap-3 bg-muted rounded-xl p-1 shadow-sm">
               <button
                 onClick={handleDecrement}
                 className="w-8 h-8 flex items-center justify-center text-on-surface-variant active:scale-90 transition-transform"
               >
                 <span className="material-symbols-outlined text-sm">remove</span>
               </button>
-              <span className="font-semibold text-sm text-on-surface w-4 text-center">
+              <span className="font-semibold text-sm text-foreground w-4 text-center">
                 {quantity}
               </span>
               <button
                 onClick={handleIncrement}
-                className="w-8 h-8 flex items-center justify-center text-primary active:scale-90 transition-transform bg-surface-container-lowest dark:bg-surface-dark rounded-lg shadow-sm"
+                className="w-8 h-8 flex items-center justify-center text-primary active:scale-90 transition-transform bg-card rounded-xl shadow-sm"
               >
                 <span className="material-symbols-outlined text-sm">add</span>
               </button>

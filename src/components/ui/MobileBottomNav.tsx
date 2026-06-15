@@ -15,7 +15,7 @@ export function MobileBottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface rounded-t-xl border-t border-outline-variant/30 shadow-lg">
+    <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container rounded-t-2xl border-t border-outline-variant shadow-lg">
       {navItems.map((item) => {
         const isActive = pathname === item.href
 
@@ -24,10 +24,10 @@ export function MobileBottomNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex flex-col items-center justify-center rounded-2xl px-4 py-1 active:scale-90 transition-transform duration-150 h-14 min-w-[64px]",
+              "flex flex-col items-center justify-center px-4 py-1 active:scale-90 transition-transform duration-150 h-14 min-w-[64px]",
               isActive
-                ? "bg-primary-container text-on-primary-container"
-                : "text-on-surface-variant"
+                ? "bg-primary-container text-on-primary-container rounded-2xl"
+                : "text-on-surface-variant rounded-xl"
             )}
           >
             <span className={cn("material-symbols-outlined", isActive && "icon-fill")}>

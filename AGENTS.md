@@ -12,7 +12,7 @@
 ## 1. 📂 Workspace Context Awareness
 
 You must maintain strict awareness of the following directory structure and utilize these files as your ultimate source of truth:
-- **`./.agents/SOURCE_OF_TRUTH.md.md`** -> Architectural rules, core workflows, database schema, and technical boundaries.
+- **`./.agents/SOURCE_OF_TRUTH.md`** -> Architectural rules, core workflows, database schema, and technical boundaries.
 - **`./.agents/DESIGN.md`** -> Color tokens, semantic themes (Light/Dark mode), spacing, and typography rules.
 - **`./.agents/reference/`** -> Component hierarchy blocks for:
   - `authentication_page/`

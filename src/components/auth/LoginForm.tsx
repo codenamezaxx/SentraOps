@@ -92,7 +92,7 @@ export default function LoginForm() {
             mail
           </span>
           <input
-            className="w-full h-12 pl-12 pr-4 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-[color:hsl(var(--outline))]/60"
+            className="w-full h-12 pl-12 pr-4 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
             id="email"
             placeholder="contoh@usaha.com"
             required
@@ -118,7 +118,7 @@ export default function LoginForm() {
             lock
           </span>
           <input
-            className="w-full h-12 pl-12 pr-12 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-[color:hsl(var(--outline))]/60"
+            className="w-full h-12 pl-12 pr-12 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
             id="password"
             placeholder="Masukkan password"
             type={showPassword ? "text" : "password"}
@@ -140,7 +140,7 @@ export default function LoginForm() {
 
       {/* Primary Action */}
       <button
-        className="w-full h-12 mt-4 bg-primary text-on-primary rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full h-12 mt-4 bg-primary text-primary-foreground rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         type="submit"
         disabled={isLoading}
       >

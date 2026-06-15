@@ -30,8 +30,8 @@ export function CategoryFilter() {
                 active:scale-95 transition-all
                 ${
                   isActive
-                    ? 'bg-primary text-on-primary'
-                    : 'bg-surface-container-lowest dark:bg-inverse-surface text-on-surface-variant dark:text-surface-variant border border-outline-variant dark:border-none hover:bg-surface-container-low'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-surface-container-low text-on-surface-variant border border-outline-variant hover:bg-surface-container'
                 }
               `}
             >

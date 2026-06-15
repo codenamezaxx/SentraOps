@@ -11,7 +11,7 @@ export function ThemeToggle() {
     <Button
       variant="ghost"
       size="icon"
-      className="w-10 h-10 rounded-full hover:bg-surface-container-high transition-colors"
+      className="w-10 h-10 rounded-full hover:bg-muted transition-colors"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
     >
       {/* Show Moon in light mode (clicking switches to dark), Show Sun in dark mode (clicking switches to light) */}
