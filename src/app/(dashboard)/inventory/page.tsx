@@ -27,7 +27,7 @@ export default async function InventoryPage() {
 
   return (
     <RequireOwner profile={profile}>
-      <div className="pt-14 px-4 md:px-8 pb-20 md:pb-8">
+      <div className="px-4 md:px-8 pb-20 md:pb-8">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">

@@ -121,18 +121,18 @@
   --card-foreground: oklch(0.93 0.008 250);
   --popover: oklch(0.22 0.006 240);
   --popover-foreground: oklch(0.93 0.008 250);
-  --primary: oklch(0.73 0.076 180); /* #6bd8cb - primary (dark mode)  */
-  --primary-foreground: oklch(0.18 0.025 180); /* #00201d - on-primary-fixed */
-  --secondary: oklch(0.77 0.014 248); /* #c6c5cf - secondary-fixed-dim */
+  --primary: oklch(0.70 0.13 186); /* Teal 500 */
+  --primary-foreground: oklch(0.14 0.01 240); /* Zinc 950 approx */
+  --secondary: oklch(0.77 0.014 248);
   --secondary-foreground: oklch(0.35 0.016 240);
   --muted: oklch(0.20 0.007 240);
   --muted-foreground: oklch(0.80 0.014 165);
-  --accent: oklch(0.73 0.076 180);
-  --accent-foreground: oklch(0.18 0.025 180);
+  --accent: oklch(0.70 0.13 186); /* Teal 500 */
+  --accent-foreground: oklch(0.14 0.01 240);
   --destructive: oklch(0.65 0.20 25);
-  --border: oklch(0.48 0.025 165); /* outline-variant in dark */
+  --border: oklch(0.48 0.025 165);
   --input: oklch(0.48 0.025 165);
-  --ring: oklch(0.73 0.076 180);
+  --ring: oklch(0.70 0.13 186);
   /* MD3 Specific Tokens */
   --surface: oklch(0.18 0.006 240);
   --surface-container: oklch(0.20 0.007 240);
@@ -143,10 +143,10 @@
   --on-surface: oklch(0.93 0.008 250);
   --on-surface-variant: oklch(0.80 0.014 165);
   --on-background: oklch(0.93 0.008 250);
-  --on-primary: oklch(0.18 0.025 180);
-  --on-primary-container: oklch(0.98 0.008 173);
+  --on-primary: oklch(0.14 0.01 240);
+  --on-primary-container: oklch(0.70 0.13 186);
   --outline-variant: oklch(0.48 0.025 165);
-  --primary-container: oklch(0.50 0.080 180);
+  --primary-container: oklch(0.31 0.06 186 / 40%); /* Teal 900 @ 40% */
   --error: oklch(0.65 0.20 25);
   --tertiary: oklch(0.69 0.095 155);
   /* Sidebar */

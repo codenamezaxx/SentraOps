@@ -6,6 +6,7 @@ import { StatCard } from '@/components/dashboard/StatCard'
 import { TrendingUp, AlertTriangle, FileText, ShoppingBag, PlusCircle, Download } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
+import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions'
 
 export default async function DashboardPage() {
   const context = await getUserContext()
@@ -54,7 +55,7 @@ export default async function DashboardPage() {
     .limit(3)
 
   return (
-    <div className="flex-1 pt-[calc(3rem+1.5rem)] pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
+    <div className="flex-1 pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
       {/* Header Section */}
       <section className="flex flex-col gap-1">
         <div className="flex justify-between items-start">
@@ -96,31 +97,7 @@ export default async function DashboardPage() {
       </section>
 
       {/* Quick Action Hub (Requirement 4.5) */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Link
-          href="/pos"
-          className="h-16 md:h-14 bg-primary text-primary-foreground rounded-xl font-bold text-sm flex items-center justify-center gap-3 shadow-md hover:opacity-90 active:scale-95 transition-all w-full"
-        >
-          <ShoppingBag className="w-5 h-5" />
-          Buka Kasir POS
-        </Link>
-
-        <Link
-          href="/inventory"
-          className="h-16 md:h-14 bg-card text-foreground rounded-xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-accent active:scale-95 transition-all border border-border w-full"
-        >
-          <PlusCircle className="w-5 h-5" />
-          Tambah Produk
-        </Link>
-
-        <Link
-          href="/financial"
-          className="h-16 md:h-14 bg-card text-foreground rounded-xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-accent active:scale-95 transition-all border border-border w-full"
-        >
-          <Download className="w-5 h-5" />
-          Unduh Laporan
-        </Link>
-      </section>
+      <DashboardQuickActions />
 
       {/* Alerts & Activity Panel (Requirement 10) */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-2">

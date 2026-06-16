@@ -5,6 +5,8 @@ interface UIState {
   sidebarOpen: boolean;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
+  isSidebarCollapsed: boolean;
+  toggleSidebarCollapsed: () => void;
   isMobile: boolean;
   setIsMobile: (mobile: boolean) => void;
 }
@@ -17,19 +19,28 @@ interface UIState {
 export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
-      // Sidebar state for desktop navigation (Requirement 13.4)
+      // Sidebar visibility state (primarily for mobile drawer)
       sidebarOpen: true,
 
-      // Toggle sidebar open/closed state
+      // Toggle sidebar visibility
       toggleSidebar: () =>
         set((state) => ({
           sidebarOpen: !state.sidebarOpen,
         })),
 
-      // Explicitly set sidebar state
+      // Explicitly set sidebar visibility
       setSidebarOpen: (open: boolean) =>
         set(() => ({
           sidebarOpen: open,
+        })),
+
+      // Sidebar collapse state for desktop
+      isSidebarCollapsed: false,
+
+      // Toggle sidebar collapse
+      toggleSidebarCollapsed: () =>
+        set((state) => ({
+          isSidebarCollapsed: !state.isSidebarCollapsed,
         })),
 
       // Track mobile viewport state
@@ -44,8 +55,9 @@ export const useUIStore = create<UIState>()(
     {
       name: 'sentraops-ui-storage', // localStorage key
       partialize: (state) => ({
-        // Only persist sidebar preference, not mobile state
+        // Persist sidebar preferences
         sidebarOpen: state.sidebarOpen,
+        isSidebarCollapsed: state.isSidebarCollapsed,
       }),
     }
   )

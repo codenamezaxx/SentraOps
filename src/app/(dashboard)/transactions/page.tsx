@@ -36,7 +36,7 @@ export default async function TransactionsPage() {
   }
 
   return (
-    <div className="flex-1 pt-[calc(3rem+1.5rem)] pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
+    <div className="flex-1 pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
       <h1 className="text-2xl md:text-3xl font-bold text-foreground">
         Riwayat Transaksi
       </h1>

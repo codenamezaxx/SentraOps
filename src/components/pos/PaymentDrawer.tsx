@@ -112,9 +112,12 @@ export function PaymentDrawer() {
     }
   }
 
-  const handleClose = () => {
-    if (!isProcessing) {
-      setIsOpen(false)
+  const handleOpenChange = (open: boolean) => {
+    if (isProcessing) return
+
+    setIsOpen(open)
+
+    if (!open) {
       // Reset state after drawer closes
       setTimeout(() => {
         setSelectedMethod(null)
@@ -131,7 +134,7 @@ export function PaymentDrawer() {
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={handleClose}>
+    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <button
           disabled={items.length === 0}
@@ -161,7 +164,7 @@ export function PaymentDrawer() {
               </span>
             </p>
             <Button
-              onClick={handleClose}
+              onClick={() => handleOpenChange(false)}
               className="mt-4 bg-primary hover:opacity-90 text-primary-foreground rounded-xl h-12 px-8"
             >
               Selesai
