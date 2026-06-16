@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getUserProfile } from '@/lib/supabase/queries'
 import type { PaymentMethod } from '@/lib/types'
+import { Xendit } from 'xendit-node'
 
 export interface CheckoutRequest {
   items: {
@@ -14,6 +15,7 @@ export interface CheckoutRequest {
 export interface CheckoutResponse {
   success: boolean
   transaction_id?: string
+  payment_url?: string
   error?: string
   code?: string
   product_name?: string
@@ -52,9 +54,9 @@ export async function POST(request: Request) {
 
     // 2. Get user profile with store context
     const profile = await getUserProfile()
-    if (!profile || !profile.store_id) {
+    if (!profile || !profile.id || !profile.store_id) {
       return NextResponse.json(
-        { success: false, error: 'Profil toko tidak ditemukan.' },
+        { success: false, code: 'INVALID_PROFILE_CONTEXT', error: 'Profil toko tidak valid atau tidak lengkap.' },
         { status: 400 }
       )
     }
@@ -131,20 +133,52 @@ export async function POST(request: Request) {
     // Use a database transaction approach: create transaction, items, then update stock
 
     // 7a. Create transaction record
-    const { data: transaction, error: transactionError } = await supabase
-      .from('transactions')
-      .insert({
-        store_id: profile.store_id,
-        cashier_id: profile.auth_id,
-        total_amount: totalAmount,
-        payment_method: body.payment_method,
-        status: 'completed',
-      })
-      .select()
-      .single()
+    let transaction: { id: string; total_amount: number } | null = null
 
-    if (transactionError || !transaction) {
-      console.error('Failed to create transaction:', transactionError)
+    try {
+      const isGateway = body.payment_method === 'qris' || body.payment_method === 'whatsapp_invoice'
+      const { data: txn, error: transactionError } = await supabase
+        .from('transactions')
+        .insert({
+          store_id: profile.store_id,
+          cashier_id: profile.id,
+          total_amount: totalAmount,
+          payment_method: body.payment_method,
+          status: isGateway ? 'pending' : 'completed',
+        })
+        .select()
+        .single()
+
+      if (transactionError) {
+        throw transactionError
+      }
+
+      if (!txn) {
+        throw new Error('Transaction record creation returned empty data.')
+      }
+
+      transaction = txn
+    } catch (err) {
+      console.error('Failed to create transaction:', err)
+
+      const pgError = err as { code?: string; details?: string; message?: string }
+      if (pgError.code === '23503') {
+        const detail = pgError.details || ''
+        let field = 'foreign key'
+
+        if (detail.includes('store_id')) field = 'store_id'
+        else if (detail.includes('cashier_id')) field = 'cashier_id'
+
+        return NextResponse.json(
+          {
+            success: false,
+            code: 'FOREIGN_KEY_VIOLATION',
+            error: `Validasi referensi data gagal. Field ${field} tidak cocok dengan data yang ada di database.`,
+          },
+          { status: 400 }
+        )
+      }
+
       return NextResponse.json(
         { success: false, error: 'Gagal membuat transaksi. Silakan coba lagi.' },
         { status: 500 }
@@ -197,10 +231,48 @@ export async function POST(request: Request) {
       }
     }
 
-    // 8. Return success response
+    // 8. Handle Xendit Invoice creation if payment method is gateway
+    let paymentUrl: string | undefined
+
+    if (body.payment_method === 'qris' || body.payment_method === 'whatsapp_invoice') {
+      try {
+        const xenditClient = new Xendit({
+          secretKey: process.env.XENDIT_SECRET_KEY || '',
+        })
+
+        const invoice = await xenditClient.Invoice.createInvoice({
+          data: {
+            externalId: transaction.id,
+            amount: transaction.total_amount,
+            description: `SentraOps Order #${transaction.id.slice(0, 8)}`,
+            customer: {
+              givenNames: profile.name || 'Customer',
+            },
+            successRedirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/transactions`,
+            failureRedirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/pos`,
+          },
+        })
+
+        paymentUrl = invoice.invoiceUrl
+      } catch (err) {
+        console.error('Xendit Invoice creation failed:', err)
+        // Keep transaction as PENDING, but notify failure to generate link
+        return NextResponse.json(
+          {
+            success: false,
+            transaction_id: transaction.id,
+            error: 'Gagal membuat invoice pembayaran. Silakan cek riwayat transaksi.',
+          },
+          { status: 500 }
+        )
+      }
+    }
+
+    // 9. Return success response
     return NextResponse.json({
       success: true,
       transaction_id: transaction.id,
+      payment_url: paymentUrl,
     })
   } catch (error) {
     console.error('Checkout error:', {

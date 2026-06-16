@@ -27,6 +27,7 @@ export interface Product {
   stock_quantity: number;
   min_stock_threshold: number;
   category: string | null;
+  image_url: string | null;
   active: boolean;
   created_at: string | null;
   updated_at: string | null;

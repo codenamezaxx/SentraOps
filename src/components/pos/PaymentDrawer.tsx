@@ -1,42 +1,50 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCartStore } from '@/lib/stores/cartStore'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
-import { CreditCard, QrCode, MessageSquare, ChevronRight, CheckCircle2, Loader2 } from 'lucide-react'
+import { CreditCard, QrCode, MessageSquare, ChevronRight, CheckCircle2, Loader2, Banknote } from 'lucide-react'
 import type { PaymentMethod } from '@/lib/types'
+import { formatCurrency, cn } from '@/lib/utils'
 
 /**
  * PaymentDrawer Component (Client Component)
  *
- * Mobile bottom-sheet drawer for payment method selection and checkout
- * Displays cart breakdown: subtotal, total
- * Supports Cash, QRIS, and WhatsApp Invoice payment methods
- * Handles checkout API call with success/error feedback
- *
- * Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 18.1, 18.3
- * Task: 10.1, 10.9
+ * Responsive payment interface: 
+ * - Mobile: bottom-sheet drawer (Requirement 13.5)
+ * - Desktop: center dialog modal (Requirement 13.5)
+ * 
+ * Features:
+ * - Payment method selection (Requirement 8.1, 8.2)
+ * - Cash amount input & change calculation
+ * - Checkout API integration (Requirement 8.3, 8.4, 8.5)
  */
 export function PaymentDrawer() {
   const { items, total, clearCart } = useCartStore()
   const [isOpen, setIsOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null)
+  const [cashAmount, setCashAmount] = useState<number>(0)
   const [completed, setCompleted] = useState(false)
   const [transactionId, setTransactionId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(amount)
-  }
+  // Responsive check
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
+  const changeAmount = selectedMethod === 'cash' ? Math.max(0, cashAmount - total) : 0
+  const isCashInsufficient = selectedMethod === 'cash' && cashAmount < total
 
   const paymentOptions: {
     method: PaymentMethod
@@ -48,7 +56,7 @@ export function PaymentDrawer() {
       method: 'cash',
       label: 'Tunai',
       description: 'Bayar langsung dengan uang tunai',
-      icon: CreditCard,
+      icon: Banknote,
     },
     {
       method: 'qris',
@@ -64,13 +72,14 @@ export function PaymentDrawer() {
     },
   ]
 
-  const handlePaymentSelect = async (method: PaymentMethod) => {
+  const handlePaymentSelect = (method: PaymentMethod) => {
     setSelectedMethod(method)
     setErrorMessage(null)
+    if (method !== 'cash') setCashAmount(0)
   }
 
   const handleConfirmPayment = async () => {
-    if (!selectedMethod || isProcessing) return
+    if (!selectedMethod || isProcessing || isCashInsufficient) return
 
     setIsProcessing(true)
     setErrorMessage(null)
@@ -94,19 +103,14 @@ export function PaymentDrawer() {
         throw new Error(result.error || 'Transaksi gagal')
       }
 
-      // Success: clear cart and show success state
       clearCart()
       setTransactionId(result.transaction_id)
       setCompleted(true)
-      toast.success('Transaksi Berhasil!', {
-        description: `ID Transaksi: ${result.transaction_id?.slice(0, 8)}...`,
-      })
+      toast.success('Transaksi Berhasil!')
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Terjadi kesalahan. Silakan coba lagi.'
+      const message = error instanceof Error ? error.message : 'Terjadi kesalahan.'
       setErrorMessage(message)
-      toast.error('Transaksi Gagal', {
-        description: message,
-      })
+      toast.error('Transaksi Gagal', { description: message })
     } finally {
       setIsProcessing(false)
     }
@@ -114,13 +118,11 @@ export function PaymentDrawer() {
 
   const handleOpenChange = (open: boolean) => {
     if (isProcessing) return
-
     setIsOpen(open)
-
     if (!open) {
-      // Reset state after drawer closes
       setTimeout(() => {
         setSelectedMethod(null)
+        setCashAmount(0)
         setCompleted(false)
         setTransactionId(null)
         setErrorMessage(null)
@@ -128,80 +130,57 @@ export function PaymentDrawer() {
     }
   }
 
-  const handleRetry = () => {
-    setErrorMessage(null)
-    setSelectedMethod(null)
-  }
-
-  return (
-    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetTrigger asChild>
-        <button
-          disabled={items.length === 0}
-          className="w-full bg-primary hover:opacity-90 disabled:bg-muted disabled:text-muted-foreground text-primary-foreground font-semibold py-3 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-sm h-12 disabled:cursor-not-allowed"
-        >
-          Bayar
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </SheetTrigger>
-      <SheetContent
-        side="bottom"
-        className="rounded-t-2xl max-h-[90vh] overflow-y-auto pb-8 px-4 pt-2 bg-surface-container-low border-outline-variant"
-      >
-        {completed && transactionId ? (
-          /* Success State */
-          <div className="flex flex-col items-center justify-center py-8 gap-4">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <CheckCircle2 className="w-8 h-8 text-primary" />
-            </div>
-            <h3 className="text-lg font-bold text-on-surface">
-              Transaksi Berhasil!
-            </h3>
-            <p className="text-sm text-on-surface-variant text-center max-w-xs">
-              Pembayaran telah diproses. ID transaksi:{' '}
-              <span className="font-mono text-xs bg-surface-container px-2 py-1 rounded-lg">
-                {transactionId.slice(0, 12)}...
-              </span>
-            </p>
-            <Button
-              onClick={() => handleOpenChange(false)}
-              className="mt-4 bg-primary hover:opacity-90 text-primary-foreground rounded-xl h-12 px-8"
-            >
-              Selesai
-            </Button>
+  const Content = (
+    <div className="flex flex-col gap-4">
+      {completed && transactionId ? (
+        <div className="flex flex-col items-center justify-center py-8 gap-4">
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-primary" />
           </div>
-        ) : (
-          <>
-            <SheetHeader className="mb-4">
-              <div className="w-10 h-1 bg-on-surface-variant/30 rounded-full mx-auto mb-3" />
-              <SheetTitle className="text-lg font-bold text-on-surface text-center">
-                Pembayaran
-              </SheetTitle>
-            </SheetHeader>
-
-            {/* Cart Breakdown */}
-            <div className="bg-surface-container rounded-xl p-4 mb-4 space-y-2">
-              <div className="flex justify-between text-sm text-on-surface-variant">
-                <span>Total Item</span>
-                <span className="font-semibold text-on-surface">
-                  {itemCount} item
-                </span>
-              </div>
-              <div className="flex justify-between items-center pt-2 border-t border-outline-variant">
-                <span className="font-semibold text-on-surface">
-                  Total Pembayaran
-                </span>
-                <span className="text-xl font-bold text-primary">
-                  {formatCurrency(total)}
-                </span>
-              </div>
+          <h3 className="text-lg font-bold text-foreground text-center">
+            Transaksi Berhasil!
+          </h3>
+          <div className="bg-muted rounded-xl p-4 w-full space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">ID Transaksi</span>
+              <span className="font-mono font-medium">{transactionId.slice(0, 8)}</span>
             </div>
+            {selectedMethod === 'cash' && (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Bayar Tunai</span>
+                  <span className="font-medium">{formatCurrency(cashAmount)}</span>
+                </div>
+                <div className="flex justify-between text-sm pt-2 border-t">
+                  <span className="text-muted-foreground font-bold text-primary">Kembalian</span>
+                  <span className="font-bold text-primary">{formatCurrency(changeAmount)}</span>
+                </div>
+              </>
+            )}
+          </div>
+          <Button
+            onClick={() => handleOpenChange(false)}
+            className="mt-2 bg-primary w-full h-12 rounded-xl"
+          >
+            Selesai
+          </Button>
+        </div>
+      ) : (
+        <>
+          <div className="bg-muted rounded-xl p-4 space-y-2">
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>Total Item</span>
+              <span className="font-semibold text-foreground">{itemCount} item</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t">
+              <span className="font-semibold text-foreground">Total Pembayaran</span>
+              <span className="text-xl font-bold text-primary">{formatCurrency(total)}</span>
+            </div>
+          </div>
 
-            {/* Payment Method Selection */}
-            <div className="space-y-2 mb-4">
-              <p className="text-sm font-semibold text-on-surface mb-2">
-                Pilih Metode Pembayaran
-              </p>
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Metode Pembayaran</p>
+            <div className="grid grid-cols-1 gap-2">
               {paymentOptions.map((option) => {
                 const Icon = option.icon
                 const isSelected = selectedMethod === option.method
@@ -209,72 +188,116 @@ export function PaymentDrawer() {
                   <button
                     key={option.method}
                     onClick={() => handlePaymentSelect(option.method)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all h-12 ${
-                      isSelected
-                        ? 'border-primary bg-primary-container/20'
-                        : 'border-outline-variant bg-surface-container-lowest hover:bg-surface-container'
-                    }`}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        isSelected
-                          ? 'bg-primary text-on-primary'
-                          : 'bg-surface-container text-on-surface-variant'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="text-sm font-semibold text-on-surface">
-                        {option.label}
-                      </p>
-                      <p className="text-xs text-on-surface-variant">
-                        {option.description}
-                      </p>
-                    </div>
-                    {isSelected && (
-                      <CheckCircle2 className="w-5 h-5 text-primary" />
+                    className={cn(
+                      "w-full flex items-center gap-3 p-3 rounded-xl border transition-all h-14 text-left",
+                      isSelected ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-accent/30"
                     )}
+                  >
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center",
+                      isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    )}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold">{option.label}</p>
+                      <p className="text-[10px] text-muted-foreground">{option.description}</p>
+                    </div>
+                    {isSelected && <CheckCircle2 className="w-5 h-5 text-primary" />}
                   </button>
                 )
               })}
             </div>
+          </div>
 
-            {/* Error Message */}
-            {errorMessage && (
-              <div className="bg-muted text-accent border border-accent/20 rounded-xl p-3 mb-4">
-                <p className="text-sm">
-                  {errorMessage}
-                </p>
-                <button
-                  onClick={handleRetry}
-                  className="text-xs font-semibold text-primary mt-1 underline"
-                >
-                  Coba metode lain
-                </button>
+          {selectedMethod === 'cash' && (
+            <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-foreground">Nominal Tunai</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">Rp</span>
+                  <Input 
+                    type="number"
+                    value={cashAmount || ''}
+                    onChange={(e) => setCashAmount(Number(e.target.value))}
+                    className="h-12 pl-10 rounded-xl text-lg font-bold"
+                    placeholder="0"
+                    autoFocus
+                  />
+                </div>
               </div>
-            )}
-
-            {/* Confirm Button */}
-            <Button
-              onClick={handleConfirmPayment}
-              disabled={!selectedMethod || isProcessing}
-              className="w-full bg-primary hover:opacity-90 disabled:bg-muted disabled:text-muted-foreground text-primary-foreground font-semibold py-3 rounded-xl h-12 disabled:cursor-not-allowed transition-all"
-            >
-              {isProcessing ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Memproses...
+              
+              <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 flex justify-between items-center h-12">
+                <span className="text-sm font-medium text-muted-foreground">Kembalian</span>
+                <span className={cn("text-lg font-bold", changeAmount > 0 ? "text-primary" : "text-muted-foreground")}>
+                  {formatCurrency(changeAmount)}
                 </span>
-              ) : selectedMethod ? (
-                `Konfirmasi Pembayaran ${paymentOptions.find((o) => o.method === selectedMethod)?.label}`
-              ) : (
-                'Pilih Metode Pembayaran'
-              )}
-            </Button>
-          </>
-        )}
-      </SheetContent>
-    </Sheet>
-  );
+              </div>
+            </div>
+          )}
+
+          {errorMessage && (
+            <p className="text-xs text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">
+              {errorMessage}
+            </p>
+          )}
+
+          <Button
+            onClick={handleConfirmPayment}
+            disabled={!selectedMethod || isProcessing || isCashInsufficient}
+            className="w-full h-12 rounded-xl mt-2 font-bold shadow-md active:scale-[0.98] transition-all"
+          >
+            {isProcessing ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : isCashInsufficient ? (
+              'Tunai Tidak Cukup'
+            ) : (
+              'Konfirmasi Pembayaran'
+            )}
+          </Button>
+        </>
+      )}
+    </div>
+  )
+
+  if (isMobile) {
+    return (
+      <Sheet open={isOpen} onOpenChange={handleOpenChange}>
+        <SheetTrigger asChild>
+          <Button 
+            disabled={items.length === 0}
+            className="w-full h-12 rounded-xl font-bold gap-2 active:scale-95 shadow-md"
+          >
+            Bayar <ChevronRight className="w-4 h-4" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="bottom" className="rounded-t-2xl px-4 pb-10 pt-2 border-t-0 shadow-2xl">
+          <SheetHeader className="mb-4">
+            <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-4" />
+            <SheetTitle className="text-center font-bold text-xl">Checkout</SheetTitle>
+          </SheetHeader>
+          {Content}
+        </SheetContent>
+      </Sheet>
+    )
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button 
+          disabled={items.length === 0}
+          className="w-full h-12 rounded-xl font-bold gap-2 active:scale-95 shadow-md"
+        >
+          Bayar <ChevronRight className="w-4 h-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[420px] rounded-2xl p-6 border-none shadow-2xl overflow-hidden">
+        <DialogHeader className="mb-2">
+          <DialogTitle className="text-2xl font-bold">Pembayaran</DialogTitle>
+        </DialogHeader>
+        {Content}
+      </DialogContent>
+    </Dialog>
+  )
 }

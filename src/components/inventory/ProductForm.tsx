@@ -18,7 +18,8 @@ import { Product } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Upload, X, ImageIcon } from 'lucide-react'
+import Image from 'next/image'
 
 const productSchema = z.object({
   name: z.string().min(1, 'Nama produk wajib diisi'),
@@ -28,6 +29,7 @@ const productSchema = z.object({
   stock_quantity: z.number().min(0, 'Stok tidak boleh negatif'),
   min_stock_threshold: z.number().min(0, 'Ambang batas tidak boleh negatif'),
   category: z.string().optional().nullable().or(z.literal('')),
+  image_url: z.string().optional().nullable().or(z.literal('')),
 })
 
 type ProductFormValues = z.infer<typeof productSchema>
@@ -46,6 +48,9 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const supabase = createClient()
 
+  const [isUploading, setIsUploading] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(product?.image_url || null)
+
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -56,6 +61,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       stock_quantity: product?.stock_quantity || 0,
       min_stock_threshold: product?.min_stock_threshold || 5,
       category: product?.category || '',
+      image_url: product?.image_url || '',
     },
   })
 
@@ -81,7 +87,8 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
         stock_quantity: values.stock_quantity,
         min_stock_threshold: values.min_stock_threshold,
         category: values.category || null,
-      }
+        image_url: values.image_url || null,
+      } as any
 
       if (product) {
         const { error } = await supabase
@@ -114,9 +121,117 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
     }
   }
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('File harus berupa gambar')
+      return
+    }
+
+    // Validate size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Ukuran gambar maksimal 2MB')
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Unauthorized')
+
+      const fileExt = file.name.split('.').pop()
+      const randomId = crypto.randomUUID().split('-')[0]
+      const fileName = `${user.id}/${randomId}.${fileExt}`
+      const filePath = `product-images/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('public-assets')
+        .upload(filePath, file, {
+          upsert: true,
+          contentType: file.type,
+        })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('public-assets')
+        .getPublicUrl(filePath)
+
+      form.setValue('image_url', publicUrl)
+      setPreviewUrl(publicUrl)
+      toast.success('Gambar berhasil diunggah')
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      toast.error('Gagal mengunggah gambar')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const removeImage = () => {
+    form.setValue('image_url', '')
+    setPreviewUrl(null)
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {/* Image Upload Field */}
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-semibold text-on-surface">Gambar Produk</label>
+          <div className="flex items-center gap-4">
+            <div className="relative w-24 h-24 rounded-2xl border-2 border-dashed border-outline-variant flex items-center justify-center overflow-hidden bg-muted group">
+              {previewUrl ? (
+                <>
+                  <Image 
+                    src={previewUrl} 
+                    alt="Preview" 
+                    fill 
+                    className="object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-6 h-6 text-white" />
+                  </button>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-muted-foreground">
+                  {isUploading ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : (
+                    <ImageIcon className="w-6 h-6" />
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex-1">
+              <label className="cursor-pointer">
+                <div className="flex items-center gap-2 px-4 h-12 rounded-xl border border-outline-variant bg-surface hover:bg-muted transition-colors font-semibold text-sm w-fit">
+                  <Upload className="w-4 h-4" />
+                  Pilih Gambar
+                </div>
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={isUploading || isLoading}
+                />
+              </label>
+              <p className="text-[10px] text-muted-foreground mt-2">
+                Format: JPG, PNG, WEBP (Maks. 2MB)
+              </p>
+            </div>
+          </div>
+        </div>
+
         <FormField
           control={form.control}
           name="name"

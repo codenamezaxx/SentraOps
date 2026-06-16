@@ -110,18 +110,18 @@ export function Navigation() {
             isSidebarCollapsed && "justify-center px-0"
           )}
         >
-          <Settings className="w-5 h-5 shrink-0" />
+          <Settings className="w-5 h-5 m-3 shrink-0" />
           {!isSidebarCollapsed && <span className="truncate">Settings</span>}
         </Link>
         <button
           onClick={handleLogout}
           title={isSidebarCollapsed ? "Keluar" : undefined}
           className={cn(
-            "flex items-center gap-3 px-3 py-3 text-muted-foreground hover:bg-muted rounded-xl font-semibold text-sm transition-all duration-200 ease-in-out h-12 w-full text-left",
+            "flex items-center gap-3 px-3 py-3 text-destructive hover:bg-destructive/10 rounded-xl font-semibold text-sm transition-all duration-200 ease-in-out h-12 w-full text-left cursor-pointer",
             isSidebarCollapsed && "justify-center px-0"
           )}
         >
-          <LogOut className="w-5 h-5 shrink-0" />
+          <LogOut className="w-5 h-5 m-3 shrink-0 text-destructive" />
           {!isSidebarCollapsed && <span className="truncate">Keluar</span>}
         </button>
       </div>

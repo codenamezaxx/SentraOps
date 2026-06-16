@@ -19,10 +19,11 @@ import { Product } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { StockBadge } from './StockBadge'
 import { Button } from '@/components/ui/button'
-import { Edit2, PackagePlus, Plus, Search } from 'lucide-react'
+import { Edit2, PackagePlus, Plus, Search, UtensilsCrossed } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { ProductForm } from './ProductForm'
 import { StockUpdateForm } from './StockUpdateForm'
+import Image from 'next/image'
 
 interface ProductTableProps {
   products: Product[]
@@ -88,7 +89,24 @@ export function ProductTable({ products: initialProducts }: ProductTableProps) {
               ) : (
                 filteredProducts.map((product) => (
                   <TableRow key={product.id} className="hover:bg-surface-container transition-colors">
-                    <TableCell className="font-medium text-on-surface">{product.name}</TableCell>
+                    <TableCell className="font-medium text-on-surface">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 border">
+                          {product.image_url ? (
+                            <Image 
+                              src={product.image_url} 
+                              alt={product.name} 
+                              width={40} 
+                              height={40} 
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <UtensilsCrossed className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </div>
+                        <span>{product.name}</span>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-on-surface-variant font-mono text-xs">
                       {product.barcode || '-'}
                     </TableCell>
