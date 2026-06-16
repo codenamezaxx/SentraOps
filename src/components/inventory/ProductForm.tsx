@@ -22,12 +22,12 @@ import { Loader2 } from 'lucide-react'
 
 const productSchema = z.object({
   name: z.string().min(1, 'Nama produk wajib diisi'),
-  barcode: z.string().optional().nullable(),
-  price: z.coerce.number().min(0, 'Harga jual tidak boleh negatif'),
-  cost_price: z.coerce.number().min(0, 'Harga modal tidak boleh negatif'),
-  stock_quantity: z.coerce.number().min(0, 'Stok tidak boleh negatif'),
-  min_stock_threshold: z.coerce.number().min(0, 'Ambang batas tidak boleh negatif'),
-  category: z.string().optional().nullable(),
+  barcode: z.string().optional().nullable().or(z.literal('')),
+  price: z.number().min(0, 'Harga jual tidak boleh negatif'),
+  cost_price: z.number().min(0, 'Harga modal tidak boleh negatif'),
+  stock_quantity: z.number().min(0, 'Stok tidak boleh negatif'),
+  min_stock_threshold: z.number().min(0, 'Ambang batas tidak boleh negatif'),
+  category: z.string().optional().nullable().or(z.literal('')),
 })
 
 type ProductFormValues = z.infer<typeof productSchema>
@@ -178,7 +178,13 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
               <FormItem>
                 <FormLabel className="text-on-surface">Harga Jual (Rp)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} value={field.value ?? 0} className="h-12 rounded-xl" />
+                  <Input 
+                    type="number" 
+                    {...field} 
+                    onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                    value={field.value ?? 0} 
+                    className="h-12 rounded-xl" 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -191,7 +197,13 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
               <FormItem>
                 <FormLabel className="text-on-surface">Harga Modal (Rp)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} value={field.value ?? 0} className="h-12 rounded-xl" />
+                  <Input 
+                    type="number" 
+                    {...field} 
+                    onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                    value={field.value ?? 0} 
+                    className="h-12 rounded-xl" 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -207,7 +219,13 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
               <FormItem>
                 <FormLabel className="text-on-surface">Stok Saat Ini</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} value={field.value ?? 0} className="h-12 rounded-xl" />
+                  <Input 
+                    type="number" 
+                    {...field} 
+                    onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                    value={field.value ?? 0} 
+                    className="h-12 rounded-xl" 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -220,7 +238,13 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
               <FormItem>
                 <FormLabel className="text-on-surface">Ambang Batas Stok Menipis</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} value={field.value ?? 0} className="h-12 rounded-xl" />
+                  <Input 
+                    type="number" 
+                    {...field} 
+                    onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                    value={field.value ?? 0} 
+                    className="h-12 rounded-xl" 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
