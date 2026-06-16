@@ -3,6 +3,7 @@
 import { useCartStore } from '@/lib/stores/cartStore'
 import Image from 'next/image'
 import { getProductImageUrl } from '@/lib/utils'
+import { ShoppingCart, UtensilsCrossed, X, Minus, Plus } from 'lucide-react'
 
 /**
  * Cart Component (Client Component)
@@ -37,9 +38,7 @@ export function Cart() {
       <div className="flex-1 space-y-3">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <span className="material-symbols-outlined text-5xl text-on-surface-variant mb-3">
-              shopping_cart
-            </span>
+            <ShoppingCart className="w-12 h-12 text-muted-foreground mb-3 opacity-20" />
             <p className="text-sm text-on-surface-variant dark:text-surface-variant">
               Keranjang masih kosong
             </p>
@@ -58,20 +57,17 @@ export function Cart() {
                 className="flex gap-3 p-3 bg-surface-container-low dark:bg-surface-container rounded-xl border border-outline-variant dark:border-none"
               >
                 {/* Product Image */}
-                <div className="w-16 h-16 bg-surface-variant dark:bg-surface-container-high rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div className="w-16 h-16 bg-surface-variant dark:bg-surface-container-high rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden relative">
                   {imageUrl ? (
                     <Image
                       src={imageUrl}
                       alt={item.name}
-                      width={64}
-                      height={64}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                       unoptimized
                     />
                   ) : (
-                    <span className="material-symbols-outlined text-outline-variant text-2xl">
-                      inventory_2
-                    </span>
+                    <UtensilsCrossed className="w-6 h-6 text-outline-variant" />
                   )}
                 </div>
 
@@ -89,9 +85,7 @@ export function Cart() {
                       className="text-on-surface-variant dark:text-surface-variant hover:text-error hover:dark:text-error transition-colors p-1 rounded-lg hover:bg-error-container/10 active:scale-90"
                       aria-label="Hapus item"
                     >
-                      <span className="material-symbols-outlined text-base">
-                        close
-                      </span>
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
 
@@ -116,9 +110,7 @@ export function Cart() {
                         className="w-8 h-8 flex items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-on-surface hover:dark:text-surface active:scale-90 transition-transform rounded-lg hover:bg-surface-container-low"
                         aria-label="Kurangi jumlah"
                       >
-                        <span className="material-symbols-outlined text-sm">
-                          remove
-                        </span>
+                        <Minus className="w-4 h-4" />
                       </button>
 
                       {/* Quantity Display (Requirement 6.4) */}
@@ -132,9 +124,7 @@ export function Cart() {
                         className="w-8 h-8 flex items-center justify-center text-primary dark:text-primary-fixed active:scale-90 transition-transform bg-surface-container-lowest dark:bg-surface-dark rounded-lg shadow-sm hover:bg-primary-container"
                         aria-label="Tambah jumlah"
                       >
-                        <span className="material-symbols-outlined text-sm">
-                          add
-                        </span>
+                        <Plus className="w-4 h-4" />
                       </button>
                     </div>
                   </div>

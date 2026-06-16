@@ -1,37 +1,40 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingBag, PlusCircle, Download } from 'lucide-react'
+import { ShoppingBag, PlusCircle, FileText } from 'lucide-react'
 import { useCartStore } from '@/lib/stores/cartStore'
 
 export function DashboardQuickActions() {
   const { clearCart } = useCartStore()
 
   return (
-    <section className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+    <section className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+      {/* POS: Full width on mobile, 1 col on desktop */}
       <Link
         href="/pos"
         onClick={() => clearCart()}
-        className="h-16 md:h-14 bg-primary text-primary-foreground rounded-xl font-bold text-sm flex items-center justify-center gap-3 shadow-md hover:opacity-90 active:scale-95 transition-all w-full"
+        className="col-span-2 md:col-span-1 h-16 md:h-20 bg-primary text-primary-foreground rounded-2xl font-bold text-base md:text-sm flex items-center justify-center gap-3 shadow-md hover:opacity-90 active:scale-[0.98] transition-all w-full"
       >
-        <ShoppingBag className="w-5 h-5" />
+        <ShoppingBag className="w-6 h-6" />
         Buka Kasir POS
       </Link>
 
+      {/* Add Product */}
       <Link
         href="/inventory"
-        className="h-16 md:h-14 bg-card text-foreground hover:text-on-primary rounded-xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-accent active:scale-95 transition-all border border-border w-full"
+        className="h-16 md:h-20 bg-card text-foreground rounded-2xl font-bold text-sm flex items-center justify-center gap-3 border border-border hover:bg-muted active:scale-[0.98] transition-all w-full"
       >
-        <PlusCircle className="w-5 h-5" />
+        <PlusCircle className="w-5 h-5 text-primary" />
         Tambah Produk
       </Link>
 
+      {/* Reports */}
       <Link
         href="/financial"
-        className="h-16 md:h-14 bg-card text-foreground hover:text-on-primary rounded-xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-accent active:scale-95 transition-all border border-border w-full"
+        className="h-16 md:h-20 bg-card text-foreground rounded-2xl font-bold text-sm flex items-center justify-center gap-3 border border-border hover:bg-muted active:scale-[0.98] transition-all w-full"
       >
-        <Download className="w-5 h-5" />
-        Unduh Laporan
+        <FileText className="w-5 h-5 text-primary" />
+        Lihat Laporan
       </Link>
     </section>
   )

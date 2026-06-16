@@ -2,6 +2,9 @@
 
 import { useCartStore } from '@/lib/stores/cartStore'
 import { PaymentDrawer } from './PaymentDrawer'
+import Image from 'next/image'
+import { getProductImageUrl } from '@/lib/utils'
+import { UtensilsCrossed, ShoppingCart, Minus, Plus } from 'lucide-react'
 
 /**
  * CartSection Component (Client Component)
@@ -48,9 +51,7 @@ export function CartSection() {
       <div className="flex-1 max-h-[400px] overflow-y-auto space-y-3">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <span className="material-symbols-outlined text-5xl text-muted-foreground mb-3">
-              shopping_cart
-            </span>
+            <ShoppingCart className="w-12 h-12 text-muted-foreground mb-3 opacity-20" />
             <p className="text-sm text-muted-foreground">
               Keranjang masih kosong
             </p>
@@ -64,11 +65,19 @@ export function CartSection() {
               key={item.id}
               className="flex gap-3 p-3 bg-muted rounded-xl"
             >
-              {/* Product Image Placeholder */}
-              <div className="w-16 h-16 bg-surface-container rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="material-symbols-outlined text-on-surface-variant text-2xl">
-                  fastfood
-                </span>
+              {/* Product Image */}
+              <div className="w-16 h-16 bg-surface-container rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                {item.image_url ? (
+                  <Image
+                    src={getProductImageUrl(item.image_url) || item.image_url}
+                    alt={item.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <UtensilsCrossed className="w-6 h-6 text-muted-foreground/40" />
+                )}
               </div>
 
               {/* Product Info */}
@@ -87,7 +96,7 @@ export function CartSection() {
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
                       className="w-6 h-6 flex items-center justify-center text-muted-foreground active:scale-90 transition-transform"
                     >
-                      <span className="material-symbols-outlined text-xs">remove</span>
+                      <Minus className="w-4 h-4" />
                     </button>
                     <span className="font-semibold text-xs text-foreground w-4 text-center">
                       {item.quantity}
@@ -96,7 +105,7 @@ export function CartSection() {
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       className="w-6 h-6 flex items-center justify-center text-primary active:scale-90 transition-transform"
                     >
-                      <span className="material-symbols-outlined text-xs">add</span>
+                      <Plus className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
