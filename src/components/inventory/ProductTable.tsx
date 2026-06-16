@@ -65,7 +65,8 @@ export function ProductTable({ products: initialProducts }: ProductTableProps) {
         </Button>
       </div>
 
-      <div className="bg-card rounded-2xl border border-outline-variant overflow-hidden shadow-sm">
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-card rounded-2xl border border-outline-variant overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -153,6 +154,84 @@ export function ProductTable({ products: initialProducts }: ProductTableProps) {
             </TableBody>
           </Table>
         </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {filteredProducts.length === 0 ? (
+          <div className="bg-card rounded-2xl border border-outline-variant p-8 text-center text-muted-foreground">
+            Tidak ada produk ditemukan.
+          </div>
+        ) : (
+          filteredProducts.map((product) => (
+            <div
+              key={product.id}
+              className="bg-card rounded-2xl border border-outline-variant p-4 shadow-sm"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 border border-border">
+                  {product.image_url ? (
+                    <Image 
+                      src={product.image_url} 
+                      alt={product.name} 
+                      width={48} 
+                      height={48} 
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <UtensilsCrossed className="w-5 h-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-on-surface truncate">{product.name}</div>
+                  <div className="text-xs text-muted-foreground font-mono">{product.barcode || 'Tanpa barcode'}</div>
+                </div>
+                <StockBadge 
+                  quantity={product.stock_quantity} 
+                  threshold={product.min_stock_threshold} 
+                />
+              </div>
+
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-on-surface-variant">
+                  {product.category || 'Umum'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="bg-muted/50 rounded-xl p-2">
+                  <div className="text-xs text-muted-foreground">Harga Jual</div>
+                  <div className="font-semibold text-on-surface">{formatCurrency(product.price)}</div>
+                </div>
+                <div className="bg-muted/50 rounded-xl p-2">
+                  <div className="text-xs text-muted-foreground">Harga Modal</div>
+                  <div className="font-semibold text-on-surface-variant">{formatCurrency(product.cost_price)}</div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setUpdatingStockProduct(product)}
+                  className="flex-1 h-10 rounded-xl text-primary border-primary/30 gap-1.5"
+                >
+                  <PackagePlus className="w-4 h-4" />
+                  Stok
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setEditingProduct(product)}
+                  className="flex-1 h-10 rounded-xl gap-1.5"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Edit
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Add Product Dialog */}

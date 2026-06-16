@@ -116,7 +116,8 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
         />
       </div>
 
-      <div className="bg-card rounded-2xl border border-outline-variant overflow-hidden shadow-sm">
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-card rounded-2xl border border-outline-variant overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -164,6 +165,37 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
             </TableBody>
           </Table>
         </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {filteredTransactions.length === 0 ? (
+          <div className="bg-card rounded-2xl border border-outline-variant p-8 text-center text-muted-foreground">
+            Tidak ada transaksi ditemukan.
+          </div>
+        ) : (
+          filteredTransactions.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setSelectedTransactionId(t.id)}
+              className="w-full bg-card rounded-2xl border border-outline-variant p-4 text-left shadow-sm active:scale-[0.98] transition-transform"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className="font-mono text-xs text-muted-foreground">{t.id.slice(0, 8)}...</div>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-muted capitalize">
+                  {t.payment_method?.replace('_', ' ')}
+                </span>
+              </div>
+              <div className="text-sm text-muted-foreground mb-1">
+                {formatDate(t.created_at)} · {t.profiles?.name || 'Kasir'}
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-primary">{formatCurrency(t.total_amount)}</span>
+                <Eye className="w-4 h-4 text-muted-foreground" />
+              </div>
+            </button>
+          ))
+        )}
       </div>
 
       {/* Transaction Details Dialog */}

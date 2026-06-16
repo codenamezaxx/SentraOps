@@ -14,7 +14,7 @@ describe('Checkout Logic Properties', () => {
   it('clears cart state after successful checkout simulation', async () => {
     // Setup initial state
     useCartStore.setState({ 
-      items: [{ id: '1', name: 'Item 1', price: 1000, quantity: 2, cost_price: 500, stock_quantity: 10, min_stock_threshold: 1, store_id: 's1', barcode: null, category: null, active: true, created_at: null, updated_at: null }], 
+      items: [{ id: '1', name: 'Item 1', price: 1000, quantity: 2, cost_price: 500, stock_quantity: 10, min_stock_threshold: 1, store_id: 's1', barcode: null, category: null, image_url: null, active: true, created_at: null, updated_at: null }], 
       total: 2000 
     })
 
@@ -35,7 +35,7 @@ describe('Checkout Logic Properties', () => {
    * Validates: Requirements 8.6, 18.3
    */
   it('preserves cart state after failed checkout simulation', async () => {
-    const initialItems = [{ id: '1', name: 'Item 1', price: 1000, quantity: 2, cost_price: 500, stock_quantity: 10, min_stock_threshold: 1, store_id: 's1', barcode: null, category: null, active: true, created_at: null, updated_at: null }]
+    const initialItems = [{ id: '1', name: 'Item 1', price: 1000, quantity: 2, cost_price: 500, stock_quantity: 10, min_stock_threshold: 1, store_id: 's1', barcode: null, category: null, image_url: null, active: true, created_at: null, updated_at: null }]
     const initialTotal = 2000
     
     useCartStore.setState({ 

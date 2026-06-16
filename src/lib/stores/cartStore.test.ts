@@ -14,7 +14,10 @@ function createTestProduct(overrides: Partial<Product> = {}): Product {
     stock_quantity: 100,
     min_stock_threshold: 10,
     category: 'Test',
+    image_url: null,
+    active: true,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     ...overrides,
   };
 }

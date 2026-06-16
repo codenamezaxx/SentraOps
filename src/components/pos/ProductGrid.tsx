@@ -66,7 +66,7 @@ export async function ProductGrid() {
       <CategoryFilter />
 
       {/* Product Grid - Responsive layout with 2 columns mobile, 3 desktop */}
-      <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
+      <section className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 pb-8 w-full overflow-hidden">
         {typedProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

@@ -31,3 +31,13 @@ export function formatDateTime(date: string | Date): string {
     minute: '2-digit',
   }).format(new Date(date))
 }
+
+const SUPABASE_STORAGE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/`
+  : ''
+
+export function getProductImageUrl(imageUrl: string | null): string | undefined {
+  if (!imageUrl) return undefined
+  if (imageUrl.startsWith('http')) return imageUrl
+  return SUPABASE_STORAGE_URL + imageUrl
+}

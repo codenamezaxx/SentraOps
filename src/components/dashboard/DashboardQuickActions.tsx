@@ -8,7 +8,7 @@ export function DashboardQuickActions() {
   const { clearCart } = useCartStore()
 
   return (
-    <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <section className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
       <Link
         href="/pos"
         onClick={() => clearCart()}

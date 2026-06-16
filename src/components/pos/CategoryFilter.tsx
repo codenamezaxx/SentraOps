@@ -16,8 +16,8 @@ export function CategoryFilter() {
   const categories = ['Semua', 'Makanan', 'Minuman', 'Snack']
 
   return (
-    <section className="w-full overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
-      <div className="flex gap-3 pb-2 w-max">
+    <section className="w-full overflow-x-auto no-scrollbar">
+      <div className="flex gap-2 pb-2 w-max">
         {categories.map((category) => {
           const isActive = selectedCategory === category
 
@@ -26,7 +26,7 @@ export function CategoryFilter() {
               key={category}
               onClick={() => setSelectedCategory(category)}
               className={`
-                px-6 py-2 rounded-full font-semibold text-sm whitespace-nowrap shadow-sm 
+                px-5 py-2 rounded-full font-semibold text-sm whitespace-nowrap shadow-sm 
                 active:scale-95 transition-all
                 ${
                   isActive

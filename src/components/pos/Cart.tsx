@@ -1,6 +1,8 @@
 'use client'
 
 import { useCartStore } from '@/lib/stores/cartStore'
+import Image from 'next/image'
+import { getProductImageUrl } from '@/lib/utils'
 
 /**
  * Cart Component (Client Component)
@@ -48,17 +50,29 @@ export function Cart() {
         ) : (
           items.map((item) => {
             const subtotal = calculateSubtotal(item.price, item.quantity)
+            const imageUrl = getProductImageUrl(item.image_url)
             
             return (
               <div
                 key={item.id}
                 className="flex gap-3 p-3 bg-surface-container-low dark:bg-surface-container rounded-xl border border-outline-variant dark:border-none"
               >
-                {/* Product Image Placeholder */}
-                <div className="w-16 h-16 bg-surface-variant dark:bg-surface-container-high rounded-xl flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-outline-variant text-2xl">
-                    inventory_2
-                  </span>
+                {/* Product Image */}
+                <div className="w-16 h-16 bg-surface-variant dark:bg-surface-container-high rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {imageUrl ? (
+                    <Image
+                      src={imageUrl}
+                      alt={item.name}
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <span className="material-symbols-outlined text-outline-variant text-2xl">
+                      inventory_2
+                    </span>
+                  )}
                 </div>
 
                 {/* Product Info & Controls */}

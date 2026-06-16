@@ -55,7 +55,7 @@ export default function DashboardLayout({
 
       <main
         className={cn(
-          "flex-1 pt-16 transition-all duration-200 ease-in-out",
+          "flex-1 pt-16 overflow-x-hidden transition-all duration-200 ease-in-out",
           isSidebarCollapsed ? "md:ml-20" : "md:ml-[280px]"
         )}
       >

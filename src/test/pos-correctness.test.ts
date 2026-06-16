@@ -14,6 +14,7 @@ const createTestProduct = (overrides?: Partial<Product>): Product => ({
   store_id: 'test-store-id',
   barcode: overrides?.barcode || null,
   category: null,
+  image_url: null,
   active: true,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),

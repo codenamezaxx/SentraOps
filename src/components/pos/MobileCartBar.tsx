@@ -30,17 +30,19 @@ export function MobileCartBar() {
   }
 
   return (
-    <div className="lg:hidden fixed bottom-[80px] left-0 w-full px-4 z-40">
-      <div className="bg-card rounded-2xl p-4 flex items-center justify-between shadow-lg backdrop-blur-md bg-opacity-95">
-        <div className="flex flex-col">
+    <div className="lg:hidden fixed bottom-[80px] left-0 w-full px-3 z-40">
+      <div className="bg-card rounded-2xl p-3 flex items-center gap-3 shadow-lg border border-outline-variant">
+        <div className="flex flex-col min-w-0">
           <span className="text-xs text-muted-foreground">
             Cart: {itemCount} {itemCount === 1 ? 'item' : 'items'}
           </span>
-          <span className="text-xl font-bold text-primary">
+          <span className="text-lg font-bold text-primary">
             {formatCurrency(total)}
           </span>
         </div>
-        <PaymentDrawer />
+        <div className="ml-auto w-32">
+          <PaymentDrawer />
+        </div>
       </div>
     </div>
   )
