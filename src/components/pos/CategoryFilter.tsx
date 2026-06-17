@@ -1,6 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+interface CategoryFilterProps {
+  selectedCategory: string
+  onCategoryChange: (category: string) => void
+}
 
 /**
  * CategoryFilter Component (Client Component)
@@ -10,9 +13,7 @@ import { useState } from 'react'
  * 
  * Requirements: 6.1 - Display products organized by category
  */
-export function CategoryFilter() {
-  const [selectedCategory, setSelectedCategory] = useState<string>('Semua')
-
+export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
   const categories = ['Semua', 'Makanan', 'Minuman', 'Snack']
 
   return (
@@ -24,7 +25,7 @@ export function CategoryFilter() {
           return (
             <button
               key={category}
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => onCategoryChange(category)}
               className={`
                 px-5 py-2 rounded-full font-semibold text-sm whitespace-nowrap shadow-sm 
                 active:scale-95 transition-all
@@ -41,7 +42,7 @@ export function CategoryFilter() {
         })}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;
         }

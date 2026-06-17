@@ -4,7 +4,7 @@ import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import Link from 'next/link'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { TrendingUp, AlertTriangle, FileText, ShoppingBag, PlusCircle, Download } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions'
 
@@ -26,6 +26,20 @@ export default async function DashboardPage() {
     .gte('created_at', startOfDay.toISOString())
 
   const todaySales = todaySalesData?.reduce((sum, t) => sum + t.total_amount, 0) || 0
+
+  // Yesterday's sales for percentage comparison
+  const startOfYesterday = new Date()
+  startOfYesterday.setDate(startOfYesterday.getDate() - 1)
+  startOfYesterday.setHours(0, 0, 0, 0)
+
+  const { data: yesterdaySalesData } = await supabase
+    .from('transactions')
+    .select('total_amount')
+    .eq('store_id', store.id)
+    .gte('created_at', startOfYesterday.toISOString())
+    .lt('created_at', startOfDay.toISOString())
+
+  const yesterdaySales = yesterdaySalesData?.reduce((sum, t) => sum + t.total_amount, 0) || 0
 
   // Requirement 4.2: Low stock count
   const { count: lowStockCount } = await supabase
@@ -73,13 +87,23 @@ export default async function DashboardPage() {
 
       {/* Snapshot Cards (Requirement 4) */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard
-          title="Penjualan Hari Ini"
-          value={formatCurrency(todaySales)}
-          icon={TrendingUp}
-          variant="success"
-          description="+0% dari kemarin"
-        />
+          <StatCard
+            title="Penjualan Hari Ini"
+            value={formatCurrency(todaySales)}
+            icon={TrendingUp}
+            variant="success"
+            description={yesterdaySales === 0
+              ? (todaySales > 0 ? 'Baru hari ini' : 'Belum ada penjualan')
+              : `${todaySales >= yesterdaySales ? '+' : ''}${Math.round(((todaySales - yesterdaySales) / yesterdaySales) * 100)}% dari kemarin`
+            }
+            descriptionClassName={
+              yesterdaySales === 0
+                ? 'text-xs mt-auto text-muted-foreground'
+                : todaySales >= yesterdaySales
+                  ? 'text-xs mt-auto text-emerald-600 dark:text-emerald-500'
+                  : 'text-xs mt-auto text-destructive'
+            }
+          />
         <StatCard
           title="Stok Kritis"
           value={`${actualLowStockCount} Item`}

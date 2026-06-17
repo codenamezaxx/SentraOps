@@ -66,6 +66,9 @@ export function ProductCard({ product }: ProductCardProps) {
           <p className="text-base font-bold text-primary">
             {formatCurrency(product.price)}
           </p>
+          <p className={`text-xs mt-0.5 ${product.stock_quantity <= 0 ? 'text-destructive font-semibold' : product.stock_quantity <= product.min_stock_threshold ? 'text-destructive' : 'text-muted-foreground'}`}>
+            Stok: {product.stock_quantity}
+          </p>
         </div>
 
         {/* Add Button or Quantity Control */}
@@ -74,7 +77,8 @@ export function ProductCard({ product }: ProductCardProps) {
             // Add Button (when not in cart)
             <button
               onClick={handleAdd}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-10 w-10 flex items-center justify-center active:scale-90 transition-transform shadow-sm"
+              disabled={product.stock_quantity <= 0}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-10 w-10 flex items-center justify-center active:scale-90 transition-transform shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <Plus className="w-5 h-5" />
             </button>
@@ -92,7 +96,8 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
               <button
                 onClick={handleIncrement}
-                className="w-8 h-8 flex items-center justify-center text-primary active:scale-90 transition-transform bg-card rounded-xl shadow-sm"
+                disabled={quantity >= product.stock_quantity}
+                className="w-8 h-8 flex items-center justify-center text-primary active:scale-90 transition-transform bg-card rounded-xl shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <Plus className="w-4 h-4" />
               </button>

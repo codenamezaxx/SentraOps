@@ -23,7 +23,11 @@ import { formatCurrency, cn } from '@/lib/utils'
  * - Cash amount input & change calculation
  * - Checkout API integration (Requirement 8.3, 8.4, 8.5)
  */
-export function PaymentDrawer() {
+interface PaymentDrawerProps {
+  onOpenChange?: (open: boolean) => void
+}
+
+export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerProps) {
   const { items, total, clearCart } = useCartStore()
   const [isOpen, setIsOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -33,6 +37,10 @@ export function PaymentDrawer() {
   const [transactionId, setTransactionId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [paidTotal, setPaidTotal] = useState(0)
+  const [paidCash, setPaidCash] = useState(0)
+  const [paidChange, setPaidChange] = useState(0)
+  const [paidMethod, setPaidMethod] = useState<PaymentMethod | null>(null)
 
   // Responsive check
   useEffect(() => {
@@ -81,6 +89,12 @@ export function PaymentDrawer() {
   const handleConfirmPayment = async () => {
     if (!selectedMethod || isProcessing || isCashInsufficient) return
 
+    // Snapshot values before clearCart zeros them
+    const snapshotTotal = total
+    const snapshotCash = selectedMethod === 'cash' ? cashAmount : 0
+    const snapshotChange = selectedMethod === 'cash' ? Math.max(0, cashAmount - total) : 0
+    const snapshotMethod = selectedMethod
+
     setIsProcessing(true)
     setErrorMessage(null)
 
@@ -103,6 +117,10 @@ export function PaymentDrawer() {
         throw new Error(result.error || 'Transaksi gagal')
       }
 
+      setPaidTotal(snapshotTotal)
+      setPaidCash(snapshotCash)
+      setPaidChange(snapshotChange)
+      setPaidMethod(snapshotMethod)
       clearCart()
       setTransactionId(result.transaction_id)
       setCompleted(true)
@@ -119,6 +137,7 @@ export function PaymentDrawer() {
   const handleOpenChange = (open: boolean) => {
     if (isProcessing) return
     setIsOpen(open)
+    onOpenChangeProp?.(open)
     if (!open) {
       setTimeout(() => {
         setSelectedMethod(null)
@@ -126,6 +145,10 @@ export function PaymentDrawer() {
         setCompleted(false)
         setTransactionId(null)
         setErrorMessage(null)
+        setPaidTotal(0)
+        setPaidCash(0)
+        setPaidChange(0)
+        setPaidMethod(null)
       }, 300)
     }
   }
@@ -145,17 +168,33 @@ export function PaymentDrawer() {
               <span className="text-muted-foreground">ID Transaksi</span>
               <span className="font-mono font-medium">{transactionId.slice(0, 8)}</span>
             </div>
-            {selectedMethod === 'cash' && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Total Belanja</span>
+              <span className="font-bold text-foreground">{formatCurrency(paidTotal)}</span>
+            </div>
+            {paidMethod === 'cash' && (
               <>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm pt-2 border-t border-border">
                   <span className="text-muted-foreground">Bayar Tunai</span>
-                  <span className="font-medium">{formatCurrency(cashAmount)}</span>
+                  <span className="font-medium">{formatCurrency(paidCash)}</span>
                 </div>
-                <div className="flex justify-between text-sm pt-2 border-t">
-                  <span className="text-muted-foreground font-bold text-primary">Kembalian</span>
-                  <span className="font-bold text-primary">{formatCurrency(changeAmount)}</span>
+                <div className="flex justify-between text-sm pt-2 border-t border-primary/20">
+                  <span className="text-primary font-bold">Kembalian</span>
+                  <span className="font-bold text-primary">{formatCurrency(paidChange)}</span>
                 </div>
               </>
+            )}
+            {paidMethod === 'qris' && (
+              <div className="flex justify-between text-sm pt-2 border-t border-border">
+                <span className="text-muted-foreground">Metode</span>
+                <span className="font-medium">QRIS</span>
+              </div>
+            )}
+            {paidMethod === 'whatsapp_invoice' && (
+              <div className="flex justify-between text-sm pt-2 border-t border-border">
+                <span className="text-muted-foreground">Metode</span>
+                <span className="font-medium">WhatsApp Invoice</span>
+              </div>
             )}
           </div>
           <Button

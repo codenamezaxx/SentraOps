@@ -42,7 +42,7 @@ export function Navigation() {
   return (
     <aside
       className={cn(
-        "hidden md:flex flex-col h-screen fixed left-0 top-0 bg-card p-4 gap-4 z-40 transition-all duration-200 ease-in-out rounded-r-2xl border-r border-border",
+        "hidden md:flex flex-col h-screen fixed left-0 top-0 bg-card p-4 gap-4 z-40 transition-all duration-200 ease-in-out border-r border-border",
         isSidebarCollapsed ? "w-20 items-center" : "w-[280px]"
       )}
     >

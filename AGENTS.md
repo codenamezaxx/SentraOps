@@ -1,72 +1,77 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# 🤖 AI Agent System Instructions & Guidelines (AGENTS.md)
+# AGENTS.md — SentraOps
 
-**Project:** SentraOps (All-in-One Operations Dashboard for UMKM)
-**Target:** Strict Spec-Driven Development Execution
+All-in-One Operations Dashboard for UMKM (Indonesian micro-businesses).
+Next.js 16 App Router + Supabase + Tailwind CSS v4.
 
-> **CRITICAL DIRECTIVE FOR THE AI AGENT:** 
-> You are an elite Fullstack Software Engineer and UI/UX guardian. Before proposing, modification, or writing any code, you MUST cross-reference this file alongside the companion files in the project directory. Never hallucinate configurations, change design languages, or break the established tech stack.
+## Commands
 
----
+- `npm run dev` — start dev server (localhost:3000)
+- `npm run build` — production build (runs TypeScript checks)
+- `npm run lint` — ESLint (flat config, eslint-config-next)
+- `npm run test` — vitest watch mode
+- `npm run test:run` — vitest single run (use for CI / verification)
+- `npm run db:types` — regenerate `src/lib/types/database.ts` from Supabase
+- `npm run db:push` / `npm run db:pull` — sync local migrations with remote DB
+- `npm run db:migration` — create new Supabase migration file
 
-## 1. 📂 Workspace Context Awareness
+No explicit `typecheck` script; `npm run build` covers type checking.
 
-You must maintain strict awareness of the following directory structure and utilize these files as your ultimate source of truth:
-- **`./.agents/SOURCE_OF_TRUTH.md`** -> Architectural rules, core workflows, database schema, and technical boundaries.
-- **`./.agents/DESIGN.md`** -> Color tokens, semantic themes (Light/Dark mode), spacing, and typography rules.
-- **`./.agents/reference/`** -> Component hierarchy blocks for:
-  - `authentication_page/`
-  - `main_dashboard/`
-  - `point_of_sale/`
-  - `inventory_management/`
-  - `invoice_payment/`
-  - `financial_summary/`
+## Architecture
 
----
+```
+src/
+  app/
+    (auth)/login/       — login page (public)
+    (dashboard)/        — all authenticated routes, layout has sidebar + topbar
+      pos/              — point of sale
+      inventory/        — product management (owner-only)
+      financial/        — financial summary (owner-only)
+      transactions/     — transaction history
+    api/                — API routes
+    access-denied/      — shown when non-owner hits owner-only route
+  components/
+    ui/                 — shadcn/ui primitives + Navigation, MobileBottomNav, ThemeToggle
+    auth/ dashboard/ financial/ inventory/ pos/ transactions/ — feature components
+  lib/
+    stores/             — Zustand stores (cartStore, uiStore)
+    supabase/           — client.ts (browser), server.ts (server components)
+    types.ts            — shared TypeScript interfaces
+    types/database.ts   — auto-generated Supabase DB types
+    utils.ts            — cn() and helpers
+```
 
-## 2. 🛠️ Strict Tech Stack Enforcement
+## Key Patterns
 
-Do not import, suggest, or use libraries outside of this specific matrix unless explicitly instructed by the user:
-- **Framework:** Next.js 15+ (App Router architecture) + React 19.
-- **Language:** TypeScript (Strict mode, no explicit `any`).
-- **Styling:** Tailwind CSS (utility-first).
-- **Component Primitives:** Shadcn/ui (Radix UI) + Lucide React for iconography.
-- **State Management:** Zustand (for client-side state isolation like `cart_state`).
-- **Theme Handling:** `next-themes` (Class-based dark mode activation).
-- **Backend Infrastructure:** Supabase (Auth, Storage, and PostgreSQL Database with Row-Level Security).
+- **Path alias:** `@/*` maps to `./src/*`
+- **Auth:** Supabase SSR with cookie-based sessions. Middleware (`src/middleware.ts`) handles redirects and role checks.
+- **Role-based routes:** `/inventory` and `/financial` are owner-only. Middleware queries `profiles.role` and redirects non-owners to `/access-denied`.
+- **State:** Zustand for client-side state (cart, UI). No Redux.
+- **Server vs Client:** Use `"use client"` only for interactivity (hooks, event handlers, Zustand). Default to Server Components.
+- **Styling:** Tailwind CSS v4 with `@tailwindcss/postcss`. Dark mode via `next-themes` (class strategy). Every component must include `dark:` variants.
+- **Icons:** Lucide React + Material Symbols Outlined (loaded via Google Fonts in root layout).
+- **Forms:** react-hook-form + zod validation.
+- **Toasts:** `sonner` (imported as `Toaster` from `@/components/ui/sonner`).
+- **Images:** Remote patterns allow `**.supabase.co` for Supabase Storage URLs.
 
----
+## Design Tokens
 
-## 3. 🎨 Design & Interaction Laws (Organic-Minimalist)
+- Fonts: Plus Jakarta Sans (headings), Be Vietnam Pro (body) — loaded in root layout
+- Colors: Warm Gray/Zinc palette + Fresh Teal/Mint (`teal-500`/`teal-600`)
+- Corners: `rounded-2xl` (16px) or `rounded-xl` (12px) for cards/panels
+- Tap targets: minimum `h-12` (48px) for interactive elements
+- Mobile-first: base styles target mobile, use `md:` / `lg:` for breakpoints
 
-Every UI element generated must match the "Fresh-Organic" style specified in `DESIGN.md`:
-1.  **Mobile-First Grid:** Default styles must always target mobile widths (`w-full`, `flex-col`). Use responsive prefixes (`md:`, `lg:`) only for screen expansion.
-2.  **No Neon / No Sci-Fi:** Use the Warm Gray/Zinc (`zinc-50` to `zinc-950`) and Fresh Teal/Mint (`teal-600` / `teal-500`) color space.
-3.  **Fitts's Law Target:** Actionable items (buttons, selection tabs, list row clicks) must maintain a minimum height/tap target of `48px` (`h-12`) for physical ergonomics on mobile devices.
-4.  **Corner Softness:** Apply `rounded-2xl` (16px) or `rounded-xl` (12px) for structural blocks to emit an approachable, friendly UX.
-5.  **Dual-Theme Completeness:** Every component MUST explicitly declare its dark mode style state using the `dark:` utility modifier.
+## Testing
 
----
+- Vitest with jsdom environment and `@testing-library/react`
+- Test files: `src/test/*.test.ts` and colocated `*.test.ts` in `src/lib/stores/`
+- Setup file (`src/test/setup.ts`) mocks `@supabase/ssr` and `next/headers` cookies
+- Tests use `fast-check` for property-based testing in some suites
 
-## 4. 💻 Implementation & Coding Protocol (Spec Mode)
+## Gotchas
 
-When executing tasks, you must abide by these development procedures:
-
-*   **Phase 1: Think & Plan (The Spec Mode):** Before outputting code, output a brief text block explaining your approach, what file contexts you are reading, and a step-by-step implementation checklist.
-*   **Phase 2: Atomization:** Do not build massive monolithic pages. Break down features into modular components inside the `/components` folder with strict single-responsibility principles.
-*   **Phase 3: Clean State Splitting:** Use React Server Components (RSC) for initial layout or structural database data fetches. Use `"use client"` exclusively for interactive elements containing event handlers, hooks, or Zustand state bindings.
-*   **Phase 4: Defensive Coding & Security:**
-    *   Always assume data rows are isolated via Supabase Row-Level Security (RLS) targeting `store_id`.
-    *   Wrap asynchronous mutations or API reads in try/catch statement handling wrapped in clean user-facing toasts (`useToast`).
-    *   Never leave comments like `// TODO: implement later` or placeholder sections. Write full, clean, production-ready code blocks.
-
----
-
-## 5. 🔁 Iteration Workflow
-
-When the user asks you to build or modify a feature:
-1. Read `AGENTS.md`, `SOURCE_OF_TRUTH.md`, and `DESIGN.md`.
-2. Locate the corresponding folder inside `./.agents/reference/` to understand the structural blueprint.
-3. Propose the modification plan.
-4. Execute code generation incrementally, verifying that the compilation passes without breaking the dark/light mode continuity.
-<!-- END:nextjs-agent-rules -->
+- `.env.local` is required with `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (not committed)
+- `src/lib/types/database.ts` is auto-generated — do not edit manually; run `npm run db:types`
+- Supabase RLS policies isolate data by `store_id` — always filter queries accordingly
+- Dashboard layout is `"use client"` because it uses Zustand store for sidebar state
+- Middleware skips API routes and static files but runs on all other paths

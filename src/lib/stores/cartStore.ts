@@ -19,7 +19,8 @@ export const useCartStore = create<CartState>((set, get) => ({
     const existingItem = items.find((item) => item.id === product.id);
 
     if (existingItem) {
-      // If product already exists in cart, increment quantity (Requirement 6.2, 6.3)
+      // Property 10: cap at available stock
+      if (existingItem.quantity >= product.stock_quantity) return;
       set((state) => ({
         items: state.items.map((item) =>
           item.id === product.id
@@ -28,13 +29,13 @@ export const useCartStore = create<CartState>((set, get) => ({
         ),
       }));
     } else {
-      // Add new product to cart with quantity 1 (Requirement 6.1)
+      // Property 10: don't add if out of stock
+      if (product.stock_quantity <= 0) return;
       set((state) => ({
         items: [...state.items, { ...product, quantity: 1 }],
       }));
     }
 
-    // Recalculate total (Requirement 6.5, Property 2)
     set({ total: calculateTotal(get().items) });
   },
 
@@ -50,19 +51,20 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   updateQuantity: (productId: string, quantity: number) => {
     if (quantity <= 0) {
-      // If quantity is zero or negative, remove the item (Requirement 7.2, Property 4)
       get().removeItem(productId);
       return;
     }
 
-    // Update item quantity (Requirement 7.1, Property 3)
+    // Property 10: cap at stock_quantity
+    const item = get().items.find((i) => i.id === productId);
+    const cappedQty = item ? Math.min(quantity, item.stock_quantity) : quantity;
+
     set((state) => ({
-      items: state.items.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
+      items: state.items.map((i) =>
+        i.id === productId ? { ...i, quantity: cappedQty } : i
       ),
     }));
 
-    // Recalculate total (Requirement 6.5, 7.1, Property 2)
     set({ total: calculateTotal(get().items) });
   },
 

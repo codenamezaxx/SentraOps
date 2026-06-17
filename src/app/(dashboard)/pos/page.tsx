@@ -1,8 +1,10 @@
 import { Suspense } from 'react'
+import { createClient } from '@/lib/supabase/server'
 import { ProductGrid } from '@/components/pos/ProductGrid'
 import { CartSection } from '@/components/pos/CartSection'
 import { MobileCartBar } from '@/components/pos/MobileCartBar'
 import { BarcodeSearch } from '@/components/pos/BarcodeSearch'
+import type { Product } from '@/lib/types'
 
 /**
  * POS Page Layout
@@ -10,27 +12,37 @@ import { BarcodeSearch } from '@/components/pos/BarcodeSearch'
  * Implements two-column layout (products | cart) for desktop
  * Single-column stacked layout for mobile
  * 
- * Mixed Server/Client Component:
- * - Page shell is Server Component for SEO and initial load performance
- * - Interactive components (ProductCard, CartSection, MobileCartBar, BarcodeSearch) are Client Components
+ * Server Component fetches products, passes to client ProductGrid for category filtering
  * 
  * Requirements: 6.1, 13.1, 13.4, 15.1, 15.2, 15.3, 15.4
- * Tasks: 9.1, 9.6 - POS page layout and barcode search
  */
 export default async function POSPage() {
+  const supabase = await createClient()
+
+  // Select all columns; cast to Product[] since generated types may lag behind migration
+  const { data: products } = await supabase
+    .from('products')
+    .select('*')
+    .gt('stock_quantity', 0)
+    .order('category', { ascending: true })
+    .order('name', { ascending: true })
+
+  // Filter active in JS until types are regenerated
+  const activeProducts = (products || []).filter((p: Record<string, unknown>) => p.active !== false) as Product[]
+
   return (
     <div className="flex-1 pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
-      {/* Mobile Barcode Search - Visible only on mobile */}
+      {/* Mobile Barcode Search */}
       <div className="md:hidden w-full mb-4">
         <BarcodeSearch />
       </div>
 
-      {/* Two-Column Layout: Products (left) | Cart (right - desktop only) */}
+      {/* Two-Column Layout */}
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left Column: Product Selection Area */}
         <div className="flex-1 flex flex-col gap-4">
           <Suspense fallback={<ProductGridSkeleton />}>
-            <ProductGrid />
+            <ProductGrid products={activeProducts} />
           </Suspense>
         </div>
 

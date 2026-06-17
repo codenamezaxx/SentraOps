@@ -85,10 +85,15 @@ export function CartSection() {
                 <h3 className="font-semibold text-sm text-foreground line-clamp-1">
                   {item.name}
                 </h3>
-                <div className="flex justify-between items-center mt-1">
-                  <p className="text-sm font-bold text-primary">
-                    {formatCurrency(item.price)}
-                  </p>
+                <div className="flex justify-between items-end mt-1">
+                  <div className="flex flex-col gap-0.5">
+                    <p className="text-sm font-bold text-primary">
+                      {formatCurrency(item.price)}
+                    </p>
+                    <p className={`text-xs ${item.quantity >= item.stock_quantity ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>
+                      Stok: {item.stock_quantity}
+                    </p>
+                  </div>
                   
                   {/* Quantity Control */}
                   <div className="flex items-center gap-2 bg-background rounded-lg p-1">
@@ -103,7 +108,8 @@ export function CartSection() {
                     </span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="w-6 h-6 flex items-center justify-center text-primary active:scale-90 transition-transform"
+                      disabled={item.quantity >= item.stock_quantity}
+                      className="w-6 h-6 flex items-center justify-center text-primary active:scale-90 transition-transform disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-4 h-4" />
                     </button>

@@ -5,7 +5,7 @@ import { MobileBottomNav } from "@/components/ui/MobileBottomNav"
 import { ThemeToggle } from "@/components/ui/ThemeToggle"
 import { useUIStore } from "@/lib/stores/uiStore"
 import { cn } from "@/lib/utils"
-import { Search, Bell, User } from "lucide-react"
+import { Search, Bell, User, Store } from "lucide-react"
 
 export default function DashboardLayout({
   children,
@@ -26,7 +26,12 @@ export default function DashboardLayout({
         )}
       >
         <div className="flex items-center gap-4">
-          <span className="font-heading text-lg font-bold text-primary md:hidden">SentraOps</span>
+          <span className="flex gap-2 font-heading text-lg font-bold text-tertiary md:hidden">
+            <span className="p-2 flex items-center justify-center rounded-lg bg-primary text-on-primary-container">
+              <Store className="w-4 h-4 text-primary-foreground" />
+            </span>
+            SentraOps
+          </span>
           <div className="hidden md:flex items-center bg-muted rounded-full px-4 py-1.5 h-10 w-64 border border-transparent focus-within:border-primary transition-all">
             <Search className="text-muted-foreground mr-2 w-4 h-4" />
             <input
