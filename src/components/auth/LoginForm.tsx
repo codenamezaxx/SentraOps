@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { createClient } from "../../lib/supabase/client"
 import { toast } from "sonner"
 
@@ -92,7 +93,7 @@ export default function LoginForm() {
             mail
           </span>
           <input
-            className="w-full h-12 pl-12 pr-4 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+            className="w-full h-12 pl-12 pr-4 rounded-xl border border-outline-variant bg-card text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
             id="email"
             placeholder="contoh@usaha.com"
             required
@@ -109,16 +110,19 @@ export default function LoginForm() {
           <label className="text-sm font-semibold text-on-surface" htmlFor="password">
             Password
           </label>
-          <a className="text-sm font-semibold text-primary hover:underline transition-colors" href="#">
+          <Link 
+            className="text-sm font-semibold text-primary hover:underline transition-colors" 
+            href="/forgot-password"
+          >
             Lupa sandi?
-          </a>
+          </Link>
         </div>
         <div className="relative flex items-center">
           <span className="material-symbols-outlined absolute left-4 text-on-surface-variant pointer-events-none">
             lock
           </span>
           <input
-            className="w-full h-12 pl-12 pr-12 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+            className="w-full h-12 pl-12 pr-12 rounded-xl border border-outline-variant bg-card text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
             id="password"
             placeholder="Masukkan password"
             type={showPassword ? "text" : "password"}

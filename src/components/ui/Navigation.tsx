@@ -20,10 +20,10 @@ import {
 } from "lucide-react"
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/", label: "Beranda", icon: LayoutDashboard },
   { href: "/pos", label: "POS", icon: ShoppingCart },
-  { href: "/inventory", label: "Inventory", icon: Package },
-  { href: "/financial", label: "Finance", icon: DollarSign },
+  { href: "/inventory", label: "Stok Barang", icon: Package },
+  { href: "/financial", label: "Laporan Keuangan", icon: DollarSign },
   { href: "/transactions", label: "Riwayat Transaksi", icon: ScrollText },
 ]
 
@@ -54,7 +54,7 @@ export function Navigation() {
         {!isSidebarCollapsed && (
           <div className="overflow-hidden">
             <h1 className="font-heading text-xl font-bold text-foreground truncate">SentraOps</h1>
-            <p className="text-xs text-muted-foreground truncate">MSME Suite</p>
+            <p className="text-xs text-muted-foreground truncate">UMKM Management</p>
           </div>
         )}
       </div>
@@ -71,7 +71,7 @@ export function Navigation() {
         )}
       >
         <Plus className="w-5 h-5 shrink-0" />
-        {!isSidebarCollapsed && <span className="truncate">New Transaction</span>}
+        {!isSidebarCollapsed && <span className="truncate">Transaksi Baru</span>}
       </button>
 
       {/* Navigation Items */}
@@ -104,14 +104,14 @@ export function Navigation() {
       <div className="flex flex-col gap-1 mt-auto px-2 pb-4 pt-4 border-t border-border">
         <Link
           href="/settings"
-          title={isSidebarCollapsed ? "Settings" : undefined}
+          title={isSidebarCollapsed ? "Pengaturan" : undefined}
           className={cn(
             "flex items-center gap-3 px-3 py-3 text-muted-foreground hover:bg-muted rounded-xl font-semibold text-sm transition-all duration-200 ease-in-out h-12",
             isSidebarCollapsed && "justify-center px-0"
           )}
         >
           <Settings className="w-5 h-5 m-3 shrink-0" />
-          {!isSidebarCollapsed && <span className="truncate">Settings</span>}
+          {!isSidebarCollapsed && <span className="truncate">Pengaturan</span>}
         </Link>
         <button
           onClick={handleLogout}

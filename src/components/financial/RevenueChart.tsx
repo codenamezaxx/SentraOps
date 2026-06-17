@@ -12,9 +12,9 @@ interface RevenueChartProps {
   data: DailyData[]
 }
 
-const PADDING = { top: 16, right: 16, bottom: 28, left: 60 }
+const PADDING = { top: 32, right: 24, bottom: 32, left: 64 }
 const CHART_W = 620
-const CHART_H = 200
+const CHART_H = 240
 const INNER_W = CHART_W - PADDING.left - PADDING.right
 const INNER_H = CHART_H - PADDING.top - PADDING.bottom
 

@@ -48,7 +48,8 @@ export default async function POSPage() {
 
         {/* Right Column: Cart Section (Desktop Only - Hidden on mobile) */}
         <div className="hidden lg:block lg:w-[380px] xl:w-[420px]">
-          <div className="sticky top-20">
+          <div className="sticky top-5 space-y-6">
+            <BarcodeSearch />
             <CartSection />
           </div>
         </div>

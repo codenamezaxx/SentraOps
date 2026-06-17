@@ -47,7 +47,8 @@ export async function middleware(request: NextRequest) {
     cookies: request.cookies.getAll().map(c => c.name)
   })
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || 
+  const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password']
+  const isAuthRoute = authRoutes.some(route => request.nextUrl.pathname.startsWith(route)) || 
                       request.nextUrl.pathname.startsWith('/auth')
   const isAccessDeniedRoute = request.nextUrl.pathname === '/access-denied'
 
@@ -57,8 +58,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Redirect authenticated users away from login page
-  if (user && request.nextUrl.pathname === '/login') {
+  // Redirect authenticated users away from auth pages
+  if (user && authRoutes.some(route => request.nextUrl.pathname === route)) {
     console.log('[Middleware] Redirecting to / - user already logged in')
     return NextResponse.redirect(new URL('/', request.url))
   }

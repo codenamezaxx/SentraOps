@@ -3,10 +3,11 @@ import { redirect } from 'next/navigation'
 import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import Link from 'next/link'
 import { StatCard } from '@/components/dashboard/StatCard'
-import { TrendingUp, AlertTriangle, FileText, ShoppingBag, PlusCircle, Download } from 'lucide-react'
+import { TrendingUp, AlertTriangle, FileText, ShoppingBag, PlusCircle, Download, BarChart3 } from 'lucide-react'
 import { formatCurrency, cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions'
+import { RevenueChart } from '@/components/financial/RevenueChart'
 
 export default async function DashboardPage() {
   const context = await getUserContext()
@@ -68,6 +69,38 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
     .limit(3)
 
+  // Fetch chart data (last 7 days)
+  const last7Days = new Date()
+  last7Days.setDate(last7Days.getDate() - 7)
+  last7Days.setHours(0, 0, 0, 0)
+
+  const { data: chartDataRaw } = await supabase
+    .from('transactions')
+    .select('total_amount, created_at')
+    .eq('store_id', store.id)
+    .gte('created_at', last7Days.toISOString())
+    .order('created_at', { ascending: true })
+
+  const revenueByDay: Record<string, number> = {}
+  for (let i = 0; i < 7; i++) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const dateStr = d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
+    revenueByDay[dateStr] = 0
+  }
+
+  chartDataRaw?.forEach(t => {
+    if (!t.created_at) return
+    const dateStr = new Date(t.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
+    if (revenueByDay[dateStr] !== undefined) {
+      revenueByDay[dateStr] += t.total_amount
+    }
+  })
+
+  const chartData = Object.entries(revenueByDay)
+    .map(([date, revenue]) => ({ date, revenue }))
+    .reverse()
+
   return (
     <div className="flex-1 pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
       {/* Header Section */}
@@ -75,7 +108,7 @@ export default async function DashboardPage() {
         <div className="flex justify-between items-start">
           <div>
             <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
-              Selamat {new Date().getHours() < 12 ? 'pagi' : 'siang'}, {store?.name || 'Toko'}
+              Selamat Datang, <span className="text-primary">{store?.name || 'Toko'}</span>
             </h2>
             <p className="text-base text-muted-foreground mt-1">
               Berikut adalah ringkasan operasional hari ini.
@@ -122,6 +155,22 @@ export default async function DashboardPage() {
 
       {/* Quick Action Hub (Requirement 4.5) */}
       <DashboardQuickActions />
+
+      {/* Revenue Chart (Requirement 12.4) */}
+      <section className="bg-card border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-col gap-6">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Tren Pendapatan</h3>
+          </div>
+          <span className="text-sm font-medium text-muted-foreground">7 Hari Terakhir</span>
+        </div>
+        <div className="w-full flex items-center justify-center">
+          <RevenueChart data={chartData} />
+        </div>
+      </section>
 
       {/* Alerts & Activity Panel (Requirement 10) */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-2">

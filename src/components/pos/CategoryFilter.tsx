@@ -1,6 +1,7 @@
 'use client'
 
 interface CategoryFilterProps {
+  categories: string[]
   selectedCategory: string
   onCategoryChange: (category: string) => void
 }
@@ -8,49 +9,35 @@ interface CategoryFilterProps {
 /**
  * CategoryFilter Component (Client Component)
  * 
- * Horizontal scrollable category chips for filtering products
- * Mobile-optimized with overflow scroll
+ * Dropdown selector for filtering products by category
  * 
  * Requirements: 6.1 - Display products organized by category
  */
-export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
-  const categories = ['Semua', 'Makanan', 'Minuman', 'Snack']
-
+export function CategoryFilter({ categories, selectedCategory, onCategoryChange }: CategoryFilterProps) {
   return (
-    <section className="w-full overflow-x-auto no-scrollbar">
-      <div className="flex gap-2 pb-2 w-max">
-        {categories.map((category) => {
-          const isActive = selectedCategory === category
-
-          return (
-            <button
-              key={category}
-              onClick={() => onCategoryChange(category)}
-              className={`
-                px-5 py-2 rounded-full font-semibold text-sm whitespace-nowrap shadow-sm 
-                active:scale-95 transition-all
-                ${
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-surface-container-low text-on-surface-variant border border-outline-variant hover:bg-surface-container'
-                }
-              `}
-            >
-              {category}
-            </button>
-          )
-        })}
+    <div className="w-full md:w-64 mb-4">
+      <label htmlFor="category-select" className="sr-only">
+        Filter Kategori
+      </label>
+      <div className="relative">
+        <select
+          id="category-select"
+          value={selectedCategory}
+          onChange={(e) => onCategoryChange(e.target.value)}
+          className="w-full h-12 px-4 bg-surface-container-low border border-outline-variant rounded-xl text-on-surface text-sm font-semibold appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+        >
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category === 'Semua' ? 'Semua Kategori' : category}
+            </option>
+          ))}
+        </select>
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+          <span className="material-symbols-outlined text-on-surface-variant">
+            expand_more
+          </span>
+        </div>
       </div>
-
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
-    </section>
+    </div>
   )
 }

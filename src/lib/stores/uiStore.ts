@@ -9,6 +9,8 @@ interface UIState {
   toggleSidebarCollapsed: () => void;
   isMobile: boolean;
   setIsMobile: (mobile: boolean) => void;
+  posSearchQuery: string;
+  setPosSearchQuery: (query: string) => void;
 }
 
 /**
@@ -50,6 +52,13 @@ export const useUIStore = create<UIState>()(
       setIsMobile: (mobile: boolean) =>
         set(() => ({
           isMobile: mobile,
+        })),
+
+      // POS Search Query
+      posSearchQuery: '',
+      setPosSearchQuery: (query: string) =>
+        set(() => ({
+          posSearchQuery: query,
         })),
     }),
     {

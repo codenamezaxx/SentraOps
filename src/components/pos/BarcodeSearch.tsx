@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useCartStore } from '@/lib/stores/cartStore'
+import { useUIStore } from '@/lib/stores/uiStore'
 import { createClient } from '@/lib/supabase/client'
 import { Barcode, X, Search, Package } from 'lucide-react'
 import type { Product } from '@/lib/types'
@@ -23,7 +24,8 @@ export function BarcodeSearch() {
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const { addItem, items } = useCartStore()
+  const { addItem } = useCartStore()
+  const { setPosSearchQuery } = useUIStore()
 
   const handleSearch = useCallback(async (barcode: string) => {
     if (!barcode.trim() || barcode.trim().length < 3) return
@@ -67,9 +69,10 @@ export function BarcodeSearch() {
   }, [addItem])
 
   // Auto-submit after a short delay for scanner input
-  // Barcode scanners typically send complete barcode as a rapid key sequence
-  // then simulate Enter. The debounce ensures we wait for the full barcode.
   useEffect(() => {
+    // Sync with global store for product grid filtering
+    setPosSearchQuery(inputValue)
+
     if (inputValue.length < 3) return
 
     const timer = setTimeout(() => {
@@ -77,7 +80,7 @@ export function BarcodeSearch() {
     }, 800)
 
     return () => clearTimeout(timer)
-  }, [inputValue, handleSearch])
+  }, [inputValue, handleSearch, setPosSearchQuery])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
