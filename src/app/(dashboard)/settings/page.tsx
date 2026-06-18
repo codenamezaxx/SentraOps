@@ -171,31 +171,31 @@ export default function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full md:w-fit flex flex-col sm:flex-row bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-1 gap-1 h-auto border-none shadow-none">
+        <TabsList className="w-full flex flex-row bg-zinc-100 dark:bg-zinc-900/50 rounded-xl p-1.5 gap-2 h-auto border-none shadow-none overflow-x-auto no-scrollbar flex-nowrap justify-start">
           <TabsTrigger
             value="profil"
-            className="rounded-xl w-full sm:w-auto h-11 px-6 justify-start gap-2 border-none! transition-all data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+            className="rounded-xl shrink-0 h-11 px-6 justify-center gap-2 border-none! transition-all data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
           >
             <Store className="w-4 h-4" />
             <span>Profil Toko</span>
           </TabsTrigger>
           <TabsTrigger
             value="staf"
-            className="rounded-xl w-full sm:w-auto h-11 px-6 justify-start gap-2 border-none! transition-all data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+            className="rounded-xl shrink-0 h-11 px-6 justify-center gap-2 border-none! transition-all data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
           >
             <Users className="w-4 h-4" />
             <span>Manajemen Staf</span>
           </TabsTrigger>
           <TabsTrigger
             value="pembayaran"
-            className="rounded-xl w-full sm:w-auto h-11 px-6 justify-start gap-2 border-none! transition-all data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+            className="rounded-xl shrink-0 h-11 px-6 justify-center gap-2 border-none! transition-all data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
           >
             <CreditCard className="w-4 h-4" />
             <span>Metode Pembayaran</span>
           </TabsTrigger>
           <TabsTrigger
             value="batasan"
-            className="rounded-xl w-full sm:w-auto h-11 px-6 justify-start gap-2 border-none! transition-all data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+            className="rounded-xl shrink-0 h-11 px-6 justify-center gap-2 border-none! transition-all data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
           >
             <AlertTriangle className="w-4 h-4" />
             <span>Batasan Sistem</span>

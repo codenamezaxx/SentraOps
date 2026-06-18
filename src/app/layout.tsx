@@ -38,6 +38,10 @@ export default function RootLayout({
       <body
         className={`${plusJakartaSans.variable} ${beVietnamPro.variable} font-sans antialiased`}
       >
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
