@@ -6,6 +6,8 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle"
 import { NavigationProgress } from "@/components/ui/NavigationProgress"
 import { GlobalSearch } from "@/components/dashboard/GlobalSearch"
 import { UserProfileDropdown } from "@/components/dashboard/UserProfileDropdown"
+import { RealtimeSyncProvider } from "@/components/RealtimeSyncProvider"
+import { OfflineSyncEngine } from "@/components/OfflineSyncEngine"
 import { useUIStore } from "@/lib/stores/uiStore"
 import { cn } from "@/lib/utils"
 import { Bell, Store } from "lucide-react"
@@ -20,6 +22,8 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-screen bg-background">
       <NavigationProgress />
+      <RealtimeSyncProvider />
+      <OfflineSyncEngine />
       <Navigation />
       
       {/* TopAppBar (Mobile & Desktop Header) */}

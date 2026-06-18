@@ -41,12 +41,14 @@ export default async function DashboardPage() {
       .from('transactions')
       .select('total_amount')
       .eq('store_id', store.id)
+      .eq('status', 'completed')
       .gte('created_at', startOfDay.toISOString()),
     
     supabase
       .from('transactions')
       .select('total_amount')
       .eq('store_id', store.id)
+      .eq('status', 'completed')
       .gte('created_at', startOfYesterday.toISOString())
       .lt('created_at', startOfDay.toISOString()),
 
@@ -59,6 +61,7 @@ export default async function DashboardPage() {
       .from('transactions')
       .select('id, total_amount, created_at, payment_method')
       .eq('store_id', store.id)
+      .neq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(3),
 
@@ -66,6 +69,7 @@ export default async function DashboardPage() {
       .from('transactions')
       .select('total_amount, created_at')
       .eq('store_id', store.id)
+      .eq('status', 'completed')
       .gte('created_at', last7Days.toISOString())
       .order('created_at', { ascending: true })
   ])

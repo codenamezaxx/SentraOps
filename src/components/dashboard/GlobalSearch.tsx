@@ -11,7 +11,8 @@ import {
   Settings,
   ArrowRight,
   PackageSearch,
-  History
+  History,
+  Receipt
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useCartStore } from "@/lib/stores/cartStore"
@@ -110,7 +111,7 @@ export function GlobalSearch() {
         <Search className="mr-2 w-4 h-4 group-hover:text-primary transition-colors" />
         <span className="text-sm flex-1 text-left">Cari Apapun...</span>
         <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
-          <span className="text-xs">⌘</span>K
+          Ctrl + K
         </kbd>
       </button>
 
@@ -147,6 +148,10 @@ export function GlobalSearch() {
             <CommandItem onSelect={() => runCommand(() => router.push("/inventory"))}>
               <Package className="mr-2 h-4 w-4" />
               <span>Manajemen Stok</span>
+            </CommandItem>
+            <CommandItem onSelect={() => runCommand(() => router.push("/invoices"))}>
+              <Receipt className="mr-2 h-4 w-4" />
+              <span>Manajemen Tagihan</span>
             </CommandItem>
             <CommandItem onSelect={() => runCommand(() => router.push("/financial"))}>
               <FileText className="mr-2 h-4 w-4" />

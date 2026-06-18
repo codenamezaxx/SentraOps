@@ -38,7 +38,7 @@ export function OverdueInvoicesCard({ invoices }: OverdueInvoicesCardProps) {
       )}>
         {hasOverdue
           ? `${count} faktur telah melewati jatuh tempo`
-          : 'Tidak ada tagihan overdue'}
+          : 'Tidak ada tagihan jatuh tempo saat ini'}
       </p>
     </Link>
   )

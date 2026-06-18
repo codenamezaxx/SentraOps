@@ -19,6 +19,7 @@ export async function createInvoiceForTransaction(params: {
   customerName: string
   customerPhone?: string
   amount: number
+  transactionId?: string
 }): Promise<Invoice | null> {
   const supabase = await createClient()
   const dueDate = new Date()
@@ -33,6 +34,7 @@ export async function createInvoiceForTransaction(params: {
       amount: params.amount,
       due_date: dueDate.toISOString(),
       status: 'UNPAID',
+      transaction_id: params.transactionId || null,
     })
     .select()
     .single()
@@ -46,6 +48,34 @@ export async function updateInvoiceXenditUrl(invoiceId: string, xenditUrl: strin
     .from('invoices')
     .update({ xendit_invoice_url: xenditUrl })
     .eq('id', invoiceId)
+}
+
+export async function markInvoiceAsPaid(invoiceId: string): Promise<boolean> {
+  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any)
+    .from('invoices')
+    .update({ status: 'PAID', updated_at: new Date().toISOString() })
+    .eq('id', invoiceId)
+  return !error
+}
+
+export async function updateInvoice(
+  invoiceId: string,
+  data: {
+    customer_name?: string
+    customer_phone?: string | null
+    amount?: number
+    due_date?: string
+  }
+): Promise<boolean> {
+  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any)
+    .from('invoices')
+    .update({ ...data, updated_at: new Date().toISOString() })
+    .eq('id', invoiceId)
+  return !error
 }
 
 export async function getInvoices(

@@ -16,7 +16,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Product } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Loader2, Upload, X, ImageIcon } from 'lucide-react'
 import Image from 'next/image'
@@ -44,7 +43,6 @@ interface ProductFormProps {
  * Form for creating or editing products
  */
 export function ProductForm({ product, onSuccess }: ProductFormProps) {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const supabase = createClient()
 
@@ -112,7 +110,6 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
         toast.success('Produk berhasil ditambahkan')
       }
 
-      router.refresh()
       onSuccess?.()
     } catch (error) {
       console.error('Error saving product:', error)

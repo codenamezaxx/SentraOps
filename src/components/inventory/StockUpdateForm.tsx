@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Minus, Plus, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
 interface StockUpdateFormProps {
@@ -19,7 +18,6 @@ interface StockUpdateFormProps {
  * Form for quick stock adjustments (increment/decrement)
  */
 export function StockUpdateForm({ productId, currentStock, onSuccess }: StockUpdateFormProps) {
-  const router = useRouter()
   const [adjustment, setAdjustment] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(false)
   const supabase = createClient()
@@ -42,7 +40,6 @@ export function StockUpdateForm({ productId, currentStock, onSuccess }: StockUpd
 
       toast.success('Stok berhasil diperbarui')
       setAdjustment(0)
-      router.refresh()
       onSuccess?.()
     } catch (error) {
       console.error('Error updating stock:', error)

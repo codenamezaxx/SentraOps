@@ -30,16 +30,21 @@ import { Transaction } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Eye, Trash2, ChevronLeft, ChevronRight, Search, Loader2 } from 'lucide-react'
+import { Eye, Trash2, Search, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
+import { Pagination } from '@/components/ui/pagination'
 
-interface TransactionWithCashier extends Omit<Transaction, 'store_id' | 'payment_method' | 'created_at' | 'cashier_id' | 'status'> {
+export interface TransactionWithCashier {
+  id: string
   store_id: string | null
+  total_amount: number
   payment_method: string
-  created_at: string | null
-  cashier_id: string | null
   status: string | null
+  cashier_id: string | null
+  created_at: string | null
+  cash_amount: number | null
+  change_amount: number | null
   profiles?: {
     name: string | null
   } | null
@@ -60,7 +65,7 @@ interface TransactionTableProps {
   transactions: TransactionWithCashier[]
 }
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 15
 
 /**
  * Requirement: 16.1, 16.2, 16.3
@@ -73,6 +78,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
   const [isLoadingItems, setIsLoadingItems] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -117,13 +123,14 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
   
   // Filter + search
   const filteredTransactions = transactions.filter(t => 
-    t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.payment_method?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (t.profiles?.name && t.profiles.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    !deletedIds.has(t.id) && (
+      t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.payment_method?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (t.profiles?.name && t.profiles.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
   )
 
   // Pagination
-  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE))
   const paginatedTransactions = filteredTransactions.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
@@ -174,8 +181,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
       }
 
       toast.success(`${ids.length} transaksi berhasil dihapus`)
-      // Refresh page to reflect changes
-      window.location.reload()
+      ids.forEach(id => setDeletedIds(prev => new Set(prev).add(id)))
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Gagal menghapus transaksi')
     } finally {
@@ -198,7 +204,10 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
           <Input
             placeholder="Cari ID, metode bayar, atau kasir..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              setCurrentPage(1)
+            }}
             className="pl-10 h-12 rounded-xl"
           />
         </div>
@@ -328,6 +337,11 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                       {t.payment_method?.replace('_', ' ')}
                     </span>
                   </div>
+                  {t.payment_method === 'cash' && (
+                    <div className="text-[11px] text-muted-foreground">
+                      Tunai {formatCurrency(t.cash_amount ?? t.total_amount)} · Kembali {formatCurrency(t.change_amount ?? 0)}
+                    </div>
+                  )}
                   <div className="text-xs text-muted-foreground truncate mt-0.5">
                     {formatDate(t.created_at)} · {t.profiles?.name || 'Kasir'} · {t.id.slice(0, 8)}
                   </div>
@@ -349,58 +363,12 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
         )}
       </div>
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="h-10 w-10 rounded-xl"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-
-          <div className="flex items-center gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <Button
-                key={page}
-                variant={page === currentPage ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setCurrentPage(page)}
-                className={`h-10 min-w-[40px] rounded-xl ${
-                  page === currentPage 
-                    ? 'bg-primary text-primary-foreground' 
-                    : ''
-                }`}
-              >
-                {page}
-              </Button>
-            ))}
-          </div>
-
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="h-10 w-10 rounded-xl"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
-      )}
-
-      {/* Page info */}
-      <div className="text-center text-xs text-muted-foreground">
-        {filteredTransactions.length > 0 && (
-          <span>
-            Menampilkan {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
-            {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} dari {filteredTransactions.length} transaksi
-          </span>
-        )}
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredTransactions.length}
+        pageSize={ITEMS_PER_PAGE}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Transaction Details Dialog */}
       <Dialog open={!!selectedTransactionId} onOpenChange={(open) => !open && setSelectedTransactionId(null)}>
@@ -442,6 +410,18 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                 )}
               </div>
 
+              {selectedTransaction.payment_method === 'cash' && (
+                <div className="space-y-2 border-t pt-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tunai Dibayarkan</span>
+                    <span className="font-medium">{formatCurrency(selectedTransaction.cash_amount || selectedTransaction.total_amount)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Kembalian</span>
+                    <span className="font-medium text-primary">{formatCurrency(selectedTransaction.change_amount || 0)}</span>
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between items-center pt-4 border-t">
                 <span className="font-bold text-lg">Total Akhir</span>
                 <span className="font-bold text-xl text-primary">

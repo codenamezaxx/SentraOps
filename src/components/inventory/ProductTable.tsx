@@ -21,6 +21,7 @@ import { StockBadge } from './StockBadge'
 import { Button } from '@/components/ui/button'
 import { Edit2, PackagePlus, Plus, Search, UtensilsCrossed } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Pagination } from '@/components/ui/pagination'
 import { ProductForm } from './ProductForm'
 import { StockUpdateForm } from './StockUpdateForm'
 import Image from 'next/image'
@@ -38,10 +39,17 @@ export function ProductTable({ products: initialProducts }: ProductTableProps) {
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [updatingStockProduct, setUpdatingStockProduct] = useState<Product | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const PAGE_SIZE = 30
   
   const filteredProducts = initialProducts.filter(product => 
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (product.barcode && product.barcode.includes(searchTerm))
+  )
+
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
   )
 
   return (
@@ -52,7 +60,10 @@ export function ProductTable({ products: initialProducts }: ProductTableProps) {
           <Input
             placeholder="Cari produk berdasarkan nama atau barcode..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              setCurrentPage(1)
+            }}
             className="pl-10 h-12 rounded-xl"
           />
         </div>
@@ -81,14 +92,14 @@ export function ProductTable({ products: initialProducts }: ProductTableProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProducts.length === 0 ? (
+              {paginatedProducts.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-on-surface-variant">
                     Tidak ada produk ditemukan.
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredProducts.map((product) => (
+                paginatedProducts.map((product) => (
                   <TableRow key={product.id} className="hover:bg-surface-container transition-colors">
                     <TableCell className="font-medium text-on-surface">
                       <div className="flex items-center gap-3">
@@ -158,12 +169,12 @@ export function ProductTable({ products: initialProducts }: ProductTableProps) {
 
       {/* Mobile Card View */}
       <div className="md:hidden space-y-3">
-        {filteredProducts.length === 0 ? (
+        {paginatedProducts.length === 0 ? (
           <div className="bg-card rounded-2xl border border-outline-variant p-8 text-center text-muted-foreground">
             Tidak ada produk ditemukan.
           </div>
         ) : (
-          filteredProducts.map((product) => (
+          paginatedProducts.map((product) => (
             <div
               key={product.id}
               className="bg-card rounded-2xl border border-outline-variant p-4 shadow-sm"
@@ -233,6 +244,15 @@ export function ProductTable({ products: initialProducts }: ProductTableProps) {
           ))
         )}
       </div>
+
+      {filteredProducts.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredProducts.length}
+          pageSize={PAGE_SIZE}
+          onPageChange={setCurrentPage}
+        />
+      )}
 
       {/* Add Product Dialog */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>

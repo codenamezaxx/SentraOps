@@ -1,7 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
-import { Transaction } from '@/lib/types'
-import { TransactionTable } from '@/components/transactions/TransactionTable'
+import { TransactionTable, type TransactionWithCashier } from '@/components/transactions/TransactionTable'
 import { redirect } from 'next/navigation'
 
 export default async function TransactionsPage() {
@@ -23,17 +21,23 @@ export default async function TransactionsPage() {
   }
 
   // Requirement 16.1: display all Transactions for the Store ordered by created_at descending
-  const { data: transactions, error } = await supabase
+  const { data: raw, error } = await supabase
     .from('transactions')
-    .select('*, profiles(name)') // Join with profiles to get cashier name
+    .select('*, profiles(name)')
     .eq('store_id', profile.store_id)
+    .neq('status', 'pending')
     .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error fetching transactions:', error)
-    // Handle error gracefully, maybe show a message to the user
     return <div>Gagal memuat riwayat transaksi. </div>
   }
+
+  const transactions: TransactionWithCashier[] = (raw || []).map((t: Record<string, unknown>) => ({
+    ...t,
+    cash_amount: (t as { cash_amount?: number }).cash_amount ?? null,
+    change_amount: (t as { change_amount?: number }).change_amount ?? null,
+  })) as TransactionWithCashier[]
 
   return (
     <div className="flex-1 pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
@@ -41,7 +45,7 @@ export default async function TransactionsPage() {
         Riwayat Transaksi
       </h1>
 
-      <TransactionTable transactions={transactions || []} />
+      <TransactionTable transactions={transactions} />
     </div>
   )
 }

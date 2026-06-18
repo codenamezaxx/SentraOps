@@ -40,6 +40,8 @@ export interface Transaction {
   total_amount: number;
   payment_method: PaymentMethod;
   status: TransactionStatus;
+  cash_amount: number | null;
+  change_amount: number | null;
   created_at: string;
 }
 
@@ -65,6 +67,7 @@ export interface Invoice {
   due_date: string;
   status: 'UNPAID' | 'PAID';
   xendit_invoice_url: string | null;
+  transaction_id: string | null;
   created_at: string | null;
   updated_at: string | null;
 }

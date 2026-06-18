@@ -12,6 +12,8 @@ export interface CheckoutRequest {
   payment_method: PaymentMethod
   customer_name?: string
   customer_phone?: string
+  cash_amount?: number
+  cash_change?: number
 }
 
 export interface CheckoutResponse {
@@ -147,15 +149,18 @@ export async function POST(request: Request) {
 
     try {
       const isPending = body.payment_method === 'qris' || body.payment_method === 'whatsapp_invoice' || body.payment_method === 'invoice'
+      const insertData: Record<string, unknown> = {
+        store_id: profile.store_id,
+        cashier_id: profile.id,
+        total_amount: totalAmount,
+        payment_method: body.payment_method,
+        status: isPending ? 'pending' : 'completed',
+        cash_amount: body.payment_method === 'cash' ? (body.cash_amount ?? totalAmount) : null,
+        change_amount: body.payment_method === 'cash' ? (body.cash_change ?? 0) : null,
+      }
       const { data: txn, error: transactionError } = await supabase
         .from('transactions')
-        .insert({
-          store_id: profile.store_id,
-          cashier_id: profile.id,
-          total_amount: totalAmount,
-          payment_method: body.payment_method,
-          status: isPending ? 'pending' : 'completed',
-        })
+        .insert(insertData as never)
         .select()
         .single()
 
@@ -248,6 +253,7 @@ export async function POST(request: Request) {
         customerName: body.customer_name!,
         customerPhone: body.customer_phone,
         amount: totalAmount,
+        transactionId: transaction.id,
       })
 
       if (!invoice) {

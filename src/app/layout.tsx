@@ -3,6 +3,8 @@ import { Plus_Jakarta_Sans, Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../components/theme-provider";
 import { Toaster } from "../components/ui/sonner";
+import { PwaRegister } from "../components/PwaRegister";
+import { OfflineDbInit } from "../components/OfflineDbInit";
 import Script from "next/script";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -21,11 +23,21 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#0d9488",
 }
 
 export const metadata: Metadata = {
   title: "SentraOps - Dashboard UMKM",
-  description: "All-in-One Operations Dashboard for UMKM",
+  description: "All-in-One Operations Dashboard untuk UMKM",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    title: "SentraOps",
+    statusBarStyle: "default",
+  },
+  icons: {
+    apple: "/icons/icon-512.svg",
+  },
 }
 
 export default function RootLayout({
@@ -66,6 +78,8 @@ export default function RootLayout({
             document.head.appendChild(style);
           `}
         </Script>
+        <PwaRegister />
+        <OfflineDbInit />
       </body>
     </html>
   );
