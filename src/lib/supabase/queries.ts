@@ -1,5 +1,75 @@
 import { createClient } from './server'
-import { Profile, Store } from '../types'
+import type { Profile, Store, Invoice } from '../types'
+
+export async function getOverdueInvoices(storeId: string): Promise<Invoice[]> {
+  const supabase = await createClient()
+  const now = new Date().toISOString()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data } = await (supabase as any)
+    .from('invoices')
+    .select('*')
+    .eq('store_id', storeId)
+    .eq('status', 'UNPAID')
+    .lt('due_date', now)
+  return (data || []) as Invoice[]
+}
+
+export async function createInvoiceForTransaction(params: {
+  storeId: string
+  customerName: string
+  customerPhone?: string
+  amount: number
+}): Promise<Invoice | null> {
+  const supabase = await createClient()
+  const dueDate = new Date()
+  dueDate.setDate(dueDate.getDate() + 7)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data } = await (supabase as any)
+    .from('invoices')
+    .insert({
+      store_id: params.storeId,
+      customer_name: params.customerName,
+      customer_phone: params.customerPhone || null,
+      amount: params.amount,
+      due_date: dueDate.toISOString(),
+      status: 'UNPAID',
+    })
+    .select()
+    .single()
+  return (data || null) as Invoice | null
+}
+
+export async function updateInvoiceXenditUrl(invoiceId: string, xenditUrl: string): Promise<void> {
+  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (supabase as any)
+    .from('invoices')
+    .update({ xendit_invoice_url: xenditUrl })
+    .eq('id', invoiceId)
+}
+
+export async function getInvoices(
+  storeId: string,
+  options?: { status?: string; overdue?: boolean }
+): Promise<Invoice[]> {
+  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query = (supabase as any)
+    .from('invoices')
+    .select('*')
+    .eq('store_id', storeId)
+    .order('created_at', { ascending: false })
+
+  if (options?.status) {
+    query = query.eq('status', options.status)
+  }
+  if (options?.overdue) {
+    query = query.eq('status', 'UNPAID').lt('due_date', new Date().toISOString())
+  }
+
+  const { data } = await query
+  return (data || []) as Invoice[]
+}
 
 export async function getUserProfile() {
   const supabase = await createClient()

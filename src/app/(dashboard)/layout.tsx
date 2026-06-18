@@ -3,6 +3,7 @@
 import { Navigation } from "@/components/ui/Navigation"
 import { MobileBottomNav } from "@/components/ui/MobileBottomNav"
 import { ThemeToggle } from "@/components/ui/ThemeToggle"
+import { NavigationProgress } from "@/components/ui/NavigationProgress"
 import { GlobalSearch } from "@/components/dashboard/GlobalSearch"
 import { UserProfileDropdown } from "@/components/dashboard/UserProfileDropdown"
 import { useUIStore } from "@/lib/stores/uiStore"
@@ -18,6 +19,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-background">
+      <NavigationProgress />
       <Navigation />
       
       {/* TopAppBar (Mobile & Desktop Header) */}

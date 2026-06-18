@@ -11,6 +11,8 @@ interface UIState {
   setIsMobile: (mobile: boolean) => void;
   posSearchQuery: string;
   setPosSearchQuery: (query: string) => void;
+  isNavigating: boolean;
+  setIsNavigating: (val: boolean) => void;
 }
 
 /**
@@ -60,6 +62,10 @@ export const useUIStore = create<UIState>()(
         set(() => ({
           posSearchQuery: query,
         })),
+
+      // Navigation loading state for progress bar feedback
+      isNavigating: false,
+      setIsNavigating: (val: boolean) => set(() => ({ isNavigating: val })),
     }),
     {
       name: 'sentraops-ui-storage', // localStorage key

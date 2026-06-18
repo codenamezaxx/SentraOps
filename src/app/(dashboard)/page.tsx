@@ -1,9 +1,10 @@
-import { getUserContext } from '../../lib/supabase/queries'
+import { getUserContext, getOverdueInvoices } from '../../lib/supabase/queries'
 import { redirect } from 'next/navigation'
 import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import Link from 'next/link'
 import { StatCard } from '@/components/dashboard/StatCard'
-import { TrendingUp, AlertTriangle, FileText, ShoppingBag, BarChart3 } from 'lucide-react'
+import { OverdueInvoicesCard } from '@/components/dashboard/OverdueInvoicesCard'
+import { TrendingUp, AlertTriangle, ShoppingBag, BarChart3 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions'
@@ -16,70 +17,65 @@ export default async function DashboardPage() {
   const { store } = context
   const supabase = await createClient()
 
-  // Requirement 4.1: Today's sales
+  // Requirement 4.1: Date ranges
   const startOfDay = new Date()
   startOfDay.setHours(0, 0, 0, 0)
   
-  const { data: todaySalesData } = await supabase
-    .from('transactions')
-    .select('total_amount')
-    .eq('store_id', store.id)
-    .gte('created_at', startOfDay.toISOString())
-
-  const todaySales = todaySalesData?.reduce((sum, t) => sum + t.total_amount, 0) || 0
-
-  // Yesterday's sales for percentage comparison
   const startOfYesterday = new Date()
   startOfYesterday.setDate(startOfYesterday.getDate() - 1)
   startOfYesterday.setHours(0, 0, 0, 0)
 
-  const { data: yesterdaySalesData } = await supabase
-    .from('transactions')
-    .select('total_amount')
-    .eq('store_id', store.id)
-    .gte('created_at', startOfYesterday.toISOString())
-    .lt('created_at', startOfDay.toISOString())
-
-  const yesterdaySales = yesterdaySalesData?.reduce((sum, t) => sum + t.total_amount, 0) || 0
-
-  // Requirement 4.2: Low stock count
-  const { count: _lowStockCount } = await supabase
-    .from('products')
-    .select('*', { count: 'exact', head: true })
-    .eq('store_id', store.id)
-    .lte('stock_quantity', 10) // Fixed threshold or dynamic from DB? Req says min_stock_threshold.
-    // Let's use the field if we can, but Supabase count filters are limited for cross-column comparisons in simple select.
-    // For now, let's assume threshold is 10 or just fetch and filter if small.
-    // Actually, I can't easily do `stock_quantity <= min_stock_threshold` in a single .select() with count.
-    // I'll fetch them.
-
-  const { data: lowStockProducts } = await supabase
-    .from('products')
-    .select('id, name, stock_quantity, min_stock_threshold')
-    .eq('store_id', store.id)
-  
-  const actualLowStockCount = lowStockProducts?.filter(p => p.stock_quantity <= p.min_stock_threshold).length || 0
-  const lowStockItems = lowStockProducts?.filter(p => p.stock_quantity <= p.min_stock_threshold) || []
-
-  // Recent transactions for activity panel
-  const { data: recentTransactions } = await supabase
-    .from('transactions')
-    .select('id, total_amount, created_at, payment_method')
-    .eq('store_id', store.id)
-    .order('created_at', { ascending: false })
-    .limit(3)
-
-  // Fetch chart data (last 7 days)
   const last7Days = new Date()
   last7Days.setDate(last7Days.getDate() - 7)
   last7Days.setHours(0, 0, 0, 0)
 
-  const { data: chartDataRaw } = await supabase
-    .from('transactions')
-    .select('total_amount, created_at')
-    .eq('store_id', store.id)
-    .gte('created_at', last7Days.toISOString())
-    .order('created_at', { ascending: true })
+  // Parallel data fetching
+  const [
+    { data: todaySalesData },
+    { data: yesterdaySalesData },
+    { data: lowStockProducts },
+    { data: recentTransactions },
+    { data: chartDataRaw }
+  ] = await Promise.all([
+    supabase
+      .from('transactions')
+      .select('total_amount')
+      .eq('store_id', store.id)
+      .gte('created_at', startOfDay.toISOString()),
+    
+    supabase
+      .from('transactions')
+      .select('total_amount')
+      .eq('store_id', store.id)
+      .gte('created_at', startOfYesterday.toISOString())
+      .lt('created_at', startOfDay.toISOString()),
+
+    supabase
+      .from('products')
+      .select('id, name, stock_quantity, min_stock_threshold')
+      .eq('store_id', store.id),
+
+    supabase
+      .from('transactions')
+      .select('id, total_amount, created_at, payment_method')
+      .eq('store_id', store.id)
+      .order('created_at', { ascending: false })
+      .limit(3),
+
+    supabase
+      .from('transactions')
+      .select('total_amount, created_at')
+      .eq('store_id', store.id)
+      .gte('created_at', last7Days.toISOString())
+      .order('created_at', { ascending: true })
+  ])
+
+  const overdueInvoices = await getOverdueInvoices(store.id)
+
+  const todaySales = todaySalesData?.reduce((sum, t) => sum + t.total_amount, 0) || 0
+  const yesterdaySales = yesterdaySalesData?.reduce((sum, t) => sum + t.total_amount, 0) || 0
+  const actualLowStockCount = lowStockProducts?.filter(p => p.stock_quantity <= p.min_stock_threshold).length || 0
+  const lowStockItems = lowStockProducts?.filter(p => p.stock_quantity <= p.min_stock_threshold) || []
 
   const revenueByDay: Record<string, number> = {}
   for (let i = 0; i < 7; i++) {
@@ -144,13 +140,7 @@ export default async function DashboardPage() {
           variant={actualLowStockCount > 0 ? 'destructive' : 'default'}
           description={actualLowStockCount > 0 ? 'Segera restok barang' : 'Semua stok aman'}
         />
-        <StatCard
-          title="Tagihan Jatuh Tempo"
-          value="0 Faktur"
-          icon={FileText}
-          variant="default"
-          description="Tidak ada tagihan"
-        />
+        <OverdueInvoicesCard invoices={overdueInvoices} />
       </section>
 
       {/* Quick Action Hub (Requirement 4.5) */}

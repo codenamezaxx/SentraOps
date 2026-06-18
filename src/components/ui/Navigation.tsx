@@ -1,17 +1,20 @@
 "use client"
 
+import * as React from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { useUIStore } from "@/lib/stores/uiStore"
 import { useCartStore } from "@/lib/stores/cartStore"
+import { LogoutDialog } from "@/components/dashboard/LogoutDialog"
 import {
   LayoutDashboard,
   ShoppingCart,
   Package,
   DollarSign,
   ScrollText,
+  Receipt,
   Settings,
   LogOut,
   Plus,
@@ -23,6 +26,7 @@ const navItems = [
   { href: "/", label: "Beranda", icon: LayoutDashboard },
   { href: "/pos", label: "POS", icon: ShoppingCart },
   { href: "/inventory", label: "Stok Barang", icon: Package },
+  { href: "/invoices", label: "Manajemen Tagihan", icon: Receipt },
   { href: "/financial", label: "Laporan Keuangan", icon: DollarSign },
   { href: "/transactions", label: "Riwayat Transaksi", icon: ScrollText },
 ]
@@ -31,15 +35,21 @@ export function Navigation() {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
-  const { isSidebarCollapsed, toggleSidebarCollapsed } = useUIStore()
+  const { isSidebarCollapsed, toggleSidebarCollapsed, setIsNavigating } = useUIStore()
   const { clearCart } = useCartStore()
+  const [showLogoutDialog, setShowLogoutDialog] = React.useState(false)
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    window.location.href = "/login"
+  React.useEffect(() => {
+    navItems.forEach((item) => router.prefetch(item.href))
+    router.prefetch('/settings')
+  }, [router])
+
+  const handleNavClick = () => {
+    setIsNavigating(true)
   }
 
   return (
+    <>
     <aside
       className={cn(
         "hidden md:flex flex-col h-screen fixed left-0 top-0 bg-card p-4 gap-4 z-40 transition-all duration-200 ease-in-out border-r border-border",
@@ -60,10 +70,11 @@ export function Navigation() {
       </div>
 
       {/* Primary Action Button */}
-      <button
+      <Link
+        href="/pos"
         onClick={() => {
           clearCart()
-          router.push('/pos')
+          setIsNavigating(true)
         }}
         className={cn(
           "mx-2 mb-4 h-12 bg-primary text-primary-foreground rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-colors active:scale-95",
@@ -72,7 +83,7 @@ export function Navigation() {
       >
         <Plus className="w-5 h-5 shrink-0" />
         {!isSidebarCollapsed && <span className="truncate">Transaksi Baru</span>}
-      </button>
+      </Link>
 
       {/* Navigation Items */}
       <nav className="flex flex-col gap-1 flex-grow overflow-y-auto px-2">
@@ -85,6 +96,7 @@ export function Navigation() {
               key={item.href}
               href={item.href}
               title={isSidebarCollapsed ? item.label : undefined}
+              onClick={handleNavClick}
               className={cn(
                 "flex items-center gap-3 px-3 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ease-in-out h-12",
                 isActive
@@ -105,6 +117,7 @@ export function Navigation() {
         <Link
           href="/settings"
           title={isSidebarCollapsed ? "Pengaturan" : undefined}
+          onClick={handleNavClick}
           className={cn(
             "flex items-center gap-3 px-3 py-3 text-muted-foreground hover:bg-muted rounded-xl font-semibold text-sm transition-all duration-200 ease-in-out h-12",
             isSidebarCollapsed && "justify-center px-0"
@@ -114,7 +127,7 @@ export function Navigation() {
           {!isSidebarCollapsed && <span className="truncate">Pengaturan</span>}
         </Link>
         <button
-          onClick={handleLogout}
+          onClick={() => setShowLogoutDialog(true)}
           title={isSidebarCollapsed ? "Keluar" : undefined}
           className={cn(
             "flex items-center gap-3 px-3 py-3 text-destructive hover:bg-destructive/10 rounded-xl font-semibold text-sm transition-all duration-200 ease-in-out h-12 w-full text-left cursor-pointer",
@@ -137,5 +150,7 @@ export function Navigation() {
         <ChevronLeft className="w-4 h-4 text-muted-foreground" />
       </button>
     </aside>
+      <LogoutDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog} />
+    </>
   )
 }

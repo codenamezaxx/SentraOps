@@ -69,11 +69,20 @@ export default function SettingsPage() {
         if (!profileData?.store_id) return
         const storeId = profileData.store_id
 
-        const { data: storeData } = await supabase
-          .from("stores")
-          .select("*")
-          .eq("id", storeId)
-          .single()
+        const [storeRes, staffRes] = await Promise.all([
+          supabase
+            .from("stores")
+            .select("*")
+            .eq("id", storeId)
+            .single(),
+          supabase
+            .from("profiles")
+            .select("id, name, role")
+            .eq("store_id", storeId)
+        ])
+
+        const { data: storeData } = storeRes
+        const { data: staffData } = staffRes
 
         if (storeData) {
           const raw = storeData as Record<string, unknown>
@@ -93,11 +102,6 @@ export default function SettingsPage() {
           setDefaultStockThreshold(Number(raw.default_stock_threshold || 5))
           setPaymentMethods(((raw.payment_methods as Record<string, boolean>) || { cash: true, qris: true, whatsapp: true }) as { cash: boolean; qris: boolean; whatsapp: boolean })
         }
-
-        const { data: staffData } = await supabase
-          .from("profiles")
-          .select("id, name, role")
-          .eq("store_id", storeId)
 
         if (staffData) setStaff(staffData as StaffMember[])
       } catch (e) {

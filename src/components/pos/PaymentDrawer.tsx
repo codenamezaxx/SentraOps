@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
-import { CreditCard, QrCode, MessageSquare, ChevronRight, CheckCircle2, Loader2, Banknote } from 'lucide-react'
+import { CreditCard, QrCode, MessageSquare, CalendarDays, ChevronRight, CheckCircle2, Loader2, Banknote } from 'lucide-react'
 import type { PaymentMethod } from '@/lib/types'
 import { formatCurrency, cn } from '@/lib/utils'
 
@@ -33,6 +33,8 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null)
   const [cashAmount, setCashAmount] = useState<number>(0)
+  const [customerName, setCustomerName] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
   const [completed, setCompleted] = useState(false)
   const [transactionId, setTransactionId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -78,6 +80,12 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
       description: 'Kirim tagihan via WhatsApp',
       icon: MessageSquare,
     },
+    {
+      method: 'invoice',
+      label: 'Buat Tagihan',
+      description: 'Catat sebagai piutang pelanggan',
+      icon: CalendarDays,
+    },
   ]
 
   const handlePaymentSelect = (method: PaymentMethod) => {
@@ -86,8 +94,10 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
     if (method !== 'cash') setCashAmount(0)
   }
 
+  const isInvoiceInvalid = selectedMethod === 'invoice' && !customerName.trim()
+
   const handleConfirmPayment = async () => {
-    if (!selectedMethod || isProcessing || isCashInsufficient) return
+    if (!selectedMethod || isProcessing || isCashInsufficient || isInvoiceInvalid) return
 
     // Snapshot values before clearCart zeros them
     const snapshotTotal = total
@@ -108,6 +118,10 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
             quantity: item.quantity,
           })),
           payment_method: selectedMethod,
+          ...(selectedMethod === 'invoice' && {
+            customer_name: customerName.trim(),
+            customer_phone: customerPhone.trim() || undefined,
+          }),
         }),
       })
 
@@ -142,6 +156,8 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
       setTimeout(() => {
         setSelectedMethod(null)
         setCashAmount(0)
+        setCustomerName('')
+        setCustomerPhone('')
         setCompleted(false)
         setTransactionId(null)
         setErrorMessage(null)
@@ -194,6 +210,12 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
               <div className="flex justify-between text-sm pt-2 border-t border-border">
                 <span className="text-muted-foreground">Metode</span>
                 <span className="font-medium">WhatsApp Invoice</span>
+              </div>
+            )}
+            {paidMethod === 'invoice' && (
+              <div className="flex justify-between text-sm pt-2 border-t border-border">
+                <span className="text-muted-foreground">Metode</span>
+                <span className="font-medium">Tagihan (Piutang)</span>
               </div>
             )}
           </div>
@@ -275,6 +297,38 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
             </div>
           )}
 
+          {selectedMethod === 'invoice' && (
+            <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-foreground">Nama Pelanggan <span className="text-destructive">*</span></label>
+                <Input
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="h-12 rounded-xl"
+                  placeholder="Masukkan nama pelanggan"
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-foreground">Nomor WhatsApp (opsional)</label>
+                <Input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="h-12 rounded-xl"
+                  placeholder="08xxxxxxx"
+                />
+              </div>
+              <div className="bg-muted rounded-xl p-3 flex items-center gap-2 h-12">
+                <CalendarDays className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="text-xs text-muted-foreground">
+                  Jatuh tempo dalam 7 hari sejak hari ini
+                </span>
+              </div>
+            </div>
+          )}
+
           {errorMessage && (
             <p className="text-xs text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">
               {errorMessage}
@@ -283,13 +337,17 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
 
           <Button
             onClick={handleConfirmPayment}
-            disabled={!selectedMethod || isProcessing || isCashInsufficient}
+            disabled={!selectedMethod || isProcessing || isCashInsufficient || isInvoiceInvalid}
             className="w-full h-12 rounded-xl mt-2 font-bold shadow-md active:scale-[0.98] transition-all"
           >
             {isProcessing ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : isCashInsufficient ? (
               'Tunai Tidak Cukup'
+            ) : isInvoiceInvalid ? (
+              'Nama Pelanggan Harus Diisi'
+            ) : selectedMethod === 'invoice' ? (
+              'Buat Tagihan'
             ) : (
               'Konfirmasi Pembayaran'
             )}

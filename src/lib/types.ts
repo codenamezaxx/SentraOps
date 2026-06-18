@@ -1,5 +1,5 @@
 export type Role = 'owner' | 'cashier';
-export type PaymentMethod = 'cash' | 'qris' | 'whatsapp_invoice';
+export type PaymentMethod = 'cash' | 'qris' | 'whatsapp_invoice' | 'invoice';
 export type TransactionStatus = 'completed' | 'pending' | 'cancelled';
 
 export interface Store {
@@ -54,6 +54,19 @@ export interface TransactionItem {
 
 export interface CartItem extends Product {
   quantity: number;
+}
+
+export interface Invoice {
+  id: string;
+  store_id: string;
+  customer_name: string;
+  customer_phone: string | null;
+  amount: number;
+  due_date: string;
+  status: 'UNPAID' | 'PAID';
+  xendit_invoice_url: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface DashboardMetrics {

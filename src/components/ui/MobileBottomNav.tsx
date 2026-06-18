@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useUIStore } from "@/lib/stores/uiStore"
 import { LayoutDashboard, ShoppingCart, Package, DollarSign, ScrollText } from "lucide-react"
 
 const navItems = [
@@ -15,10 +16,14 @@ const navItems = [
 
 export function MobileBottomNav() {
   const pathname = usePathname()
+  const { setIsNavigating } = useUIStore()
+
+  const handleNavClick = () => {
+    setIsNavigating(true)
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 h-20 md:hidden">
-      {/* Container background */}
       <div className="absolute bottom-0 h-18 w-full border-t rounded-2xl border-zinc-200/60 bg-white/80 backdrop-blur-lg dark:border-zinc-800 dark:bg-zinc-950/80" />
       
       <div className="relative flex h-full items-end justify-around pb-2">
@@ -31,6 +36,7 @@ export function MobileBottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={handleNavClick}
                 className="relative -top-2.5 flex flex-col items-center justify-center gap-1"
               >
                 <div className={cn(
@@ -55,6 +61,7 @@ export function MobileBottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={handleNavClick}
               className={cn(
                 "flex h-16 flex-col items-center justify-center gap-1 px-3 transition-colors",
                 isActive

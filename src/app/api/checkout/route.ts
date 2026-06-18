@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getUserProfile } from '@/lib/supabase/queries'
+import { getUserProfile, createInvoiceForTransaction } from '@/lib/supabase/queries'
 import type { PaymentMethod } from '@/lib/types'
 import { Xendit } from 'xendit-node'
 
@@ -10,6 +10,8 @@ export interface CheckoutRequest {
     quantity: number
   }[]
   payment_method: PaymentMethod
+  customer_name?: string
+  customer_phone?: string
 }
 
 export interface CheckoutResponse {
@@ -71,10 +73,18 @@ export async function POST(request: Request) {
       )
     }
 
-    const validPaymentMethods: PaymentMethod[] = ['cash', 'qris', 'whatsapp_invoice']
+    const validPaymentMethods: PaymentMethod[] = ['cash', 'qris', 'whatsapp_invoice', 'invoice']
     if (!body.payment_method || !validPaymentMethods.includes(body.payment_method)) {
       return NextResponse.json(
         { success: false, error: 'Metode pembayaran tidak valid.' },
+        { status: 400 }
+      )
+    }
+
+    // Require customer_name for invoice payment method
+    if (body.payment_method === 'invoice' && (!body.customer_name || !body.customer_name.trim())) {
+      return NextResponse.json(
+        { success: false, error: 'Nama pelanggan wajib diisi untuk metode tagihan.' },
         { status: 400 }
       )
     }
@@ -136,7 +146,7 @@ export async function POST(request: Request) {
     let transaction: { id: string; total_amount: number } | null = null
 
     try {
-      const isGateway = body.payment_method === 'qris' || body.payment_method === 'whatsapp_invoice'
+      const isPending = body.payment_method === 'qris' || body.payment_method === 'whatsapp_invoice' || body.payment_method === 'invoice'
       const { data: txn, error: transactionError } = await supabase
         .from('transactions')
         .insert({
@@ -144,7 +154,7 @@ export async function POST(request: Request) {
           cashier_id: profile.id,
           total_amount: totalAmount,
           payment_method: body.payment_method,
-          status: isGateway ? 'pending' : 'completed',
+          status: isPending ? 'pending' : 'completed',
         })
         .select()
         .single()
@@ -231,7 +241,21 @@ export async function POST(request: Request) {
       }
     }
 
-    // 8. Handle Xendit Invoice creation if payment method is gateway
+    // 8. Create invoice record if payment method is invoice
+    if (body.payment_method === 'invoice') {
+      const invoice = await createInvoiceForTransaction({
+        storeId: profile.store_id,
+        customerName: body.customer_name!,
+        customerPhone: body.customer_phone,
+        amount: totalAmount,
+      })
+
+      if (!invoice) {
+        console.error('Failed to create invoice for transaction:', transaction.id)
+      }
+    }
+
+    // 9. Handle Xendit Invoice creation if payment method is gateway
     let paymentUrl: string | undefined
 
     if (body.payment_method === 'qris' || body.payment_method === 'whatsapp_invoice') {
@@ -268,7 +292,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // 9. Return success response
+    // 10. Return success response
     return NextResponse.json({
       success: true,
       transaction_id: transaction.id,

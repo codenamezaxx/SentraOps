@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+// useEffect is used for fetching transaction items when dialog opens
 import { 
   Table, 
   TableBody, 
@@ -15,11 +16,23 @@ import {
   DialogHeader, 
   DialogTitle 
 } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Transaction } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Eye, Search } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Eye, Trash2, ChevronLeft, ChevronRight, Search, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { toast } from 'sonner'
 
 interface TransactionWithCashier extends Omit<Transaction, 'store_id' | 'payment_method' | 'created_at' | 'cashier_id' | 'status'> {
   store_id: string | null
@@ -32,7 +45,6 @@ interface TransactionWithCashier extends Omit<Transaction, 'store_id' | 'payment
   } | null
 }
 
-import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { TransactionItem } from '@/lib/types'
 
@@ -48,15 +60,22 @@ interface TransactionTableProps {
   transactions: TransactionWithCashier[]
 }
 
+const ITEMS_PER_PAGE = 10
+
 /**
  * Requirement: 16.1, 16.2, 16.3
- * Table for viewing transaction history
+ * Table for viewing transaction history with pagination and delete support
  */
 export function TransactionTable({ transactions }: TransactionTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null)
   const [transactionItems, setTransactionItems] = useState<TransactionItemWithProduct[]>([])
   const [isLoadingItems, setIsLoadingItems] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -96,24 +115,111 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
     }).format(new Date(dateString))
   }
   
+  // Filter + search
   const filteredTransactions = transactions.filter(t => 
     t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     t.payment_method?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (t.profiles?.name && t.profiles.name.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE))
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
+
+
   const selectedTransaction = transactions.find(t => t.id === selectedTransactionId)
+
+  // Select all / deselect all on current page
+  const allSelectedOnPage = paginatedTransactions.length > 0 &&
+    paginatedTransactions.every(t => selectedIds.has(t.id))
+
+  const handleSelectAll = () => {
+    if (allSelectedOnPage) {
+      const newSet = new Set(selectedIds)
+      paginatedTransactions.forEach(t => newSet.delete(t.id))
+      setSelectedIds(newSet)
+    } else {
+      const newSet = new Set(selectedIds)
+      paginatedTransactions.forEach(t => newSet.add(t.id))
+      setSelectedIds(newSet)
+    }
+  }
+
+  const handleSelectOne = (id: string) => {
+    const newSet = new Set(selectedIds)
+    if (newSet.has(id)) {
+      newSet.delete(id)
+    } else {
+      newSet.add(id)
+    }
+    setSelectedIds(newSet)
+  }
+
+  const handleDeleteTransactions = useCallback(async (ids: string[]) => {
+    if (ids.length === 0) return
+    setIsDeleting(true)
+    try {
+      const res = await fetch('/api/transactions', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids })
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Gagal menghapus transaksi')
+      }
+
+      toast.success(`${ids.length} transaksi berhasil dihapus`)
+      // Refresh page to reflect changes
+      window.location.reload()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Gagal menghapus transaksi')
+    } finally {
+      setIsDeleting(false)
+      setDeleteDialogOpen(false)
+      setDeleteTargetId(null)
+      setSelectedIds(new Set())
+    }
+  }, [])
+
+  // Determine which IDs to delete
+  const idsToDelete = deleteTargetId ? [deleteTargetId] : Array.from(selectedIds)
 
   return (
     <div className="space-y-4">
-      <div className="relative w-full md:w-96">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Cari ID, metode bayar, atau kasir..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 h-12 rounded-xl"
-        />
+      {/* Toolbar: Search + Bulk Actions */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Cari ID, metode bayar, atau kasir..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-12 rounded-xl"
+          />
+        </div>
+
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              {selectedIds.size} terpilih
+            </span>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setDeleteDialogOpen(true)}
+              className="h-10 rounded-xl"
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              Hapus Terpilih
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Desktop Table View */}
@@ -122,6 +228,13 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
           <Table>
             <TableHeader>
               <TableRow className="bg-surface-container/50">
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={allSelectedOnPage}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Pilih semua"
+                  />
+                </TableHead>
                 <TableHead className="font-semibold text-on-surface">ID Transaksi</TableHead>
                 <TableHead className="font-semibold">Waktu</TableHead>
                 <TableHead className="font-semibold">Kasir</TableHead>
@@ -131,15 +244,22 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTransactions.length === 0 ? (
+              {paginatedTransactions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-on-surface-variant">
+                  <TableCell colSpan={7} className="h-24 text-center text-on-surface-variant">
                     Tidak ada transaksi ditemukan.
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredTransactions.map((t) => (
+                paginatedTransactions.map((t) => (
                   <TableRow key={t.id} className="hover:bg-surface-container transition-colors">
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(t.id)}
+                        onCheckedChange={() => handleSelectOne(t.id)}
+                        aria-label={`Pilih transaksi ${t.id}`}
+                      />
+                    </TableCell>
                     <TableCell className="font-mono text-xs">{t.id.slice(0, 8)}...</TableCell>
                     <TableCell className="text-on-surface-variant">
                       {formatDate(t.created_at)}
@@ -150,14 +270,27 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                       {formatCurrency(t.total_amount)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={() => setSelectedTransactionId(t.id)}
-                        className="h-10 w-10 rounded-lg hover:bg-muted"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => setSelectedTransactionId(t.id)}
+                          className="h-10 w-10 rounded-lg hover:bg-muted"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => {
+                            setDeleteTargetId(t.id)
+                            setDeleteDialogOpen(true)
+                          }}
+                          className="h-10 w-10 rounded-lg hover:bg-destructive/10 text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -168,39 +301,110 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
       </div>
 
       {/* Mobile Card View */}
-      <div className="md:hidden space-y-3">
-        {filteredTransactions.length === 0 ? (
+      <div className="md:hidden space-y-2">
+        {paginatedTransactions.length === 0 ? (
           <div className="bg-card rounded-2xl border border-outline-variant p-8 text-center text-muted-foreground">
             Tidak ada transaksi ditemukan.
           </div>
         ) : (
-          filteredTransactions.map((t) => (
-            <button
+          paginatedTransactions.map((t) => (
+            <div
               key={t.id}
-              onClick={() => setSelectedTransactionId(t.id)}
-              className="w-full bg-card rounded-2xl border border-outline-variant p-4 text-left shadow-sm active:scale-[0.98] transition-transform"
+              className="bg-card rounded-2xl border border-outline-variant p-3 shadow-sm"
             >
-              <div className="flex items-start justify-between mb-2">
-                <div className="font-mono text-xs text-muted-foreground">{t.id.slice(0, 8)}...</div>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-muted capitalize">
-                  {t.payment_method?.replace('_', ' ')}
-                </span>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  checked={selectedIds.has(t.id)}
+                  onCheckedChange={() => handleSelectOne(t.id)}
+                  aria-label={`Pilih transaksi ${t.id}`}
+                />
+                <button
+                  onClick={() => setSelectedTransactionId(t.id)}
+                  className="flex-1 min-w-0 text-left"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-primary">{formatCurrency(t.total_amount)}</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-muted capitalize whitespace-nowrap">
+                      {t.payment_method?.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground truncate mt-0.5">
+                    {formatDate(t.created_at)} · {t.profiles?.name || 'Kasir'} · {t.id.slice(0, 8)}
+                  </div>
+                </button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setDeleteTargetId(t.id)
+                    setDeleteDialogOpen(true)
+                  }}
+                  className="h-10 w-10 rounded-lg hover:bg-destructive/10 text-destructive shrink-0"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
-              <div className="text-sm text-muted-foreground mb-1">
-                {formatDate(t.created_at)} · {t.profiles?.name || 'Kasir'}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-primary">{formatCurrency(t.total_amount)}</span>
-                <Eye className="w-4 h-4 text-muted-foreground" />
-              </div>
-            </button>
+            </div>
           ))
+        )}
+      </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="h-10 w-10 rounded-xl"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+
+          <div className="flex items-center gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <Button
+                key={page}
+                variant={page === currentPage ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCurrentPage(page)}
+                className={`h-10 min-w-[40px] rounded-xl ${
+                  page === currentPage 
+                    ? 'bg-primary text-primary-foreground' 
+                    : ''
+                }`}
+              >
+                {page}
+              </Button>
+            ))}
+          </div>
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="h-10 w-10 rounded-xl"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Page info */}
+      <div className="text-center text-xs text-muted-foreground">
+        {filteredTransactions.length > 0 && (
+          <span>
+            Menampilkan {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+            {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} dari {filteredTransactions.length} transaksi
+          </span>
         )}
       </div>
 
       {/* Transaction Details Dialog */}
       <Dialog open={!!selectedTransactionId} onOpenChange={(open) => !open && setSelectedTransactionId(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md sm:rounded-2xl">
           <DialogHeader>
             <DialogTitle>Detail Transaksi</DialogTitle>
           </DialogHeader>
@@ -248,6 +452,41 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="sm:rounded-2xl max-w-sm">
+          <AlertDialogHeader>
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 mb-2">
+              <Trash2 className="h-6 w-6 text-destructive" />
+            </div>
+            <AlertDialogTitle className="text-center">Hapus Transaksi</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              {idsToDelete.length === 1
+                ? 'Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini tidak dapat dibatalkan.'
+                : `Apakah Anda yakin ingin menghapus ${idsToDelete.length} transaksi? Tindakan ini tidak dapat dibatalkan.`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel className="h-12 rounded-xl w-full sm:w-auto" disabled={isDeleting}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleDeleteTransactions(idsToDelete)
+              }}
+              disabled={isDeleting}
+              className="h-12 rounded-xl w-full sm:w-auto bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            >
+              {isDeleting ? (
+                <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Menghapus...</>
+              ) : (
+                'Ya, Hapus'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

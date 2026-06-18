@@ -14,17 +14,7 @@ import {
   ChevronDown
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { LogoutDialog } from "@/components/dashboard/LogoutDialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -159,29 +149,7 @@ export function UserProfileDropdown() {
       </DropdownMenuContent>
     </DropdownMenu>
 
-      {/* Logout Confirmation Dialog */}
-      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent className="sm:rounded-2xl max-w-sm">
-          <AlertDialogHeader>
-            <div className="mx-auto sm:mx-0 flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 mb-2">
-              <LogOut className="h-6 w-6 text-destructive" />
-            </div>
-            <AlertDialogTitle className="text-center sm:text-left">Konfirmasi Keluar</AlertDialogTitle>
-            <AlertDialogDescription className="text-center sm:text-left">
-              Apakah Anda yakin ingin keluar dari akun ini? Anda akan dialihkan ke halaman login.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel className="h-12 rounded-xl w-full sm:w-auto">Batal</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleSignOut}
-              className="h-12 rounded-xl w-full sm:w-auto bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-            >
-              Ya, Keluar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <LogoutDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog} />
     </>
   )
 }
