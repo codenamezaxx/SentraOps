@@ -24,6 +24,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { EditInvoiceDialog } from './EditInvoiceDialog'
+import { toast } from 'sonner'
 
 function daysOverdue(dueDate: string): number {
   const due = new Date(dueDate)
@@ -59,7 +60,10 @@ export function InvoiceRow({ invoice, storeName, onUpdated }: InvoiceRowProps) {
           storeName,
         }),
       })
-      if (!res.ok) throw new Error('Failed')
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }))
+        throw new Error(err.error || 'Gagal mengirim pengingat')
+      }
       const { waText } = await res.json()
 
       const phone = invoice.customer_phone?.replace(/[^0-9]/g, '') || ''
@@ -69,6 +73,7 @@ export function InvoiceRow({ invoice, storeName, onUpdated }: InvoiceRowProps) {
       window.open(waUrl, '_blank')
     } catch (err) {
       console.error('[reminder]', err)
+      toast.error(err instanceof Error ? err.message : 'Gagal mengirim pengingat')
     } finally {
       setSending(false)
     }

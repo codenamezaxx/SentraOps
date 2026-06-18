@@ -257,7 +257,13 @@ export async function POST(request: Request) {
       })
 
       if (!invoice) {
-        console.error('Failed to create invoice for transaction:', transaction.id)
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Gagal membuat tagihan. Silakan coba lagi.',
+          },
+          { status: 500 }
+        )
       }
     }
 

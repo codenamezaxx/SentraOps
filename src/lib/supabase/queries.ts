@@ -25,7 +25,7 @@ export async function createInvoiceForTransaction(params: {
   const dueDate = new Date()
   dueDate.setDate(dueDate.getDate() + 7)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data } = await (supabase as any)
+  const { data, error } = await (supabase as any)
     .from('invoices')
     .insert({
       store_id: params.storeId,
@@ -34,10 +34,13 @@ export async function createInvoiceForTransaction(params: {
       amount: params.amount,
       due_date: dueDate.toISOString(),
       status: 'UNPAID',
-      transaction_id: params.transactionId || null,
     })
     .select()
     .single()
+  if (error) {
+    console.error('[createInvoiceForTransaction]', error)
+    return null
+  }
   return (data || null) as Invoice | null
 }
 
