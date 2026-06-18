@@ -331,7 +331,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
           Bayar <ChevronRight className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[420px] rounded-2xl p-6 border-none shadow-2xl overflow-hidden">
+      <DialogContent className="sm:max-w-105 rounded-2xl p-6 border-none shadow-2xl overflow-hidden">
         <DialogHeader className="mb-2">
           <DialogTitle className="text-2xl font-bold">Pembayaran</DialogTitle>
         </DialogHeader>

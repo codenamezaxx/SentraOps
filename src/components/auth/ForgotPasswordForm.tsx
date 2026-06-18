@@ -49,9 +49,10 @@ export function ForgotPasswordForm() {
 
       setIsSent(true);
       toast.success("Instruksi reset kata sandi telah dikirim ke email Anda.");
-    } catch (error: any) {
-      console.error("Forgot password error:", error);
-      toast.error(error.message || "Terjadi kesalahan saat memproses permintaan");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Terjadi kesalahan saat memproses permintaan";
+      console.error("Forgot password error:", err);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -60,17 +61,17 @@ export function ForgotPasswordForm() {
   if (isSent) {
     return (
       <div className="text-center space-y-4">
-        <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-full w-fit mx-auto">
-          <Mail className="h-6 w-6 text-orange-600" />
+        <div className="p-3 bg-primary/10 rounded-full w-fit mx-auto">
+          <Mail className="h-6 w-6 text-primary" />
         </div>
-        <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Cek Email Anda</h2>
-        <p className="text-zinc-600 dark:text-zinc-400">
+        <h2 className="text-xl font-bold text-foreground">Cek Email Anda</h2>
+        <p className="text-muted-foreground">
           Kami telah mengirimkan tautan untuk mengatur ulang kata sandi ke email Anda.
         </p>
         <Button
           asChild
           variant="outline"
-          className="w-full h-12 rounded-xl border-zinc-200 dark:border-zinc-800"
+          className="w-full h-12 rounded-xl border-border bg-card"
         >
           <Link href="/login">Kembali ke Masuk</Link>
         </Button>
@@ -89,11 +90,11 @@ export function ForgotPasswordForm() {
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-5 w-5 text-zinc-400" />
+                  <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                   <Input
                     placeholder="nama@email.com"
                     type="email"
-                    className="pl-10 h-12 rounded-xl border-zinc-200 dark:border-zinc-800 focus:ring-orange-500"
+                    className="pl-10 h-12 rounded-xl border-border bg-card focus:ring-primary"
                     {...field}
                   />
                 </div>
@@ -104,7 +105,7 @@ export function ForgotPasswordForm() {
         />
         <Button
           type="submit"
-          className="w-full h-12 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-semibold transition-all"
+          className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -118,7 +119,7 @@ export function ForgotPasswordForm() {
         </Button>
         <Link
           href="/login"
-          className="flex items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+          className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Kembali ke Masuk

@@ -112,7 +112,7 @@ export function BarcodeSearch() {
       {isExpanded ? (
         <div className="bg-card rounded-xl border border-border shadow-sm">
           <form onSubmit={handleSubmit} className="flex items-center gap-2 p-2">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <Barcode className="w-4 h-4 text-primary" />
             </div>
             <input

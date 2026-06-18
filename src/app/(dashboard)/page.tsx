@@ -3,8 +3,8 @@ import { redirect } from 'next/navigation'
 import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import Link from 'next/link'
 import { StatCard } from '@/components/dashboard/StatCard'
-import { TrendingUp, AlertTriangle, FileText, ShoppingBag, PlusCircle, Download, BarChart3 } from 'lucide-react'
-import { formatCurrency, cn } from '@/lib/utils'
+import { TrendingUp, AlertTriangle, FileText, ShoppingBag, BarChart3 } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions'
 import { RevenueChart } from '@/components/financial/RevenueChart'
@@ -43,7 +43,7 @@ export default async function DashboardPage() {
   const yesterdaySales = yesterdaySalesData?.reduce((sum, t) => sum + t.total_amount, 0) || 0
 
   // Requirement 4.2: Low stock count
-  const { count: lowStockCount } = await supabase
+  const { count: _lowStockCount } = await supabase
     .from('products')
     .select('*', { count: 'exact', head: true })
     .eq('store_id', store.id)

@@ -18,9 +18,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { createClient } from "@/lib/supabase/client";
 
-const signupSchema = z.z.object({
+const signupSchema = z.object({
   fullName: z.string().min(2, "Nama lengkap minimal 2 karakter"),
   storeName: z.string().min(2, "Nama toko minimal 2 karakter"),
   email: z.string().email("Email tidak valid"),
@@ -33,7 +32,6 @@ export function SignupForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const supabase = createClient();
 
   const form = useForm<SignupValues>({
     resolver: zodResolver(signupSchema),
@@ -48,50 +46,26 @@ export function SignupForm() {
   async function onSubmit(values: SignupValues) {
     setIsLoading(true);
     try {
-      // 1. Sign up user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-        options: {
-          data: {
-            full_name: values.fullName,
-          },
-        },
-      });
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      })
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Gagal membuat akun");
+      const data = await response.json()
 
-      // 2. Create store
-      const { data: storeData, error: storeError } = await supabase
-        .from("stores")
-        .insert({
-          name: values.storeName,
-          owner_id: authData.user.id,
-        })
-        .select()
-        .single();
+      if (!response.ok) {
+        throw new Error(data.error || "Gagal mendaftar")
+      }
 
-      if (storeError) throw storeError;
-
-      // 3. Update profile with store_id and role
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          store_id: storeData.id,
-          role: "owner",
-        })
-        .eq("id", authData.user.id);
-
-      if (profileError) throw profileError;
-
-      toast.success("Akun berhasil dibuat! Silakan masuk.");
-      router.push("/login");
-    } catch (error: any) {
-      console.error("Signup error:", error);
-      toast.error(error.message || "Terjadi kesalahan saat mendaftar");
+      toast.success("Akun berhasil dibuat! Silakan masuk.")
+      router.push("/login")
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Terjadi kesalahan saat mendaftar"
+      console.error("Signup error:", err)
+      toast.error(message)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 

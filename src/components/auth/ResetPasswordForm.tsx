@@ -55,9 +55,10 @@ export function ResetPasswordForm() {
 
       toast.success("Kata sandi berhasil diperbarui. Silakan masuk kembali.");
       router.push("/login");
-    } catch (error: any) {
-      console.error("Reset password error:", error);
-      toast.error(error.message || "Terjadi kesalahan saat memperbarui kata sandi");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Terjadi kesalahan saat memperbarui kata sandi";
+      console.error("Reset password error:", err);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

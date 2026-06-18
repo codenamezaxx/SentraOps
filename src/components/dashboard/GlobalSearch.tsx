@@ -24,7 +24,6 @@ import {
   CommandList,
   CommandSeparator
 } from "@/components/ui/command"
-import { cn } from "@/lib/utils"
 import type { Product, Transaction } from "@/lib/types"
 
 /**
@@ -39,7 +38,7 @@ export function GlobalSearch() {
   const [query, setQuery] = React.useState("")
   const [products, setProducts] = React.useState<Product[]>([])
   const [transactions, setTransactions] = React.useState<Transaction[]>([])
-  const [loading, setLoading] = React.useState(false)
+  const [, setLoading] = React.useState(false)
   
   const router = useRouter()
   const pathname = usePathname()
@@ -133,7 +132,7 @@ export function GlobalSearch() {
           onValueChange={setQuery}
           className="h-12!"
         />
-        <CommandList className="max-h-[400px] p-2">
+        <CommandList className="max-h-100 p-2">
           <CommandEmpty>Hasil tidak ditemukan.</CommandEmpty>
           
           <CommandGroup heading="Navigasi">

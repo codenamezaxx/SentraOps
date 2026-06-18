@@ -92,7 +92,7 @@ export function ProductTable({ products: initialProducts }: ProductTableProps) {
                   <TableRow key={product.id} className="hover:bg-surface-container transition-colors">
                     <TableCell className="font-medium text-on-surface">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 border">
+                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0 border">
                           {product.image_url ? (
                             <Image 
                               src={product.image_url} 
@@ -169,7 +169,7 @@ export function ProductTable({ products: initialProducts }: ProductTableProps) {
               className="bg-card rounded-2xl border border-outline-variant p-4 shadow-sm"
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 border border-border">
+                <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center overflow-hidden shrink-0 border border-border">
                   {product.image_url ? (
                     <Image 
                       src={product.image_url} 

@@ -7,7 +7,7 @@ import { GlobalSearch } from "@/components/dashboard/GlobalSearch"
 import { UserProfileDropdown } from "@/components/dashboard/UserProfileDropdown"
 import { useUIStore } from "@/lib/stores/uiStore"
 import { cn } from "@/lib/utils"
-import { Bell, User, Store } from "lucide-react"
+import { Bell, Store } from "lucide-react"
 
 export default function DashboardLayout({
   children,
@@ -24,7 +24,7 @@ export default function DashboardLayout({
       <header
         className={cn(
           "fixed top-0 left-0 w-full z-30 flex items-center justify-between px-4 md:px-10 h-16 bg-card border-b border-border transition-all duration-200 ease-in-out",
-          isSidebarCollapsed ? "md:ml-20 md:w-[calc(100%-80px)]" : "md:ml-[280px] md:w-[calc(100%-280px)]"
+          isSidebarCollapsed ? "md:ml-20 md:w-[calc(100%-80px)]" : "md:ml-70 md:w-[calc(100%-280px)]"
         )}
       >
         <div className="flex items-center gap-4">
@@ -56,7 +56,7 @@ export default function DashboardLayout({
       <main
         className={cn(
           "flex-1 pt-16 overflow-x-hidden transition-all duration-200 ease-in-out",
-          isSidebarCollapsed ? "md:ml-20" : "md:ml-[280px]"
+          isSidebarCollapsed ? "md:ml-20" : "md:ml-70"
         )}
       >
         <div className="p-4 md:p-8">

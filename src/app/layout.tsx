@@ -35,13 +35,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <head>
-        {/* Material Symbols Outlined Font */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <body
         className={`${plusJakartaSans.variable} ${beVietnamPro.variable} font-sans antialiased`}
       >

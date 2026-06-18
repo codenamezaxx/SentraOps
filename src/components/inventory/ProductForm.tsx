@@ -88,6 +88,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
         min_stock_threshold: values.min_stock_threshold,
         category: values.category || null,
         image_url: values.image_url || null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any
 
       if (product) {

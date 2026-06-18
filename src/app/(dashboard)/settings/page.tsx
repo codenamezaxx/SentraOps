@@ -1,7 +1,6 @@
 "use client"
 
 import { createClient } from "@/lib/supabase/client"
-import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -29,11 +28,7 @@ interface StoreSettings {
   address: string | null
   phone: string | null
   receipt_footer: string | null
-  payment_methods: {
-    cash: boolean
-    qris: boolean
-    whatsapp: boolean
-  } | null
+  payment_methods: Record<string, boolean> | null
   default_stock_threshold: number | null
 }
 
@@ -60,7 +55,6 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profil")
   const supabase = createClient()
 
-  // Fetch store data and staff on mount
   useEffect(() => {
     async function fetchData() {
       try {
@@ -82,22 +76,22 @@ export default function SettingsPage() {
           .single()
 
         if (storeData) {
-          const typedStore = storeData as Record<string, unknown>
+          const raw = storeData as Record<string, unknown>
           setStore({
-            id: String(typedStore.id),
-            name: String(typedStore.name),
-            address: typedStore.address as string | null,
-            phone: typedStore.phone as string | null,
-            receipt_footer: typedStore.receipt_footer as string | null,
-            payment_methods: typedStore.payment_methods as StoreSettings['payment_methods'],
-            default_stock_threshold: typedStore.default_stock_threshold as number | null
+            id: String(raw.id),
+            name: String(raw.name),
+            address: raw.address as string | null,
+            phone: raw.phone as string | null,
+            receipt_footer: raw.receipt_footer as string | null,
+            payment_methods: raw.payment_methods as Record<string, boolean> | null,
+            default_stock_threshold: raw.default_stock_threshold as number | null
           })
-          setStoreName(String(typedStore.name || ""))
-          setAddress(String(typedStore.address || ""))
-          setPhone(String(typedStore.phone || ""))
-          setReceiptFooter(String(typedStore.receipt_footer || ""))
-          setDefaultStockThreshold(Number(typedStore.default_stock_threshold || 5))
-          setPaymentMethods((typedStore.payment_methods as StoreSettings['payment_methods']) || { cash: true, qris: true, whatsapp: true })
+          setStoreName(String(raw.name || ""))
+          setAddress(String(raw.address || ""))
+          setPhone(String(raw.phone || ""))
+          setReceiptFooter(String(raw.receipt_footer || ""))
+          setDefaultStockThreshold(Number(raw.default_stock_threshold || 5))
+          setPaymentMethods(((raw.payment_methods as Record<string, boolean>) || { cash: true, qris: true, whatsapp: true }) as { cash: boolean; qris: boolean; whatsapp: boolean })
         }
 
         const { data: staffData } = await supabase
@@ -118,16 +112,14 @@ export default function SettingsPage() {
     if (!store) return
     setSaving(true)
     try {
-      await supabase
-        .from("stores")
-        .update({
-          name: storeName,
-          address,
-          phone,
-          receipt_footer: receiptFooter
-        })
-        .eq("id", store.id)
-
+      const payload: Record<string, unknown> = {
+        name: storeName,
+        address,
+        phone,
+        receipt_footer: receiptFooter,
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from("stores") as any).update(payload).eq("id", store.id)
       toast.success("Profil toko berhasil diperbarui.")
       setStore(prev => prev ? { ...prev, name: storeName, address, phone, receipt_footer: receiptFooter } : prev)
     } catch {
@@ -143,14 +135,11 @@ export default function SettingsPage() {
     if (!store) return
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await supabase
-        .from("stores")
-        .update({ payment_methods: updated } as any)
-        .eq("id", store.id)
+      await (supabase.from("stores") as any).update({ payment_methods: updated }).eq("id", store.id)
       toast.success("Metode pembayaran diperbarui.")
     } catch {
       toast.error("Gagal memperbarui metode pembayaran.")
-      setPaymentMethods(paymentMethods) // revert
+      setPaymentMethods(paymentMethods)
     }
   }
 
@@ -159,10 +148,7 @@ export default function SettingsPage() {
     setSaving(true)
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await supabase
-        .from("stores")
-        .update({ default_stock_threshold: defaultStockThreshold } as any)
-        .eq("id", store.id)
+      await (supabase.from("stores") as any).update({ default_stock_threshold: defaultStockThreshold }).eq("id", store.id)
       toast.success("Batasan stok berhasil diperbarui.")
     } catch {
       toast.error("Gagal memperbarui batasan stok.")
@@ -188,28 +174,28 @@ export default function SettingsPage() {
         <TabsList className="w-full md:w-fit flex flex-col sm:flex-row bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-1 gap-1 h-auto border-none shadow-none">
           <TabsTrigger
             value="profil"
-            className="rounded-xl w-full sm:w-auto h-11 px-6 justify-start gap-2 !border-none transition-all data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+            className="rounded-xl w-full sm:w-auto h-11 px-6 justify-start gap-2 border-none! transition-all data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
           >
             <Store className="w-4 h-4" />
             <span>Profil Toko</span>
           </TabsTrigger>
           <TabsTrigger
             value="staf"
-            className="rounded-xl w-full sm:w-auto h-11 px-6 justify-start gap-2 !border-none transition-all data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+            className="rounded-xl w-full sm:w-auto h-11 px-6 justify-start gap-2 border-none! transition-all data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
           >
             <Users className="w-4 h-4" />
             <span>Manajemen Staf</span>
           </TabsTrigger>
           <TabsTrigger
             value="pembayaran"
-            className="rounded-xl w-full sm:w-auto h-11 px-6 justify-start gap-2 !border-none transition-all data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+            className="rounded-xl w-full sm:w-auto h-11 px-6 justify-start gap-2 border-none! transition-all data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
           >
             <CreditCard className="w-4 h-4" />
             <span>Metode Pembayaran</span>
           </TabsTrigger>
           <TabsTrigger
             value="batasan"
-            className="rounded-xl w-full sm:w-auto h-11 px-6 justify-start gap-2 !border-none transition-all data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+            className="rounded-xl w-full sm:w-auto h-11 px-6 justify-start gap-2 border-none! transition-all data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
           >
             <AlertTriangle className="w-4 h-4" />
             <span>Batasan Sistem</span>
