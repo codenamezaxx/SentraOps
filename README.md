@@ -1,251 +1,209 @@
-# 🚀 SentraOps - Operations Dashboard untuk UMKM
+<p align="center">
+  <img src="./public/banner.png" alt="SentraOps Banner" width="100%" />
+</p>
 
-**Status:** ✅ Database Ready | 🚧 Active Development
+<p align="center">
+  <strong>All-in-One Operations Dashboard untuk UMKM</strong>
+  <br />
+  Mobile-first · Offline-ready · Multi-tenant
+  <br />
+  <br />
+  <img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js 16" />
+  <img src="https://img.shields.io/badge/TypeScript-Strict-blue" alt="TypeScript Strict" />
+  <img src="https://img.shields.io/badge/Supabase-Realtime-green" alt="Supabase Realtime" />
+  <img src="https://img.shields.io/badge/PWA-Enabled-teal" alt="PWA Enabled" />
+  <img src="https://img.shields.io/badge/Status-Active_Development-yellow" alt="Active Development" />
+</p>
 
-A mobile-first operations dashboard designed for MSME (Micro, Small, and Medium Enterprises / UMKM) businesses. Built with Next.js 15+, React 19, TypeScript, and Tailwind CSS with full Supabase integration.
+---
 
 ## ✨ Features
 
 - 🔐 **Multi-method authentication** (email/password + magic links)
-- 📊 **Real-time business dashboard** dengan health check 3 detik
-- 🛒 **Mobile POS system** - tap-and-go cashier
-- 📦 **Inventory management** dengan low-stock alerts
-- 💰 **Financial reports** - otomatis P&L generation
-- 🎨 **Fresh-organic design** - minimalist dengan dual theme
-- 📱 **Mobile-first responsive** - optimized untuk touchscreen
-- 🔒 **Multi-tenant ready** - RLS isolation per toko
+- 🛒 **Mobile POS system** — tap-and-go cashier with barcode scanner support
+- 📦 **Inventory management** with low-stock alerts and stock adjustments
+- 💰 **Financial reports** — auto-generated P&L with payment method breakdown
+- 📄 **Invoice management** — create, edit, mark paid, WhatsApp reminders
+- 📱 **PWA support** — installable on mobile home screen, offline-capable
+- 📡 **Offline mode** — Dexie.js IndexedDB cache + offline transaction queue
+- 🔄 **Real-time sync** — Supabase Realtime silently syncs product changes
+- 🎨 **Dual theme** — light/dark mode with consistent design tokens
+- 🔒 **Multi-tenant** — RLS isolation per store_id
 
 ## 🛠️ Tech Stack
 
-- **Framework**: Next.js 15+ with App Router
-- **Language**: TypeScript (Strict mode)
-- **Styling**: Tailwind CSS v4
-- **UI Library**: Shadcn/ui + Radix UI
-- **State Management**: Zustand
-- **Backend**: ✅ **Supabase** (PostgreSQL + Auth + Real-time)
-- **Icons**: Lucide React
-- **Theme**: next-themes (Dark/Light mode)
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | Next.js 16 (App Router) |
+| **Language** | TypeScript (Strict mode) |
+| **Styling** | Tailwind CSS v4 |
+| **UI Library** | shadcn/ui + Radix UI |
+| **State** | Zustand (client state) |
+| **Backend** | Supabase (PostgreSQL + Auth + Realtime) |
+| **Offline DB** | Dexie.js (IndexedDB wrapper) |
+| **Icons** | Lucide React + Material Symbols |
+| **Theme** | next-themes (class strategy) |
+| **Forms** | react-hook-form + zod |
+| **Toasts** | sonner |
 
-## 📊 Database Status
-
-### ✅ SETUP COMPLETED!
-
-Database sudah 100% siap digunakan dengan:
-- ✅ **5 Tables Created** (stores, profiles, products, transactions, transaction_items)
-- ✅ **RLS Policies Enabled** untuk multi-tenant isolation
-- ✅ **TypeScript Types Generated** untuk type safety
-- ✅ **Migration Applied** to Supabase remote
-- ✅ **Sample Seed Data** available
-
-**Quick Commands:**
-```bash
-npm run db:types    # Regenerate TypeScript types
-npm run db:push     # Push new migrations
-npm run db:pull     # Pull remote schema
-```
-
-**📖 Full Documentation:**
-- [Database Setup Complete](./DATABASE_SETUP_COMPLETE.md) - Complete setup summary
-- [Quick Reference](./QUICK_REFERENCE.md) - Command cheat sheet
-- [Setup Guide](./supabase/SETUP_GUIDE.md) - Detailed setup instructions
-- [Migration Status](./supabase/MIGRATION_STATUS.md) - Migration logs
-
----
-
-## Project Structure
-
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── (auth)/            # Authentication routes
-│   │   └── login/
-│   ├── (dashboard)/       # Dashboard routes
-│   │   ├── pos/           # Point of Sale
-│   │   ├── inventory/     # Inventory management
-│   │   └── financial/     # Financial reports
-│   ├── layout.tsx         # Root layout
-│   ├── page.tsx           # Home page
-│   └── globals.css        # Global styles
-├── components/            # React components
-│   ├── auth/             # Authentication components
-│   ├── dashboard/        # Dashboard components
-│   ├── pos/              # POS components
-│   ├── inventory/        # Inventory components
-│   ├── financial/        # Financial components
-│   └── ui/               # Shared UI components
-└── lib/                   # Utility libraries
-    ├── supabase/         # ✅ Supabase client & utilities
-    │   ├── client.ts     # Client-side with types
-    │   ├── server.ts     # Server-side with types
-    │   └── queries.ts    # Database queries
-    ├── stores/           # Zustand state stores
-    ├── types/            # ✅ TypeScript types
-    │   └── database.ts   # Generated from Supabase
-    └── utils/            # Helper functions
-```
-
-**Additional Files:**
-```
-supabase/
-├── migrations/           # ✅ Database migrations
-│   └── 20260608_initial_schema.sql
-├── seed.sql             # ✅ Sample data
-├── config.toml          # ✅ Supabase config
-├── README.md            # Database documentation
-└── SETUP_GUIDE.md       # Setup instructions
-
-.clinerules/             # AI Agent rules
-├── SOURCE_OF_TRUTH.md   # Architecture & workflows
-├── DESIGN.md            # UI/UX guidelines
-└── AGENTS.md            # Agent instructions
-```
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 20+ 
-- npm, yarn, or pnpm
+- Node.js 20+
+- npm / yarn / pnpm
+- Supabase project (credentials in `.env.local`)
 
 ### Installation
 
-1. Install dependencies:
 ```bash
 npm install
-```
-
-2. Run the development server:
-```bash
 npm run dev
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
-### Available Scripts
+### Environment
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run db:types` - ✅ Generate TypeScript types from database
-- `npm run db:push` - ✅ Push migrations to Supabase
-- `npm run db:pull` - ✅ Pull schema from remote
-- `npm run db:migration` - ✅ Create new migration
-
-## Development Guidelines
-
-### Database Operations
-
-**Always use TypeScript types:**
-```typescript
-import { createClient } from '@/lib/supabase/client'
-import type { Database } from '@/lib/types/database'
-
-const supabase = createClient()
-const { data: products } = await supabase.from('products').select('*')
-// products is fully typed! ✅
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-**After schema changes:**
-```bash
-npm run db:push      # Push migration
-npm run db:types     # Regenerate types
+## 📦 Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server (localhost:3000) |
+| `npm run build` | Production build + TypeScript check |
+| `npm run lint` | ESLint |
+| `npm run test` | Vitest watch mode |
+| `npm run test:run` | Vitest single run |
+| `npm run db:types` | Regenerate Supabase TypeScript types |
+| `npm run db:push` | Push migrations to remote |
+| `npm run db:pull` | Pull schema from remote |
+| `npm run db:migration` | Create new migration file |
+
+## 🏗️ Project Structure
+
+```
+src/
+├── app/
+│   ├── (auth)/login/          # Login page
+│   ├── (dashboard)/           # Authenticated routes
+│   │   ├── pos/               # Point of Sale
+│   │   ├── inventory/         # Product management (owner)
+│   │   ├── financial/         # Financial reports (owner)
+│   │   ├── transactions/      # Transaction history
+│   │   ├── invoices/          # Invoice management
+│   │   └── settings/          # Store settings
+│   ├── api/                   # API routes (checkout, webhooks, etc.)
+│   └── layout.tsx             # Root layout with PWA + offline init
+├── components/
+│   ├── ui/                    # shadcn/ui primitives
+│   ├── pos/                   # POS components (ProductGrid, PaymentDrawer, etc.)
+│   ├── inventory/             # ProductTable, StockUpdateForm, etc.
+│   ├── financial/             # PaymentMethodBreakdown, TopProfitContributors
+│   ├── transactions/          # TransactionTable
+│   └── invoices/              # InvoicesView, InvoiceRow, EditInvoiceDialog
+├── lib/
+│   ├── stores/                # Zustand stores (cartStore, uiStore, syncStore)
+│   ├── supabase/              # client.ts, server.ts, queries.ts
+│   ├── types/                 # Shared types + generated database.ts
+│   ├── offlineDb.ts           # Dexie.js IndexedDB schema
+│   └── utils.ts               # cn(), formatCurrency(), etc.
+public/
+├── favicon.svg                # Website favicon
+├── banner.png                 # README banner
+├── manifest.json              # PWA manifest
+├── sw.js                      # Service worker
+└── icons/                     # PWA app icons (SVG)
 ```
 
-### Server vs Client Components
+## 🔄 Sync Architecture
 
-- **Server Components (default)**: Use for data fetching, layouts, and static content
-- **Client Components ("use client")**: Use for interactivity, state management, and browser APIs
+```
+┌──────────────────────────────────────────────────┐
+│                  Online Mode                      │
+│  ┌──────────┐    ┌──────────────┐                 │
+│  │ Supabase │◄──►│  Realtime    │  (silent sync)  │
+│  │  Server  │    │  Provider    │                  │
+│  └────┬─────┘    └──────┬───────┘                 │
+│       │                 │                         │
+│  ┌────▼─────┐    ┌──────▼───────┐                 │
+│  │  Dexie   │◄───│ Product Grid │                 │
+│  │ IndexedDB│    │  + Cart      │                 │
+│  └──────────┘    └──────────────┘                 │
+│                                                   │
+│  ┌──────────────────┐                             │
+│  │ Offline Queue    │──── online event ──────────►│
+│  │ (PENDING_SYNC)   │    POST /api/checkout       │
+│  └──────────────────┘                             │
+└──────────────────────────────────────────────────┘
 
-### Code Quality
+         ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+         │    Offline Mode        │
+         │  ┌──────────────────┐  │
+         │  │  Read from Dexie  │  │
+         │  │  Queue to Dexie   │  │
+         │  └──────────────────┘  │
+         └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+```
 
-- TypeScript strict mode enabled
-- ESLint configured with Next.js recommended rules
-- Tailwind CSS v4 with PostCSS
+## 📊 Development Status
 
-### Performance Targets
+### ✅ Completed
+- [x] Project setup & Supabase integration
+- [x] Authentication & role-based routing
+- [x] Database schema, migrations, RLS policies
+- [x] TypeScript types & strict mode
+- [x] Theme system (light/dark)
+- [x] Mobile-first responsive layout
+- [x] Sidebar + bottom navigation
+- [x] POS system (product grid, cart, barcode scanner)
+- [x] Checkout flow (cash, QRIS, WA invoice, invoice/piutang)
+- [x] Inventory management (CRUD, stock updates)
+- [x] Transaction history with bulk delete
+- [x] Invoice management (mark paid, edit, WA reminder)
+- [x] Financial page (P&L, payment breakdown, top products)
+- [x] Pagination (POS 25, inventory 30, invoices 10, transactions 15)
+- [x] Navigation progress bar + prefetching
+- [x] PWA support (manifest, service worker, iOS meta tags)
+- [x] **Offline mode** (Dexie.js cache, offline transaction queue)
+- [x] **Real-time sync** (Supabase Realtime for products)
+- [x] **Offline queue auto-sync** (on `online` event)
 
-- Dashboard loads within 3 seconds on 3G networks
-- Server-side rendering for initial page loads
-- Lazy loading for images and non-critical components
-- Minimum 48px touch targets for mobile usability
+### 🚧 In Progress
+- [ ] Enhanced real-time sync for transactions & invoices
+- [ ] Sales analytics dashboard
+- [ ] Receipt printing
 
----
+### 📋 Planned
+- [ ] WhatsApp Business API integration
+- [ ] Barcode label printing
+- [ ] Multi-store management
+- [ ] Export reports (CSV/Excel)
+- [ ] Supplier management
 
 ## 📖 Documentation
 
-### Core Documentation
-- [SOURCE_OF_TRUTH.md](./.clinerules/SOURCE_OF_TRUTH.md) - Architecture, workflows, database schema
-- [DESIGN.md](./.clinerules/DESIGN.md) - UI/UX guidelines & design system
-- [AGENTS.md](./.clinerules/AGENTS.md) - AI agent development rules
-
-### Database Documentation
-- [DATABASE_SETUP_COMPLETE.md](./DATABASE_SETUP_COMPLETE.md) - ✅ Setup completion report
-- [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) - Quick command reference
-- [supabase/README.md](./supabase/README.md) - Database schema & policies
-- [supabase/SETUP_GUIDE.md](./supabase/SETUP_GUIDE.md) - Detailed setup guide
-- [supabase/MIGRATION_STATUS.md](./supabase/MIGRATION_STATUS.md) - Migration logs
-
----
-
-## 🔗 Useful Links
-
-- **Supabase Dashboard:** https://supabase.com/dashboard/project/hvpafhhbzstvtxxzsxvz
-- **Next.js Docs:** https://nextjs.org/docs
-- **Tailwind CSS:** https://tailwindcss.com/docs
-- **Shadcn/ui:** https://ui.shadcn.com
-
----
+- [AGENTS.md](./AGENTS.md) — Development conventions & commands
+- [Supabase README](./supabase/README.md) — Database schema & policies
+- [Supabase SETUP GUIDE](./supabase/SETUP_GUIDE.md) — Initial setup
 
 ## 🤝 Contributing
 
-Proyek ini menggunakan strict guidelines untuk consistency:
-1. ✅ Baca `AGENTS.md` sebelum coding
-2. ✅ Follow design system di `DESIGN.md`
-3. ✅ Maintain database schema dengan migrations
-4. ✅ Update types setelah schema changes (`npm run db:types`)
-5. ✅ Test dark/light mode compatibility
+1. Read `AGENTS.md` for conventions
+2. Maintain database schema with migrations
+3. Run `npm run db:types` after schema changes
+4. Test both light & dark mode
+5. Run `npm run build` before committing
 
 ---
 
-## 📝 Environment Setup
-
-File `.env.local` sudah dikonfigurasi dengan Supabase credentials:
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://hvpafhhbzstvtxxzsxvz.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_***
-SUPABASE_SERVICE_ROLE_KEY=sb_secret_***
-```
-
-⚠️ **SECURITY:** File ini di `.gitignore` - JANGAN commit ke git!
-
----
-
-## 🎯 Development Status
-
-### ✅ Completed
-- [x] Database schema & migrations
-- [x] Authentication UI
-- [x] Theme system (Light/Dark)
-- [x] TypeScript types & type safety
-- [x] Project structure & components
-- [x] Supabase integration
-
-### 🚧 In Progress
-- [ ] Main Dashboard implementation
-- [ ] POS System development
-- [ ] Inventory Management
-- [ ] Financial Reports
-
-### 📋 Planned
-- [ ] Mobile PWA support
-- [ ] Offline mode
-- [ ] Real-time sync
-- [ ] WhatsApp integration
-- [ ] Receipt printing
-
----
-
-## License
-
-Private - All Rights Reserved
+<p align="center">
+  Built with ❤️ for UMKM Indonesia
+  <br />
+  <strong>SentraOps</strong> — MIT License · All Rights Reserved
+</p>
