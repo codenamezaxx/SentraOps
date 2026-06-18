@@ -117,7 +117,7 @@
   /* Material Design 3 Dark Theme — Orange accent, dark warm neutrals */
   --background: oklch(18.762% 0.00404 285.935); /* dark warm surface */
   --foreground: oklch(0.92 0.007 60); /* warm light text */
-  --card: oklch(22.34% 0.0058 285.865); /* surface-container */
+  --card: oklch(21.471% 0.00585 285.844); /* surface-container */
   --card-foreground: oklch(0.92 0.007 60);
   --popover: oklch(22.385% 0.00773 285.719);
   --popover-foreground: oklch(0.92 0.007 60);
@@ -125,7 +125,7 @@
   --primary-foreground: oklch(0.14 0.01 50);
   --secondary: oklch(0.77 0.012 55); /* warm gray */
   --secondary-foreground: oklch(0.35 0.012 50);
-  --muted: oklch(0.22 0.007 50); /* warm dark surface */
+  --muted: oklch(19.535% 0.00868 264.378); /* warm dark surface */
   --muted-foreground: oklch(0.78 0.012 55); /* warm muted text */
   --accent: oklch(68.631% 0.17566 42.851);
   --accent-foreground: oklch(0.14 0.01 50);
@@ -136,7 +136,7 @@
   /* MD3 dark warm neutral surfaces */
   --surface: oklch(15.155% 0.00853 285.317);
   --surface-container: oklch(23.245% 0.00765 285.747);
-  --surface-container-low: oklch(0.18 0.006 50);
+  --surface-container-low: oklch(17.082% 0.01036 285.234);
   --surface-container-lowest: oklch(10.991% 0.01272 284.109);
   --surface-container-high: oklch(21.998% 0.00971 285.546);
   --surface-container-highest: oklch(25.031% 0.01128 285.529);
