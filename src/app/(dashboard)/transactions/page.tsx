@@ -1,14 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { TransactionTable, type TransactionWithCashier } from '@/components/transactions/TransactionTable'
-import { redirect } from 'next/navigation'
 
 export default async function TransactionsPage() {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    redirect('/login')
-  }
+  if (!user) return null
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -16,9 +13,7 @@ export default async function TransactionsPage() {
     .eq('auth_id', user.id)
     .single()
 
-  if (!profile?.store_id || (profile.role !== 'owner' && profile.role !== 'cashier')) {
-    redirect('/unauthorized') // or some error page
-  }
+  if (!profile?.store_id || (profile.role !== 'owner' && profile.role !== 'cashier')) return null
 
   // Requirement 16.1: display all Transactions for the Store ordered by created_at descending
   const { data: raw, error } = await supabase

@@ -1,5 +1,4 @@
 import { getUserContext, getOverdueInvoices } from '../../lib/supabase/queries'
-import { redirect } from 'next/navigation'
 import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import Link from 'next/link'
 import { StatCard } from '@/components/dashboard/StatCard'
@@ -12,7 +11,14 @@ import { RevenueChart } from '@/components/financial/RevenueChart'
 
 export default async function DashboardPage() {
   const context = await getUserContext()
-  if (!context || !context.store) redirect('/login')
+  if (!context || !context.store) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <p className="text-muted-foreground text-sm">Memuat data dashboard...</p>
+      </div>
+    )
+  }
 
   const { store } = context
   const supabase = await createClient()

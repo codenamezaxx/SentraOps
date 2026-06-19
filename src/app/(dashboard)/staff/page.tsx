@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { StaffContent } from '@/components/staff/StaffContent'
@@ -8,7 +7,7 @@ export default async function StaffPage() {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) return null
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -16,8 +15,8 @@ export default async function StaffPage() {
     .eq('auth_id', user.id)
     .single()
 
-  if (!profile || profile.role !== 'owner') redirect('/pos')
-  if (!profile.store_id) redirect('/pos')
+  if (!profile || profile.role !== 'owner') return null
+  if (!profile.store_id) return null
 
   // Use admin client to bypass RLS — regular server client can't see all profiles in a store
   const supabaseAdmin = createAdminClient(

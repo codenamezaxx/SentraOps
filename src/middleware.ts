@@ -2,7 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Skip middleware for static files and API routes
   if (
     request.nextUrl.pathname.startsWith('/_next') ||
     request.nextUrl.pathname.startsWith('/api') ||
@@ -12,9 +11,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+    request: { headers: request.headers },
   })
 
   const supabase = createServerClient(
@@ -22,72 +19,54 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
+        getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options)
-          })
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
         },
       },
     }
   )
 
-  const {
-    data: { user },
-    error
-  } = await supabase.auth.getUser()
-
-  console.log('[Middleware]', {
-    path: request.nextUrl.pathname,
-    hasUser: !!user,
-    userId: user?.id,
-    error: error?.message,
-    cookies: request.cookies.getAll().map(c => c.name)
-  })
+  const { data: { user } } = await supabase.auth.getUser()
 
   const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password']
-  const isAuthRoute = authRoutes.some(route => request.nextUrl.pathname.startsWith(route)) || 
-                      request.nextUrl.pathname.startsWith('/auth')
+  const isAuthRoute = authRoutes.some(route => request.nextUrl.pathname.startsWith(route))
   const isAccessDeniedRoute = request.nextUrl.pathname === '/access-denied'
 
-  // Redirect unauthenticated users to login (except if already on auth routes or access denied)
+  // Unauthenticated: redirect to login
   if (!user && !isAuthRoute && !isAccessDeniedRoute) {
-    console.log('[Middleware] Redirecting to /login - no user')
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // For authenticated users on auth pages: rewrite to / instead of redirect.
-  // A redirect creates a loop if client-side code keeps pushing to /login.
-  // Rewrite serves the dashboard content at the /login URL without a browser redirect.
+  // Authenticated on auth route: detect loop via Referer header.
+  // If the request came from within the app (a dashboard page), pass through
+  // instead of rewriting. This breaks any client-side redirect loop.
   if (user && authRoutes.some(route => request.nextUrl.pathname === route)) {
+    const referer = request.headers.get('referer') || ''
+    const isInternalReferer = referer && new URL(referer).origin === request.nextUrl.origin
+    
+    if (isInternalReferer && !referer.includes('/login') && !referer.includes('/signup')) {
+      // Loop detected: let the auth page render to break the cycle
+      return NextResponse.next()
+    }
+    // Normal case: rewrite to serve dashboard content at auth URL
     return NextResponse.rewrite(new URL('/', request.url))
   }
 
-  // Owner-only routes - check authorization
+  // Owner-only routes
   const ownerOnlyRoutes = ['/inventory', '/financial', '/staff']
-  const isOwnerOnlyRoute = ownerOnlyRoutes.some(route => 
+  const isOwnerOnlyRoute = ownerOnlyRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
   )
 
   if (user && isOwnerOnlyRoute) {
-    // Fetch user profile to check role
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('auth_id', user.id)
       .single()
 
-    console.log('[Middleware] Role check:', {
-      path: request.nextUrl.pathname,
-      role: profile?.role,
-      isOwnerOnly: isOwnerOnlyRoute
-    })
-
-    // Redirect non-owners to access denied page
     if (profile?.role !== 'owner') {
-      console.log('[Middleware] Redirecting to /access-denied - not an owner')
       return NextResponse.redirect(new URL('/access-denied', request.url))
     }
   }

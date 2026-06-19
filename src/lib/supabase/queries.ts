@@ -127,14 +127,15 @@ export async function getStaff(storeId: string): Promise<Profile[]> {
 
 export async function getUserProfile() {
   const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+
+  const { data: { session } } = await supabase.auth.getSession()
+  const userId = session?.user?.id
+  if (!userId) return null
 
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .eq('auth_id', user.id)
+    .eq('auth_id', userId)
     .single()
 
   return profile as Profile | null

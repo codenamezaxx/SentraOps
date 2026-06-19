@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import { calculateFinancialMetrics } from '@/lib/financial-utils'
 import { formatCurrency } from '@/lib/utils'
 import { StatCard } from '@/components/dashboard/StatCard'
@@ -19,7 +18,7 @@ export default async function FinancialPage({
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) return null
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -27,7 +26,7 @@ export default async function FinancialPage({
     .eq('auth_id', user.id)
     .single()
 
-  if (!profile?.store_id) redirect('/unauthorized')
+  if (!profile?.store_id) return null
 
   const now = new Date()
   const defaultStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
