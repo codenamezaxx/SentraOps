@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
+import { getStore, getInvoices } from '@/lib/supabase/queries'
 import { createClient } from '@/lib/supabase/server'
-import { getInvoices } from '@/lib/supabase/queries'
 import { InvoicesView } from '@/components/invoices/InvoicesView'
 
 export default async function InvoicesPage() {
@@ -19,12 +19,7 @@ export default async function InvoicesPage() {
   const storeId = profile?.store_id
   if (!storeId) return null
 
-  const { data: store } = await supabase
-    .from('stores')
-    .select('name')
-    .eq('id', storeId)
-    .single()
-
+  const store = await getStore(storeId)
   const storeName = store?.name || 'Toko'
   const invoices = await getInvoices(storeId)
 

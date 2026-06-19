@@ -1,4 +1,5 @@
 import { createClient } from './server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import type { Profile, Store, Invoice } from '../types'
 
 export async function getOverdueInvoices(storeId: string): Promise<Invoice[]> {
@@ -142,9 +143,14 @@ export async function getUserProfile() {
 }
 
 export async function getStore(storeId: string) {
-  const supabase = await createClient()
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
   
-  const { data: store } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: store } = await (supabaseAdmin as any)
     .from('stores')
     .select('*')
     .eq('id', storeId)
