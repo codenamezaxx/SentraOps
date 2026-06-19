@@ -58,14 +58,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Redirect authenticated users away from auth pages
+  // For authenticated users on auth pages: rewrite to / instead of redirect.
+  // A redirect creates a loop if client-side code keeps pushing to /login.
+  // Rewrite serves the dashboard content at the /login URL without a browser redirect.
   if (user && authRoutes.some(route => request.nextUrl.pathname === route)) {
-    console.log('[Middleware] Redirecting to / - user already logged in')
-    return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.rewrite(new URL('/', request.url))
   }
 
   // Owner-only routes - check authorization
-  const ownerOnlyRoutes = ['/inventory', '/financial']
+  const ownerOnlyRoutes = ['/inventory', '/financial', '/staff']
   const isOwnerOnlyRoute = ownerOnlyRoutes.some(route => 
     request.nextUrl.pathname.startsWith(route)
   )

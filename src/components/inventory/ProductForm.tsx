@@ -368,7 +368,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
         <Button 
           type="submit" 
           disabled={isLoading}
-          className="w-full h-12 rounded-xl bg-primary hover:opacity-90 text-primary-foreground"
+          className="w-full h-12 rounded-xl bg-accent-blue hover:opacity-90 text-accent-blue-foreground"
         >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {product ? 'Simpan Perubahan' : 'Tambah Produk'}

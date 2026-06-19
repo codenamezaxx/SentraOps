@@ -81,6 +81,16 @@ export async function updateInvoice(
   return !error
 }
 
+export async function deleteInvoice(invoiceId: string): Promise<boolean> {
+  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any)
+    .from('invoices')
+    .delete()
+    .eq('id', invoiceId)
+  return !error
+}
+
 export async function getInvoices(
   storeId: string,
   options?: { status?: string; overdue?: boolean }
@@ -102,6 +112,17 @@ export async function getInvoices(
 
   const { data } = await query
   return (data || []) as Invoice[]
+}
+
+export async function getStaff(storeId: string): Promise<Profile[]> {
+  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data } = await (supabase as any)
+    .from('profiles')
+    .select('*')
+    .eq('store_id', storeId)
+    .order('created_at', { ascending: false })
+  return (data || []) as Profile[]
 }
 
 export async function getUserProfile() {

@@ -126,8 +126,8 @@ export function RevenueChart({ data }: RevenueChartProps) {
       >
         <defs>
           <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="var(--accent-blue)" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="var(--accent-blue)" stopOpacity="0.02" />
           </linearGradient>
         </defs>
 
@@ -165,7 +165,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
           <path
             d={linePath}
             fill="none"
-            stroke="var(--primary)"
+            stroke="var(--accent-blue)"
             strokeWidth={2.5}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -179,7 +179,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
             cx={xScale(i)}
             cy={yScale(d.revenue)}
             r={hoveredIndex === i ? 5 : 3}
-            className="fill-primary transition-all"
+            className="fill-accent-blue transition-all"
             stroke="var(--card)"
             strokeWidth={2}
           />
@@ -207,7 +207,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
               y1={PADDING.top}
               x2={tooltip.x}
               y2={PADDING.top + INNER_H}
-              stroke="var(--primary)"
+              stroke="var(--accent-blue)"
               strokeWidth={1}
               strokeDasharray="3 3"
               strokeOpacity={0.5}

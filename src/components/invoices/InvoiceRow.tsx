@@ -10,6 +10,8 @@ import {
   Check,
   Receipt,
   Eye,
+  Trash2,
+  X,
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import type { Invoice } from '@/lib/types'
@@ -36,14 +38,18 @@ interface InvoiceRowProps {
   invoice: Invoice
   storeName: string
   onUpdated?: (invoice: Invoice) => void
+  onDeleted?: (invoiceId: string) => void
 }
 
-export function InvoiceRow({ invoice, storeName, onUpdated }: InvoiceRowProps) {
+export function InvoiceRow({ invoice, storeName, onUpdated, onDeleted }: InvoiceRowProps) {
   const [sending, setSending] = useState(false)
   const [paying, setPaying] = useState(false)
   const [copied, setCopied] = useState(false)
   const [showPayConfirm, setShowPayConfirm] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
+  const [showDetail, setShowDetail] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const overdue = invoice.status === 'UNPAID' ? daysOverdue(invoice.due_date) : 0
 
   const handleSendReminder = async () => {
@@ -97,6 +103,26 @@ export function InvoiceRow({ invoice, storeName, onUpdated }: InvoiceRowProps) {
     }
   }
 
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      const res = await fetch('/api/invoices/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoiceId: invoice.id }),
+      })
+      if (!res.ok) throw new Error('Failed')
+      setShowDeleteConfirm(false)
+      onDeleted?.(invoice.id)
+      toast.success('Tagihan berhasil dihapus')
+    } catch (err) {
+      console.error('[delete-invoice]', err)
+      toast.error('Gagal menghapus tagihan')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const handleCopyLink = async () => {
     if (invoice.xendit_invoice_url) {
       await navigator.clipboard.writeText(invoice.xendit_invoice_url)
@@ -138,7 +164,6 @@ export function InvoiceRow({ invoice, storeName, onUpdated }: InvoiceRowProps) {
           </span>
         </div>
 
-        {/* Action buttons */}
         <div className="flex items-center gap-2 flex-wrap">
           {!isLunas && (
             <>
@@ -207,10 +232,26 @@ export function InvoiceRow({ invoice, storeName, onUpdated }: InvoiceRowProps) {
           )}
 
           {isLunas && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Receipt className="w-3.5 h-3.5" />
-              Tagihan lunas
-            </div>
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowDetail(true)}
+                className="h-9 text-xs gap-1.5"
+              >
+                <Receipt className="w-3.5 h-3.5" />
+                Detail
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="h-9 text-xs gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Hapus
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -244,6 +285,74 @@ export function InvoiceRow({ invoice, storeName, onUpdated }: InvoiceRowProps) {
         invoice={invoice}
         onSaved={(updated) => { onUpdated?.(updated); setShowEdit(false) }}
       />
+
+      {/* Detail dialog for paid invoices */}
+      <Dialog open={showDetail} onOpenChange={setShowDetail}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Detail Tagihan</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="flex justify-between items-center pb-2 border-b border-border">
+              <span className="text-sm text-muted-foreground">Pelanggan</span>
+              <span className="text-sm font-semibold text-foreground">{invoice.customer_name}</span>
+            </div>
+            {invoice.customer_phone && (
+              <div className="flex justify-between items-center pb-2 border-b border-border">
+                <span className="text-sm text-muted-foreground">No. HP</span>
+                <span className="text-sm text-foreground">{invoice.customer_phone}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center pb-2 border-b border-border">
+              <span className="text-sm text-muted-foreground">Jumlah</span>
+              <span className="text-sm font-bold text-primary">{formatCurrency(invoice.amount)}</span>
+            </div>
+            <div className="flex justify-between items-center pb-2 border-b border-border">
+              <span className="text-sm text-muted-foreground">Jatuh Tempo</span>
+              <span className="text-sm text-foreground">{new Date(invoice.due_date).toLocaleDateString('id-ID')}</span>
+            </div>
+            <div className="flex justify-between items-center pb-2 border-b border-border">
+              <span className="text-sm text-muted-foreground">Status</span>
+              <Badge variant="default" className="text-xs">Lunas</Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Tanggal Lunas</span>
+              <span className="text-sm text-foreground">
+                {invoice.updated_at ? new Date(invoice.updated_at).toLocaleDateString('id-ID') : '-'}
+              </span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDetail(false)}>
+              <X className="w-4 h-4 mr-1.5" />
+              Tutup
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hapus Tagihan</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus tagihan atas nama{' '}
+              <strong>{invoice.customer_name}</strong> sebesar{' '}
+              <strong>{formatCurrency(invoice.amount)}</strong>? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteConfirm(false)} disabled={deleting}>
+              Batal
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : <Trash2 className="w-4 h-4 mr-1.5" />}
+              Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

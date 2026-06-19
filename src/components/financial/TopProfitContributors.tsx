@@ -42,7 +42,7 @@ export function TopProfitContributors({ products }: TopProfitContributorsProps) 
               key={product.product_id}
               className="flex items-center gap-3 py-3 min-h-[48px] hover:bg-muted/50 -mx-2 px-2 rounded-xl transition-colors"
             >
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-accent-blue/10 flex items-center justify-center text-accent-blue shrink-0">
                 <RankIcon className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">

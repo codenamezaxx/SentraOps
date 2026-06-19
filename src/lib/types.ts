@@ -72,6 +72,18 @@ export interface Invoice {
   updated_at: string | null;
 }
 
+export type NotificationType = 'payment' | 'stock' | 'sync';
+
+export interface Notification {
+  id: string;
+  store_id: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+  is_read: boolean;
+  created_at: string;
+}
+
 export interface DashboardMetrics {
   todaySales: number;
   lowStockCount: number;

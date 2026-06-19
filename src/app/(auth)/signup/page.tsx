@@ -1,39 +1,29 @@
-import Link from "next/link";
-import { SignupForm } from "@/components/auth/SignupForm";
+import Link from "next/link"
+import SignupForm from "../../../components/auth/SignupForm"
 
 export default function SignupPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">
-            Daftar SentraOps
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            Kelola operasional UMKM Anda dengan lebih mudah
+    <div className="bg-background min-h-screen flex items-center justify-center p-4 md:p-10">
+      <main className="w-full max-w-[420px] bg-card rounded-2xl shadow-md border border-outline-variant flex flex-col p-6 md:p-8 gap-6 animate-[fadeIn_0.3s_ease-out]">
+        <header className="flex flex-col items-center justify-center gap-2 text-center pt-2">
+          <h1 className="font-heading text-3xl font-bold text-primary">SentraOps</h1>
+          <p className="text-base text-on-surface-variant">Daftar akun baru</p>
+        </header>
+
+        <SignupForm />
+
+        <div className="mt-4 text-center">
+          <p className="text-base text-on-surface-variant">
+            Sudah punya akun?{' '}
+            <Link
+              className="text-sm font-bold text-primary hover:underline decoration-2 underline-offset-4"
+              href="/login"
+            >
+              Masuk di sini
+            </Link>
           </p>
         </div>
-
-        <div className="bg-card p-8 rounded-2xl shadow-sm border border-border">
-          <SignupForm />
-          
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              Sudah punya akun?{" "}
-              <Link
-                href="/login"
-                className="font-semibold text-primary hover:text-primary/80 transition-colors"
-              >
-                Masuk di sini
-              </Link>
-            </p>
-          </div>
-        </div>
-        
-        <p className="text-center text-xs text-muted-foreground/60">
-          &copy; {new Date().getFullYear()} SentraOps. All rights reserved.
-        </p>
-      </div>
+      </main>
     </div>
-  );
+  )
 }

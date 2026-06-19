@@ -1,4 +1,4 @@
-CREATE TABLE invoices (
+CREATE TABLE IF NOT EXISTS invoices (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   store_id UUID REFERENCES stores(id) ON DELETE CASCADE,
   customer_name TEXT NOT NULL,
@@ -13,6 +13,7 @@ CREATE TABLE invoices (
 
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Store isolation for invoices" ON invoices;
 CREATE POLICY "Store isolation for invoices" ON invoices
   FOR ALL USING (
     store_id IN (

@@ -13,7 +13,7 @@ interface PaymentMethodBreakdownProps {
   grandTotal: number
 }
 
-const colorMap = ['bg-primary', 'bg-teal-500', 'bg-amber-500', 'bg-purple-500']
+const colorMap = ['bg-accent-blue', 'bg-teal-500', 'bg-amber-500', 'bg-purple-500']
 
 export function PaymentMethodBreakdown({ data, grandTotal }: PaymentMethodBreakdownProps) {
   const others = data.filter((d) => d.method !== 'cash')
@@ -72,7 +72,7 @@ export function PaymentMethodBreakdown({ data, grandTotal }: PaymentMethodBreakd
                 </div>
                 <div className="w-full h-1.5 rounded-full bg-muted mt-1 overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${item.method === 'cash' ? 'bg-primary' : 'bg-teal-500'} transition-all`}
+                    className={`h-full rounded-full ${item.method === 'cash' ? 'bg-accent-blue' : 'bg-teal-500'} transition-all`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>

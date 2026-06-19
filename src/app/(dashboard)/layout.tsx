@@ -6,11 +6,12 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle"
 import { NavigationProgress } from "@/components/ui/NavigationProgress"
 import { GlobalSearch } from "@/components/dashboard/GlobalSearch"
 import { UserProfileDropdown } from "@/components/dashboard/UserProfileDropdown"
+import { NotificationBell } from "@/components/dashboard/NotificationBell"
 import { RealtimeSyncProvider } from "@/components/RealtimeSyncProvider"
 import { OfflineSyncEngine } from "@/components/OfflineSyncEngine"
 import { useUIStore } from "@/lib/stores/uiStore"
 import { cn } from "@/lib/utils"
-import { Bell, Store } from "lucide-react"
+import { Store } from "lucide-react"
 
 export default function DashboardLayout({
   children,
@@ -51,10 +52,7 @@ export default function DashboardLayout({
           <div className="hidden md:block">
             <ThemeToggle />
           </div>
-          <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted transition-colors active:scale-95 text-muted-foreground relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-destructive rounded-full"></span>
-          </button>
+          <NotificationBell />
           <UserProfileDropdown />
         </div>
       </header>

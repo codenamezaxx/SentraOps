@@ -20,29 +20,53 @@ import {
   Plus,
   ChevronLeft,
   Store,
+  Users,
 } from "lucide-react"
+
+const ownerOnlyRoutes = ['/inventory', '/financial', '/staff']
 
 const navItems = [
   { href: "/", label: "Beranda", icon: LayoutDashboard },
   { href: "/pos", label: "POS", icon: ShoppingCart },
-  { href: "/inventory", label: "Stok Barang", icon: Package },
+  { href: "/inventory", label: "Stok Barang", icon: Package, ownerOnly: true },
   { href: "/invoices", label: "Manajemen Tagihan", icon: Receipt },
-  { href: "/financial", label: "Laporan Keuangan", icon: DollarSign },
+  { href: "/financial", label: "Laporan Keuangan", icon: DollarSign, ownerOnly: true },
   { href: "/transactions", label: "Riwayat Transaksi", icon: ScrollText },
+  { href: "/staff", label: "Manajemen Staf", icon: Users, ownerOnly: true },
 ]
 
 export function Navigation() {
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
+  const [supabase] = React.useState(() => createClient())
   const { isSidebarCollapsed, toggleSidebarCollapsed, setIsNavigating } = useUIStore()
   const { clearCart } = useCartStore()
   const [showLogoutDialog, setShowLogoutDialog] = React.useState(false)
+  const [role, setRole] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    navItems.forEach((item) => router.prefetch(item.href))
+    async function getRole() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('auth_id', user.id)
+        .single()
+      if (data) setRole(data.role)
+    }
+    getRole()
+  }, [supabase])
+
+  const visibleItems = React.useMemo(
+    () => navItems.filter((item) => !item.ownerOnly || role === 'owner'),
+    [role]
+  )
+
+  React.useEffect(() => {
+    visibleItems.forEach((item) => router.prefetch(item.href))
     router.prefetch('/settings')
-  }, [router])
+  }, [router, visibleItems])
 
   const handleNavClick = () => {
     setIsNavigating(true)
@@ -87,7 +111,7 @@ export function Navigation() {
 
       {/* Navigation Items */}
       <nav className="flex flex-col gap-1 flex-grow overflow-y-auto px-2">
-        {navItems.map((item) => {
+        {visibleItems.map((item) => {
           const isActive = pathname === item.href
           const Icon = item.icon
           

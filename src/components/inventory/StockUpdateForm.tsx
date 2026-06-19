@@ -92,7 +92,7 @@ export function StockUpdateForm({ productId, currentStock, onSuccess }: StockUpd
       <Button
         type="submit"
         disabled={isLoading || adjustment === 0}
-        className="w-full h-12 rounded-xl bg-primary hover:opacity-90 text-primary-foreground font-semibold"
+        className="w-full h-12 rounded-xl bg-accent-blue hover:opacity-90 text-accent-blue-foreground font-semibold"
       >
         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Simpan Perubahan Stok

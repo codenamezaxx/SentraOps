@@ -561,7 +561,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
         <Button
           onClick={handleConfirmPayment}
           disabled={!selectedMethod || isProcessing || isCashInsufficient || isInvoiceInvalid}
-          className="w-full h-12 rounded-xl mt-2 font-bold shadow-md active:scale-[0.98] transition-all"
+          className="w-full h-12 rounded-xl mt-2 font-bold shadow-md active:scale-[0.98] transition-all bg-accent-blue text-accent-blue-foreground hover:bg-accent-blue/90"
         >
           {isProcessing ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -585,7 +585,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
         <SheetTrigger asChild>
           <Button
             disabled={items.length === 0}
-            className="w-full h-12 rounded-xl font-bold gap-2 active:scale-95 shadow-md"
+            className="w-full h-12 rounded-xl font-bold gap-2 active:scale-95 shadow-md bg-accent-blue text-accent-blue-foreground hover:bg-accent-blue/90"
           >
             Bayar <ChevronRight className="w-4 h-4" />
           </Button>
@@ -610,7 +610,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
       <DialogTrigger asChild>
         <Button
           disabled={items.length === 0}
-          className="w-full h-12 rounded-xl font-bold gap-2 active:scale-95 shadow-md"
+          className="w-full h-12 rounded-xl font-bold gap-2 active:scale-95 shadow-md bg-accent-blue text-accent-blue-foreground hover:bg-accent-blue/90"
         >
           Bayar <ChevronRight className="w-4 h-4" />
         </Button>

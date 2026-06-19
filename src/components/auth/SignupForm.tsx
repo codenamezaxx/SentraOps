@@ -1,39 +1,31 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { Loader2, Eye, EyeOff, Store, User, Mail, Lock } from "lucide-react";
-import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { toast } from "sonner"
 
 const signupSchema = z.object({
   fullName: z.string().min(2, "Nama lengkap minimal 2 karakter"),
   storeName: z.string().min(2, "Nama toko minimal 2 karakter"),
   email: z.string().email("Email tidak valid"),
   password: z.string().min(6, "Kata sandi minimal 6 karakter"),
-});
+})
 
-type SignupValues = z.infer<typeof signupSchema>;
+type SignupValues = z.infer<typeof signupSchema>
 
-export function SignupForm() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+export default function SignupForm() {
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
-  const form = useForm<SignupValues>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignupValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       fullName: "",
@@ -41,10 +33,10 @@ export function SignupForm() {
       email: "",
       password: "",
     },
-  });
+  })
 
   async function onSubmit(values: SignupValues) {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
@@ -70,116 +62,90 @@ export function SignupForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="fullName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nama Lengkap</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    placeholder="John Doe"
-                    className="pl-10 h-12 rounded-xl border-border bg-card focus:ring-primary"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="storeName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nama Toko</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Store className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    placeholder="Toko Kelontong Berkah"
-                    className="pl-10 h-12 rounded-xl border-border bg-card focus:ring-primary"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    placeholder="nama@email.com"
-                    type="email"
-                    className="pl-10 h-12 rounded-xl border-border bg-card focus:ring-primary"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Kata Sandi</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    className="pl-10 pr-10 h-12 rounded-xl border-border bg-card focus:ring-primary"
-                    {...field}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button
-          type="submit"
-          className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Memproses...
-            </>
-          ) : (
-            "Daftar Sekarang"
-          )}
-        </Button>
-      </form>
-    </Form>
-  );
+    <form className="flex flex-col gap-4 mt-4" onSubmit={handleSubmit(onSubmit)}>
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-semibold text-on-surface" htmlFor="fullName">
+          Nama Lengkap
+        </label>
+        <div className="relative flex items-center">
+          <span className="material-symbols-outlined absolute left-4 text-on-surface-variant pointer-events-none">person</span>
+          <input
+            className="w-full h-12 pl-12 pr-4 rounded-xl border border-outline-variant bg-card text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+            id="fullName"
+            placeholder="John Doe"
+            {...register("fullName")}
+          />
+        </div>
+        {errors.fullName && <p className="text-xs text-red-500">{errors.fullName.message}</p>}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-semibold text-on-surface" htmlFor="storeName">
+          Nama Toko
+        </label>
+        <div className="relative flex items-center">
+          <span className="material-symbols-outlined absolute left-4 text-on-surface-variant pointer-events-none">store</span>
+          <input
+            className="w-full h-12 pl-12 pr-4 rounded-xl border border-outline-variant bg-card text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+            id="storeName"
+            placeholder="Toko Kelontong Berkah"
+            {...register("storeName")}
+          />
+        </div>
+        {errors.storeName && <p className="text-xs text-red-500">{errors.storeName.message}</p>}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-semibold text-on-surface" htmlFor="email">
+          Email
+        </label>
+        <div className="relative flex items-center">
+          <span className="material-symbols-outlined absolute left-4 text-on-surface-variant pointer-events-none">mail</span>
+          <input
+            className="w-full h-12 pl-12 pr-4 rounded-xl border border-outline-variant bg-card text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+            id="email"
+            placeholder="nama@email.com"
+            type="email"
+            {...register("email")}
+          />
+        </div>
+        {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-semibold text-on-surface" htmlFor="password">
+          Kata Sandi
+        </label>
+        <div className="relative flex items-center">
+          <span className="material-symbols-outlined absolute left-4 text-on-surface-variant pointer-events-none">lock</span>
+          <input
+            className="w-full h-12 pl-12 pr-12 rounded-xl border border-outline-variant bg-card text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+            id="password"
+            placeholder="••••••••"
+            type={showPassword ? "text" : "password"}
+            {...register("password")}
+          />
+          <button
+            aria-label="Toggle password visibility"
+            className="absolute right-4 text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none flex items-center justify-center h-full"
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            <span className="material-symbols-outlined">
+              {showPassword ? "visibility" : "visibility_off"}
+            </span>
+          </button>
+        </div>
+        {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
+      </div>
+
+      <button
+        className="w-full h-12 mt-4 bg-primary text-primary-foreground rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        type="submit"
+        disabled={isLoading}
+      >
+        {isLoading ? "Memproses..." : "Daftar Sekarang"}
+      </button>
+    </form>
+  )
 }

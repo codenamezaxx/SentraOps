@@ -1,130 +1,88 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { Loader2, Mail, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { createClient } from "@/lib/supabase/client";
-
-const forgotPasswordSchema = z.object({
-  email: z.string().email("Email tidak valid"),
-});
-
-type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
+import { useState } from "react"
+import { toast } from "sonner"
+import { createClient } from "@/lib/supabase/client"
 
 export function ForgotPasswordForm() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSent, setIsSent] = useState(false);
-  const supabase = createClient();
+  const [email, setEmail] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSent, setIsSent] = useState(false)
+  const supabase = createClient()
 
-  const form = useForm<ForgotPasswordValues>({
-    resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: {
-      email: "",
-    },
-  });
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== "undefined" ? window.location.origin : "")
 
-  async function onSubmit(values: ForgotPasswordValues) {
-    setIsLoading(true);
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setIsLoading(true)
+
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${siteUrl}/reset-password`,
+      })
 
-      if (error) throw error;
+      if (error) throw error
 
-      setIsSent(true);
-      toast.success("Instruksi reset kata sandi telah dikirim ke email Anda.");
+      setIsSent(true)
+      toast.success("Instruksi reset kata sandi telah dikirim ke email Anda.")
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Terjadi kesalahan saat memproses permintaan";
-      console.error("Forgot password error:", err);
-      toast.error(message);
+      const message = err instanceof Error ? err.message : "Terjadi kesalahan"
+      console.error("Forgot password error:", err)
+      toast.error(message)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
   if (isSent) {
     return (
-      <div className="text-center space-y-4">
-        <div className="p-3 bg-primary/10 rounded-full w-fit mx-auto">
-          <Mail className="h-6 w-6 text-primary" />
+      <div className="flex flex-col items-center gap-4 text-center pt-2">
+        <div className="p-4 bg-primary/10 rounded-full">
+          <span className="material-symbols-outlined text-primary text-3xl">mail</span>
         </div>
-        <h2 className="text-xl font-bold text-foreground">Cek Email Anda</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-lg font-semibold text-on-surface">Cek Email Anda</h2>
+        <p className="text-sm text-on-surface-variant">
           Kami telah mengirimkan tautan untuk mengatur ulang kata sandi ke email Anda.
         </p>
-        <Button
-          asChild
-          variant="outline"
-          className="w-full h-12 rounded-xl border-border bg-card"
+        <a
+          className="w-full h-12 border border-outline-variant text-primary rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-surface-container-low hover:border-primary active:scale-[0.98] transition-all mt-2"
+          href="/login"
         >
-          <Link href="/login">Kembali ke Masuk</Link>
-        </Button>
+          Kembali ke Masuk
+        </a>
       </div>
-    );
+    )
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    placeholder="nama@email.com"
-                    type="email"
-                    className="pl-10 h-12 rounded-xl border-border bg-card focus:ring-primary"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button
-          type="submit"
-          className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Mengirim...
-            </>
-          ) : (
-            "Kirim Instruksi Reset"
-          )}
-        </Button>
-        <Link
-          href="/login"
-          className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Kembali ke Masuk
-        </Link>
-      </form>
-    </Form>
-  );
+    <form className="flex flex-col gap-4 mt-4" onSubmit={handleSubmit}>
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-semibold text-on-surface" htmlFor="email">
+          Email
+        </label>
+        <div className="relative flex items-center">
+          <span className="material-symbols-outlined absolute left-4 text-on-surface-variant pointer-events-none">
+            mail
+          </span>
+          <input
+            className="w-full h-12 pl-12 pr-4 rounded-xl border border-outline-variant bg-card text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+            id="email"
+            placeholder="nama@email.com"
+            required
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <button
+        className="w-full h-12 mt-4 bg-primary text-primary-foreground rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        type="submit"
+        disabled={isLoading}
+      >
+        {isLoading ? "Mengirim..." : "Kirim Instruksi Reset"}
+      </button>
+    </form>
+  )
 }

@@ -48,39 +48,6 @@ export default function LoginForm() {
     }
   }
 
-  async function handleMagicLinkLogin() {
-    if (!email) {
-      toast.info("Masukkan email Anda untuk magic link.")
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${location.origin}/auth/callback`,
-        },
-      })
-
-      if (error) {
-        toast.error("Gagal mengirim magic link", {
-          description: error.message,
-        })
-        return
-      }
-
-      toast.success("Magic link terkirim", {
-        description: "Cek email Anda untuk link masuk.",
-      })
-    } catch (err) {
-      console.error('Magic link error:', err)
-      toast.error("Terjadi kesalahan sistem")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return (
     <form className="flex flex-col gap-4 mt-4" onSubmit={handlePasswordLogin}>
       {/* Email Field */}
@@ -151,23 +118,6 @@ export default function LoginForm() {
         {isLoading ? "Memproses..." : "Masuk ke Akun"}
       </button>
 
-      {/* Divider */}
-      <div className="flex items-center gap-4 my-2">
-        <div className="flex-1 h-px bg-outline-variant/50"></div>
-        <span className="text-xs text-on-surface-variant uppercase tracking-wider">Atau</span>
-        <div className="flex-1 h-px bg-outline-variant/50"></div>
-      </div>
-
-      {/* Secondary Action */}
-      <button
-        className="w-full h-12 border border-outline-variant text-primary rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-surface-container-low hover:border-primary active:scale-[0.98] transition-all"
-        type="button"
-        onClick={handleMagicLinkLogin}
-        disabled={isLoading}
-      >
-        <span className="material-symbols-outlined icon-fill">send</span>
-        Kirim Link Masuk ke Email
-      </button>
     </form>
   )
 }

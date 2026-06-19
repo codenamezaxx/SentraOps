@@ -121,7 +121,7 @@ export function Cart() {
                       {/* Increment Button */}
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center text-primary dark:text-primary-fixed active:scale-90 transition-transform bg-surface-container-lowest dark:bg-surface-dark rounded-lg shadow-sm hover:bg-primary-container"
+                        className="w-8 h-8 flex items-center justify-center text-accent-blue active:scale-90 transition-transform bg-surface-container-lowest dark:bg-surface-dark rounded-lg shadow-sm hover:bg-accent-blue/10"
                         aria-label="Tambah jumlah"
                       >
                         <Plus className="w-4 h-4" />

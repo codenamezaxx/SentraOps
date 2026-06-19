@@ -69,7 +69,7 @@ export function ProductTable({ products: initialProducts }: ProductTableProps) {
         </div>
         <Button 
           onClick={() => setIsAddOpen(true)}
-          className="h-12 px-6 rounded-xl bg-primary hover:opacity-90 text-primary-foreground gap-2 w-full md:w-auto"
+          className="h-12 px-6 rounded-xl bg-accent-blue hover:bg-accent-blue/90 text-accent-blue-foreground gap-2 w-full md:w-auto"
         >
           <Plus className="w-5 h-5" />
           Tambah Produk

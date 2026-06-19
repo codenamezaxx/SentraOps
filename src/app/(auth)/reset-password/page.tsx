@@ -1,26 +1,28 @@
-import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
+import Link from "next/link"
+import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm"
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Reset Kata Sandi
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            Masukkan kata sandi baru untuk akun Anda.
+    <div className="bg-background min-h-screen flex items-center justify-center p-4 md:p-10">
+      <main className="w-full max-w-[420px] bg-card rounded-2xl shadow-md border border-outline-variant flex flex-col p-6 md:p-8 gap-6 animate-[fadeIn_0.3s_ease-out]">
+        <header className="flex flex-col items-center justify-center gap-2 text-center pt-2">
+          <h1 className="font-heading text-3xl font-bold text-primary">SentraOps</h1>
+          <p className="text-base text-on-surface-variant">Buat kata sandi baru</p>
+        </header>
+
+        <ResetPasswordForm />
+
+        <div className="mt-4 text-center">
+          <p className="text-base text-on-surface-variant">
+            <Link
+              className="text-sm font-bold text-primary hover:underline decoration-2 underline-offset-4"
+              href="/login"
+            >
+              Kembali ke Masuk
+            </Link>
           </p>
         </div>
-
-        <div className="bg-card p-8 rounded-2xl shadow-sm border border-border">
-          <ResetPasswordForm />
-        </div>
-        
-        <p className="text-center text-xs text-muted-foreground/60">
-          &copy; {new Date().getFullYear()} SentraOps. All rights reserved.
-        </p>
-      </div>
+      </main>
     </div>
-  );
+  )
 }

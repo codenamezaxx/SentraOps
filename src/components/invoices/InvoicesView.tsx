@@ -23,15 +23,20 @@ export function InvoicesView({ invoices, storeName }: InvoicesViewProps) {
   const [activeTab, setActiveTab] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [updatedMap, setUpdatedMap] = useState<Record<string, Invoice>>({})
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
   const PAGE_SIZE = 10
 
   const merged = useMemo(() =>
-    invoices.map(inv => updatedMap[inv.id] ?? inv),
-    [invoices, updatedMap]
+    invoices.filter(inv => !deletedIds.has(inv.id)).map(inv => updatedMap[inv.id] ?? inv),
+    [invoices, updatedMap, deletedIds]
   )
 
   const handleInvoiceUpdated = (updated: Invoice) => {
     setUpdatedMap(prev => ({ ...prev, [updated.id]: updated }))
+  }
+
+  const handleInvoiceDeleted = (invoiceId: string) => {
+    setDeletedIds(prev => new Set(prev).add(invoiceId))
   }
 
   const filtered = useMemo(() => {
@@ -76,9 +81,9 @@ export function InvoicesView({ invoices, storeName }: InvoicesViewProps) {
   return (
     <>
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="w-full md:w-auto overflow-x-auto">
+        <TabsList className="w-full md:w-auto overflow-x-auto justify-start scroll-pl-4">
           {tabs.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value} className="h-10 px-4 whitespace-nowrap">
+            <TabsTrigger key={tab.value} value={tab.value} className="h-10 px-4 whitespace-nowrap shrink-0">
               {tab.label}
             </TabsTrigger>
           ))}
@@ -94,7 +99,7 @@ export function InvoicesView({ invoices, storeName }: InvoicesViewProps) {
         <>
           <div className="flex flex-col gap-3">
             {paginated.map((inv) => (
-              <InvoiceRow key={inv.id} invoice={inv} storeName={storeName} onUpdated={handleInvoiceUpdated} />
+              <InvoiceRow key={inv.id} invoice={inv} storeName={storeName} onUpdated={handleInvoiceUpdated} onDeleted={handleInvoiceDeleted} />
             ))}
           </div>
           <Pagination

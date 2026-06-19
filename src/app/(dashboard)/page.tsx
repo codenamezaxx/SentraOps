@@ -172,7 +172,7 @@ export default async function DashboardPage() {
         <div className="bg-card border border-outline-variant rounded-2xl p-5 shadow-sm flex flex-col gap-4">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-semibold text-foreground">Perlu Restock</h3>
-            <Link href="/inventory" className="text-sm font-semibold text-primary hover:underline">
+            <Link href="/inventory" className="text-sm font-semibold text-muted-foreground hover:underline">
               Lihat Semua
             </Link>
           </div>
@@ -211,7 +211,7 @@ export default async function DashboardPage() {
         <div className="bg-card border border-outline-variant rounded-2xl p-5 shadow-sm flex flex-col gap-4">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-semibold text-foreground">Aktivitas Terakhir</h3>
-            <Link href="/transactions" className="text-sm font-semibold text-primary hover:underline">
+            <Link href="/transactions" className="text-sm font-semibold text-muted-foreground hover:underline">
               Riwayat
             </Link>
           </div>

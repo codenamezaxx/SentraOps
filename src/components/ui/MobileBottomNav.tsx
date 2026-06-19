@@ -1,8 +1,10 @@
 "use client"
 
+import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
 import { useUIStore } from "@/lib/stores/uiStore"
 import {
   LayoutDashboard,
@@ -13,6 +15,7 @@ import {
   Receipt,
   Settings,
   MoreHorizontal,
+  Users,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -21,15 +24,27 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-const mainItems = [
+const ownerMainItems = [
   { href: "/", label: "Beranda", icon: LayoutDashboard },
   { href: "/inventory", label: "Stok", icon: Package },
   { href: "/pos", label: "POS", icon: ShoppingCart, isPrimary: true },
   { href: "/financial", label: "Laporan", icon: DollarSign },
 ]
 
-const moreItems = [
+const cashierMainItems = [
+  { href: "/", label: "Beranda", icon: LayoutDashboard },
   { href: "/transactions", label: "Riwayat", icon: ScrollText },
+  { href: "/pos", label: "POS", icon: ShoppingCart, isPrimary: true },
+]
+
+const ownerMoreItems = [
+  { href: "/transactions", label: "Riwayat", icon: ScrollText },
+  { href: "/invoices", label: "Tagihan", icon: Receipt },
+  { href: "/staff", label: "Manajemen Staf", icon: Users },
+  { href: "/settings", label: "Pengaturan", icon: Settings },
+]
+
+const cashierMoreItems = [
   { href: "/invoices", label: "Tagihan", icon: Receipt },
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ]
@@ -37,6 +52,25 @@ const moreItems = [
 export function MobileBottomNav() {
   const pathname = usePathname()
   const { setIsNavigating } = useUIStore()
+  const [role, setRole] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    async function getRole() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('auth_id', user.id)
+        .single()
+      if (data) setRole(data.role)
+    }
+    getRole()
+  }, [])
+
+  const mainItems = role === 'owner' ? ownerMainItems : cashierMainItems
+  const moreItems = role === 'owner' ? ownerMoreItems : cashierMoreItems
 
   const handleNavClick = () => {
     setIsNavigating(true)
