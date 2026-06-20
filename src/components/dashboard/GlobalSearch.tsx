@@ -13,7 +13,8 @@ import {
   PackageSearch,
   History,
   Receipt,
-  Users
+  Users,
+  TrendingDown
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useCartStore } from "@/lib/stores/cartStore"
@@ -40,6 +41,7 @@ export function GlobalSearch() {
   const [query, setQuery] = React.useState("")
   const [products, setProducts] = React.useState<Product[]>([])
   const [transactions, setTransactions] = React.useState<Transaction[]>([])
+  const [expenses, setExpenses] = React.useState<{ id: string; title: string; amount: number; category: string }[]>([])
   const [, setLoading] = React.useState(false)
   
   const router = useRouter()
@@ -65,6 +67,7 @@ export function GlobalSearch() {
       if (!query.trim()) {
         setProducts([])
         setTransactions([])
+        setExpenses([])
         return
       }
 
@@ -72,8 +75,8 @@ export function GlobalSearch() {
       const supabase = createClient()
 
       try {
-        // Parallel search for products and transactions
-        const [productsRes, transactionsRes] = await Promise.all([
+        // Parallel search for products, transactions, and expenses
+        const [productsRes, transactionsRes, expensesRes] = await Promise.all([
           supabase
             .from("products")
             .select("*")
@@ -83,11 +86,18 @@ export function GlobalSearch() {
             .from("transactions")
             .select("*")
             .ilike("id", `%${query}%`)
+            .limit(5),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase as any)
+            .from("expenses")
+            .select("id, title, amount, category")
+            .ilike("title", `%${query}%`)
             .limit(5)
         ])
 
         if (productsRes.data) setProducts(productsRes.data as Product[])
         if (transactionsRes.data) setTransactions(transactionsRes.data as Transaction[])
+        if (expensesRes.data) setExpenses(expensesRes.data as { id: string; title: string; amount: number; category: string }[])
       } catch (error) {
         console.error("Search error:", error)
       } finally {
@@ -166,6 +176,10 @@ export function GlobalSearch() {
               <Users className="mr-2 h-4 w-4" />
               <span>Manajemen Staff</span>
             </CommandItem>
+            <CommandItem onSelect={() => runCommand(() => router.push("/expenses"))}>
+              <TrendingDown className="mr-2 h-4 w-4" />
+              <span>Manajemen Pengeluaran</span>
+            </CommandItem>
           </CommandGroup>
 
           {products.length > 0 && (
@@ -217,6 +231,29 @@ export function GlobalSearch() {
                       <span>#{tx.id.slice(0, 8)}</span>
                       <span className="text-[10px] text-muted-foreground">
                         {tx.payment_method.toUpperCase()} | Rp {tx.total_amount.toLocaleString("id-ID")}
+                      </span>
+                    </div>
+                    <ArrowRight className="ml-auto h-3 w-3 opacity-50" />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </>
+          )}
+
+          {expenses.length > 0 && (
+            <>
+              <CommandSeparator />
+              <CommandGroup heading="Pengeluaran">
+                {expenses.map((expense) => (
+                  <CommandItem 
+                    key={expense.id}
+                    onSelect={() => runCommand(() => router.push("/expenses"))}
+                  >
+                    <TrendingDown className="mr-2 h-4 w-4" />
+                    <div className="flex flex-col">
+                      <span>{expense.title}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {expense.category} | Rp {expense.amount.toLocaleString("id-ID")}
                       </span>
                     </div>
                     <ArrowRight className="ml-auto h-3 w-3 opacity-50" />

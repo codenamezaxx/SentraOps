@@ -41,7 +41,7 @@ export function StatCard({
         <p className="text-sm font-semibold text-muted-foreground">{title}</p>
         <Icon className={cn("w-5 h-5", iconStyles[variant])} />
       </div>
-      <h3 className="text-2xl md:text-3xl font-bold text-foreground">{value}</h3>
+      <h3 className="text-2xl md:text-3xl font-bold text-foreground truncate">{value}</h3>
       {description && (
         <p className={cn("text-xs mt-auto", descriptionClassName || iconStyles[variant])}>
           {description}

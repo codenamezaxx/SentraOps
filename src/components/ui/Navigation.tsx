@@ -20,9 +20,10 @@ import {
   Plus,
   ChevronLeft,
   Users,
+  TrendingDown,
 } from "lucide-react"
 
-const ownerOnlyRoutes = ['/inventory', '/financial', '/staff']
+const ownerOnlyRoutes = ['/inventory', '/financial', '/staff', '/expenses']
 
 const navItems = [
   { href: "/", label: "Beranda", icon: LayoutDashboard },
@@ -31,6 +32,7 @@ const navItems = [
   { href: "/invoices", label: "Manajemen Tagihan", icon: Receipt },
   { href: "/financial", label: "Laporan Keuangan", icon: DollarSign, ownerOnly: true },
   { href: "/transactions", label: "Riwayat Transaksi", icon: ScrollText },
+  { href: "/expenses", label: "Manajemen Pengeluaran", icon: TrendingDown, ownerOnly: true },
   { href: "/staff", label: "Manajemen Staf", icon: Users, ownerOnly: true },
 ]
 
@@ -80,7 +82,7 @@ export function Navigation() {
       )}
     >
       {/* Brand Header */}
-      <div className={cn("flex items-center gap-3 px-2 pt-4 pb-6", isSidebarCollapsed && "justify-center")}>
+      <div className={cn("flex items-center gap-3 px-2 pt-4 pb-4", isSidebarCollapsed && "px-0 justify-center")}>
         <img
           src="/icons/icon-192.svg"
           alt="SentraOps"

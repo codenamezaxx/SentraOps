@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createNotification } from '@/lib/notifications'
 
 export async function POST(request: Request) {
   try {
@@ -55,6 +56,27 @@ export async function POST(request: Request) {
         } else {
           console.error('Webhook: Failed to update transaction:', txnError)
         }
+      }
+
+      // Get store_id from the transaction to create notification
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: txn } = await (supabaseAdmin as any)
+        .from('transactions')
+        .select('store_id, total_amount, payment_method')
+        .eq('id', external_id)
+        .single()
+
+      if (txn) {
+        const methodLabel =
+          txn.payment_method === 'qris' ? 'QRIS' :
+          txn.payment_method === 'whatsapp_invoice' ? 'WhatsApp Invoice' :
+          'Online'
+        await createNotification({
+          storeId: txn.store_id,
+          title: 'Pembayaran Diterima',
+          message: `Pembayaran ${methodLabel} sebesar ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(txn.total_amount)} telah dikonfirmasi.`,
+          type: 'payment',
+        })
       }
     }
 

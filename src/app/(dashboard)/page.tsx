@@ -3,7 +3,7 @@ import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import Link from 'next/link'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { OverdueInvoicesCard } from '@/components/dashboard/OverdueInvoicesCard'
-import { TrendingUp, AlertTriangle, ShoppingBag, BarChart3 } from 'lucide-react'
+import { TrendingUp, AlertTriangle, ShoppingBag, BarChart3, LayoutDashboard } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions'
@@ -41,7 +41,8 @@ export default async function DashboardPage() {
     { data: yesterdaySalesData },
     { data: lowStockProducts },
     { data: recentTransactions },
-    { data: chartDataRaw }
+    { data: chartDataRaw },
+    { data: recentExpensesRaw }
   ] = await Promise.all([
     supabase
       .from('transactions')
@@ -69,7 +70,7 @@ export default async function DashboardPage() {
       .eq('store_id', store.id)
       .neq('status', 'pending')
       .order('created_at', { ascending: false })
-      .limit(3),
+      .limit(5),
 
     supabase
       .from('transactions')
@@ -77,7 +78,15 @@ export default async function DashboardPage() {
       .eq('store_id', store.id)
       .eq('status', 'completed')
       .gte('created_at', last7Days.toISOString())
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: true }),
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from('expenses')
+      .select('id, title, amount, created_at, category')
+      .eq('store_id', store.id)
+      .order('created_at', { ascending: false })
+      .limit(5)
   ])
 
   const overdueInvoices = await getOverdueInvoices(store.id)
@@ -107,18 +116,49 @@ export default async function DashboardPage() {
     .map(([date, revenue]) => ({ date, revenue }))
     .reverse()
 
+  // Combine transactions and expenses into a single activity feed
+  const recentExpenses = (recentExpensesRaw || []) as { id: string; title: string; amount: number; created_at: string; category: string }[]
+  type ActivityItem = {
+    type: 'income' | 'expense'
+    id: string
+    label: string
+    amount: number
+    timestamp: string
+    meta: string
+  }
+  const activities: ActivityItem[] = [
+    ...(recentTransactions || []).map((tx) => ({
+      type: 'income' as const,
+      id: tx.id,
+      label: `Penjualan #${tx.id.slice(0, 4)}`,
+      amount: tx.total_amount,
+      timestamp: tx.created_at || '',
+      meta: tx.payment_method,
+    })),
+    ...recentExpenses.map((ex) => ({
+      type: 'expense' as const,
+      id: ex.id,
+      label: ex.title,
+      amount: ex.amount,
+      timestamp: ex.created_at,
+      meta: ex.category,
+    })),
+  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5)
+
   return (
     <div className="flex-1 pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
       {/* Header Section */}
       <section className="flex flex-col gap-1">
         <div className="flex justify-between items-start">
-          <div>
-            <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
-              Selamat Datang, <span className="text-primary">{store?.name || 'Toko'}</span>
-            </h2>
-            <p className="text-base text-muted-foreground mt-1">
-              Berikut adalah ringkasan operasional hari ini.
-            </p>
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="min-w-0">
+              <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
+                Selamat Datang, <span className="text-primary">{store?.name || 'Toko'}</span>
+              </h2>
+              <p className="text-base text-muted-foreground mt-1">
+                Berikut adalah ringkasan operasional hari ini.
+              </p>
+            </div>
           </div>
           <ThemeToggle />
         </div>
@@ -222,20 +262,21 @@ export default async function DashboardPage() {
             </Link>
           </div>
           
-          {(recentTransactions && recentTransactions.length > 0) ? (
+          {activities.length > 0 ? (
             <div className="space-y-3">
-              {recentTransactions.map((tx) => (
-                <div key={tx.id} className="flex justify-between items-center p-3 bg-muted rounded-xl border border-outline-variant">
+              {activities.map((act) => (
+                <div key={`${act.type}-${act.id}`} className="flex justify-between items-center p-3 bg-muted rounded-xl border border-outline-variant">
                   <div className="flex flex-col">
                     <span className="font-medium text-foreground">
-                      Penjualan #{tx.id.slice(0, 4)}
+                      {act.type === 'income' ? act.label : act.label}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(tx.created_at || '').toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} • {tx.payment_method}
+                      {new Date(act.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                      {act.type === 'income' ? <> &bull; {act.meta}</> : null}
                     </span>
                   </div>
-                  <span className="font-bold text-primary">
-                    {formatCurrency(tx.total_amount)}
+                  <span className={`font-bold ${act.type === 'income' ? 'text-primary' : 'text-destructive'}`}>
+                    {act.type === 'income' ? '' : '-'}{formatCurrency(act.amount)}
                   </span>
                 </div>
               ))}

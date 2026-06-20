@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingBag, Receipt, ScrollText } from 'lucide-react'
+import { ShoppingBag, Package, BarChart3 } from 'lucide-react'
 import { useCartStore } from '@/lib/stores/cartStore'
 
 export function DashboardQuickActions() {
@@ -19,22 +19,22 @@ export function DashboardQuickActions() {
         Buka Kasir POS
       </Link>
 
-      {/* Review Invoices */}
+      {/* Add Product */}
       <Link
-        href="/invoices"
+        href="/inventory"
         className="h-16 bg-card text-foreground rounded-2xl font-bold text-sm flex items-center justify-center gap-3 border border-border hover:bg-muted active:scale-[0.98] transition-all w-full"
       >
-        <Receipt className="w-5 h-5 text-primary" />
-        Tinjau Tagihan
+        <Package className="w-5 h-5 text-primary" />
+        Tambah Produk
       </Link>
 
-      {/* View History */}
+      {/* View Reports */}
       <Link
-        href="/transactions"
+        href="/financial"
         className="h-16 bg-card text-foreground rounded-2xl font-bold text-sm flex items-center justify-center gap-3 border border-border hover:bg-muted active:scale-[0.98] transition-all w-full"
       >
-        <ScrollText className="w-5 h-5 text-primary" />
-        Lihat Riwayat
+        <BarChart3 className="w-5 h-5 text-primary" />
+        Lihat Laporan
       </Link>
     </section>
   )

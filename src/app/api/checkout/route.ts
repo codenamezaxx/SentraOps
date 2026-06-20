@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { getUserProfile, createInvoiceForTransaction } from '@/lib/supabase/queries'
+import { createNotification } from '@/lib/notifications'
 import type { PaymentMethod } from '@/lib/types'
 import { Xendit } from 'xendit-node'
 
@@ -279,6 +280,27 @@ export async function POST(request: Request) {
       }
     }
 
+    // Check for low stock after update and create notifications
+    for (const item of body.items) {
+      const product = products.find((p) => p.id === item.product_id)!
+      const newStock = product.stock_quantity - item.quantity
+      if (newStock > 0 && newStock <= (product.min_stock_threshold || 5)) {
+        await createNotification({
+          storeId: profile.store_id,
+          title: 'Stok Menipis',
+          message: `${product.name} tersisa ${newStock} — segera lakukan restok.`,
+          type: 'stock',
+        })
+      } else if (newStock <= 0) {
+        await createNotification({
+          storeId: profile.store_id,
+          title: 'Stok Habis',
+          message: `${product.name} sudah habis — lakukan restok segera.`,
+          type: 'stock',
+        })
+      }
+    }
+
     // 8. Create invoice record if payment method is invoice
     if (body.payment_method === 'invoice') {
       const invoice = await createInvoiceForTransaction({
@@ -298,6 +320,14 @@ export async function POST(request: Request) {
           { status: 500 }
         )
       }
+
+      // Notify new invoice created
+      await createNotification({
+        storeId: profile.store_id,
+        title: 'Tagihan Baru',
+        message: `Tagihan untuk ${body.customer_name} sebesar ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalAmount)} telah dibuat.`,
+        type: 'invoice',
+      })
     }
 
     // 9. Handle Xendit Invoice creation if payment method is gateway
@@ -337,7 +367,18 @@ export async function POST(request: Request) {
       }
     }
 
-    // 10. Return success response
+    // 10. Create notifications
+    if (body.payment_method === 'cash') {
+      // Notify successful cash payment
+      await createNotification({
+        storeId: profile.store_id,
+        title: 'Pembayaran Diterima',
+        message: `Pembayaran tunai sebesar ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalAmount)} berhasil.`,
+        type: 'payment',
+      })
+    }
+
+    // 11. Return success response
     return NextResponse.json({
       success: true,
       transaction_id: transaction.id,

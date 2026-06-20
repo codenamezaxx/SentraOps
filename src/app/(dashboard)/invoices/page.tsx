@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, Receipt } from 'lucide-react'
 import { getStore, getInvoices } from '@/lib/supabase/queries'
 import { createClient } from '@/lib/supabase/server'
 import { InvoicesView } from '@/components/invoices/InvoicesView'
@@ -25,12 +25,17 @@ export default async function InvoicesPage() {
 
   return (
     <div className="flex-1 pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Manajemen Tagihan</h1>
-          <p className="text-sm text-muted-foreground">
-            Kelola faktur dan tagihan pelanggan
-          </p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Receipt className="w-6 h-6 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold text-foreground">Manajemen Tagihan</h1>
+            <p className="text-sm text-muted-foreground">
+              Kelola faktur dan tagihan pelanggan
+            </p>
+          </div>
         </div>
         <Link
           href="/pos"

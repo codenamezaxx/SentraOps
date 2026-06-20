@@ -73,7 +73,7 @@ export interface Invoice {
   updated_at: string | null;
 }
 
-export type NotificationType = 'payment' | 'stock' | 'sync';
+export type NotificationType = 'payment' | 'stock' | 'sync' | 'invoice';
 
 export interface Notification {
   id: string;
@@ -82,6 +82,19 @@ export interface Notification {
   message: string;
   type: NotificationType;
   is_read: boolean;
+  created_at: string;
+}
+
+export type ExpenseCategory = 'operasional' | 'gaji' | 'logistik' | 'lain-lain';
+
+export interface Expense {
+  id: string;
+  store_id: string;
+  title: string;
+  amount: number;
+  category: ExpenseCategory;
+  description: string | null;
+  expense_date: string;
   created_at: string;
 }
 

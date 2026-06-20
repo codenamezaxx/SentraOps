@@ -6,6 +6,7 @@ import { Toaster } from "../components/ui/sonner";
 import { PwaRegister } from "../components/PwaRegister";
 import { OfflineDbInit } from "../components/OfflineDbInit";
 import Script from "next/script";
+import "@aejkatappaja/phantom-ui/ssr.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",

@@ -16,6 +16,7 @@ import {
   Settings,
   MoreHorizontal,
   Users,
+  TrendingDown,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -41,6 +42,7 @@ const cashierMainItems = [
 const ownerMoreItems = [
   { href: "/transactions", label: "Riwayat", icon: ScrollText },
   { href: "/invoices", label: "Tagihan", icon: Receipt },
+  { href: "/expenses", label: "Pengeluaran", icon: TrendingDown },
   { href: "/staff", label: "Manajemen Staf", icon: Users },
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ]

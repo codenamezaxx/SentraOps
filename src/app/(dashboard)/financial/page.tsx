@@ -1,13 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { calculateFinancialMetrics } from '@/lib/financial-utils'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatCompactCurrency } from '@/lib/utils'
 import { StatCard } from '@/components/dashboard/StatCard'
-import { DollarSign, TrendingUp, ShoppingBag, PieChart } from 'lucide-react'
+import { DollarSign, TrendingUp, ShoppingBag, PieChart, TrendingDown } from 'lucide-react'
 import type { Transaction, TransactionItem } from '@/lib/types'
 import { RevenueChart } from '@/components/financial/RevenueChart'
 import { PaymentMethodBreakdown } from '@/components/financial/PaymentMethodBreakdown'
 import { TopProfitContributors } from '@/components/financial/TopProfitContributors'
 import { ExportButton } from '@/components/financial/ExportButton'
+import { PeriodSelector } from '@/components/financial/PeriodSelector'
+import { PrintStyles } from '@/components/financial/PrintStyles'
 
 export default async function FinancialPage({
   searchParams,
@@ -55,16 +57,21 @@ export default async function FinancialPage({
     items = (data || []) as TransactionItem[]
   }
 
-  const metrics = calculateFinancialMetrics((transactions || []) as Transaction[], items)
+  // Fetch total expenses for the date range
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: expensesData } = await (supabase as any)
+    .from('expenses')
+    .select('amount')
+    .eq('store_id', profile.store_id)
+    .gte('expense_date', startDate)
+    .lte('expense_date', endDate)
+  const totalExpenses = ((expensesData || []) as { amount: number }[]).reduce((sum, e) => sum + e.amount, 0)
 
-  // Group transactions by date for chart
-  const groupedData = (transactions || []).reduce((acc: Record<string, number>, t) => {
-    const date = new Date(t.created_at || '').toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
-    acc[date] = (acc[date] || 0) + t.total_amount
-    return acc
-  }, {})
-
-  const chartData = Object.entries(groupedData).map(([date, revenue]) => ({ date, revenue }))
+  const metrics = calculateFinancialMetrics(
+    (transactions || []) as Transaction[],
+    items,
+    totalExpenses
+  )
 
   // --- Payment method breakdown ---
   const methodAgg = (transactions || []).reduce(
@@ -129,36 +136,88 @@ export default async function FinancialPage({
 
   const periodLabel = `${new Date(startDate).toLocaleDateString('id-ID')} - ${new Date(endDate).toLocaleDateString('id-ID')}`
 
+  // Detect active period preset
+  function detectActivePeriod(s?: string, e?: string): string {
+    if (!s && !e) return 'monthly'
+    const now = new Date()
+    const sd = s ? new Date(s + 'T00:00:00') : null
+    if (!sd) return 'custom'
+
+    const weekStart = new Date(now); weekStart.setDate(now.getDate() - 7)
+    if (sd.toDateString() === weekStart.toDateString()) return 'weekly'
+
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+    if (sd.toDateString() === monthStart.toDateString()) return 'monthly'
+
+    const yearStart = new Date(now.getFullYear(), 0, 1)
+    if (sd.toDateString() === yearStart.toDateString()) return 'ytd'
+
+    return 'custom'
+  }
+  const activePeriod = detectActivePeriod(start, end)
+
+  // Group chart data — daily for short periods, monthly for long periods
+  const isLongPeriod = activePeriod === 'yearly' || activePeriod === 'ytd'
+  const chartGroupedData = (transactions || []).reduce((acc: Record<string, number>, t) => {
+    if (!t.created_at) return acc
+    const key = isLongPeriod
+      ? new Date(t.created_at).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
+      : new Date(t.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
+    acc[key] = (acc[key] || 0) + t.total_amount
+    return acc
+  }, {})
+
+  const chartData = Object.entries(chartGroupedData).map(([date, revenue]) => ({ date, revenue }))
+
   return (
     <div className="flex-1 pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
+      <PrintStyles />
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-            Ringkasan Keuangan
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Periode: {periodLabel}
-          </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 md:gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <DollarSign className="w-6 h-6 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+              Ringkasan Keuangan
+            </h1>
+            <p className="text-sm text-muted-foreground" data-period={periodLabel}>
+              Periode: {periodLabel}
+            </p>
+          </div>
         </div>
-        <ExportButton />
+        <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+          <PeriodSelector activePeriod={activePeriod} />
+          <ExportButton />
+        </div>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Top Row: Revenue + Expenses */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <StatCard
           title="Total Pendapatan"
-          value={formatCurrency(metrics.grossRevenue)}
+          value={formatCompactCurrency(metrics.grossRevenue)}
           icon={DollarSign}
         />
         <StatCard
+          title="Total Pengeluaran"
+          value={formatCompactCurrency(metrics.totalExpenses)}
+          icon={TrendingDown}
+          variant="destructive"
+        />
+      </div>
+
+      {/* Second Row: COGS + Net Profit + Margin */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard
           title="Harga Pokok Penjualan"
-          value={formatCurrency(metrics.cogs)}
+          value={formatCompactCurrency(metrics.cogs)}
           icon={ShoppingBag}
         />
         <StatCard
           title="Laba Bersih"
-          value={formatCurrency(metrics.netProfit)}
+          value={formatCompactCurrency(metrics.netProfit)}
           icon={TrendingUp}
           variant={metrics.netProfit >= 0 ? 'success' : 'destructive'}
         />
@@ -170,7 +229,7 @@ export default async function FinancialPage({
       </div>
 
       {/* Revenue Chart */}
-      <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+      <div className="bg-card p-6 rounded-2xl border border-outline-variant shadow-sm">
         <h3 className="text-base font-bold text-foreground mb-4">Tren Pendapatan</h3>
         {chartData.length > 0 ? (
           <RevenueChart data={chartData} />

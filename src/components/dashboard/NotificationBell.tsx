@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from 'react'
-import { Bell, CheckCheck, CreditCard, AlertTriangle, RefreshCw, X } from 'lucide-react'
+import { Bell, CheckCheck, CreditCard, AlertTriangle, RefreshCw, Receipt, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useNotificationStore } from '@/lib/stores/notificationStore'
 import type { Notification } from '@/lib/types'
@@ -10,6 +10,7 @@ const typeConfig = {
   payment: { icon: CreditCard, className: 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/40' },
   stock: { icon: AlertTriangle, className: 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/40' },
   sync: { icon: RefreshCw, className: 'text-teal-600 dark:text-teal-400 bg-teal-100 dark:bg-teal-950/40' },
+  invoice: { icon: Receipt, className: 'text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-950/40' },
 } as const
 
 export function NotificationBell() {

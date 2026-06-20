@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { StaffContent } from '@/components/staff/StaffContent'
 import { StaffTable } from '@/components/staff/StaffTable'
+import { Users } from 'lucide-react'
 
 export default async function StaffPage() {
   const supabase = await createClient()
@@ -53,10 +54,15 @@ export default async function StaffPage() {
 
   return (
     <div className="flex-1 pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Manajemen Staf</h1>
-          <p className="text-sm text-muted-foreground">Kelola akun staf toko Anda</p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Users className="w-6 h-6 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold text-foreground">Manajemen Staf</h1>
+            <p className="text-sm text-muted-foreground">Kelola akun staf toko Anda</p>
+          </div>
         </div>
         <StaffContent />
       </div>
