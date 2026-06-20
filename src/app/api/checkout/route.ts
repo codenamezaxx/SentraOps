@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { getUserProfile, createInvoiceForTransaction } from '@/lib/supabase/queries'
 import type { PaymentMethod } from '@/lib/types'
 import { Xendit } from 'xendit-node'
@@ -89,6 +90,38 @@ export async function POST(request: Request) {
         { success: false, error: 'Nama pelanggan wajib diisi untuk metode tagihan.' },
         { status: 400 }
       )
+    }
+
+    // Validate that payment method is enabled in store settings
+    const settingKeyMap: Record<string, string> = {
+      cash: 'cash',
+      qris: 'qris',
+      whatsapp_invoice: 'whatsapp',
+      invoice: 'piutang',
+    }
+    const supabaseAdmin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    )
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: storeData } = await (supabaseAdmin as any)
+      .from('stores')
+      .select('payment_methods')
+      .eq('id', profile.store_id)
+      .single()
+    if (storeData?.payment_methods) {
+      const settingKey = settingKeyMap[body.payment_method]
+      const isEnabled = (storeData.payment_methods as Record<string, boolean>)[settingKey]
+      if (isEnabled === false) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Metode pembayaran ini sedang dinonaktifkan oleh pengaturan toko.',
+          },
+          { status: 400 }
+        )
+      }
     }
 
     // 4. Fetch all products with their current stock

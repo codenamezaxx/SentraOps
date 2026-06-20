@@ -14,6 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string | null
+          customer_name: string
+          customer_phone: string | null
+          due_date: string
+          id: string
+          status: string
+          store_id: string | null
+          transaction_id: string | null
+          updated_at: string | null
+          xendit_invoice_url: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          due_date: string
+          id?: string
+          status?: string
+          store_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          xendit_invoice_url?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          due_date?: string
+          id?: string
+          status?: string
+          store_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          xendit_invoice_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          store_id: string
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          store_id: string
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          store_id?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           barcode: string | null
@@ -21,6 +116,7 @@ export type Database = {
           cost_price: number
           created_at: string | null
           id: string
+          image_url: string | null
           min_stock_threshold: number
           name: string
           price: number
@@ -33,6 +129,7 @@ export type Database = {
           cost_price?: number
           created_at?: string | null
           id?: string
+          image_url?: string | null
           min_stock_threshold?: number
           name: string
           price?: number
@@ -45,6 +142,7 @@ export type Database = {
           cost_price?: number
           created_at?: string | null
           id?: string
+          image_url?: string | null
           min_stock_threshold?: number
           name?: string
           price?: number
@@ -64,6 +162,7 @@ export type Database = {
       profiles: {
         Row: {
           auth_id: string
+          avatar_url: string | null
           created_at: string | null
           id: string
           name: string | null
@@ -72,6 +171,7 @@ export type Database = {
         }
         Insert: {
           auth_id: string
+          avatar_url?: string | null
           created_at?: string | null
           id?: string
           name?: string | null
@@ -80,6 +180,7 @@ export type Database = {
         }
         Update: {
           auth_id?: string
+          avatar_url?: string | null
           created_at?: string | null
           id?: string
           name?: string | null
@@ -98,22 +199,37 @@ export type Database = {
       }
       stores: {
         Row: {
+          address: string | null
           created_at: string | null
+          default_stock_threshold: number | null
           id: string
           name: string
           owner_id: string
+          payment_methods: Json | null
+          phone: string | null
+          receipt_footer: string | null
         }
         Insert: {
+          address?: string | null
           created_at?: string | null
+          default_stock_threshold?: number | null
           id?: string
           name: string
           owner_id: string
+          payment_methods?: Json | null
+          phone?: string | null
+          receipt_footer?: string | null
         }
         Update: {
+          address?: string | null
           created_at?: string | null
+          default_stock_threshold?: number | null
           id?: string
           name?: string
           owner_id?: string
+          payment_methods?: Json | null
+          phone?: string | null
+          receipt_footer?: string | null
         }
         Relationships: []
       }
@@ -161,7 +277,9 @@ export type Database = {
       }
       transactions: {
         Row: {
+          cash_amount: number | null
           cashier_id: string | null
+          change_amount: number | null
           created_at: string | null
           id: string
           payment_method: string
@@ -170,7 +288,9 @@ export type Database = {
           total_amount: number
         }
         Insert: {
+          cash_amount?: number | null
           cashier_id?: string | null
+          change_amount?: number | null
           created_at?: string | null
           id?: string
           payment_method: string
@@ -179,7 +299,9 @@ export type Database = {
           total_amount?: number
         }
         Update: {
+          cash_amount?: number | null
           cashier_id?: string | null
+          change_amount?: number | null
           created_at?: string | null
           id?: string
           payment_method?: string

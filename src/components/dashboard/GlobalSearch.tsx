@@ -12,7 +12,8 @@ import {
   ArrowRight,
   PackageSearch,
   History,
-  Receipt
+  Receipt,
+  Users
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useCartStore } from "@/lib/stores/cartStore"
@@ -160,6 +161,10 @@ export function GlobalSearch() {
             <CommandItem onSelect={() => runCommand(() => router.push("/transactions"))}>
               <History className="mr-2 h-4 w-4" />
               <span>Riwayat Transaksi</span>
+            </CommandItem>
+            <CommandItem onSelect={() => runCommand(() => router.push("/staff"))}>
+              <Users className="mr-2 h-4 w-4" />
+              <span>Manajemen Staff</span>
             </CommandItem>
           </CommandGroup>
 

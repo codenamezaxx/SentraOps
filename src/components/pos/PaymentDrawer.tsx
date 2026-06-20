@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useCartStore } from '@/lib/stores/cartStore'
+import { createClient } from '@/lib/supabase/client'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -10,11 +11,19 @@ import { toast } from 'sonner'
 import {
   CreditCard, QrCode, MessageSquare, CalendarDays,
   ChevronRight, CheckCircle2, Loader2, Banknote,
-  Copy, Check, ExternalLink, Clock,
+  Copy, Check, ExternalLink, Clock, XCircle,
 } from 'lucide-react'
 import type { PaymentMethod } from '@/lib/types'
 import { formatCurrency, cn } from '@/lib/utils'
 import { db } from '@/lib/offlineDb'
+
+interface PaymentOption {
+  method: PaymentMethod
+  label: string
+  description: string
+  icon: typeof CreditCard
+  settingKey: string
+}
 
 interface PaymentDrawerProps {
   onOpenChange?: (open: boolean) => void
@@ -40,6 +49,10 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
   const [paidCash, setPaidCash] = useState(0)
   const [paidChange, setPaidChange] = useState(0)
 
+  // Store payment methods (fetched from settings)
+  const [enabledMethods, setEnabledMethods] = useState<Record<string, boolean> | null>(null)
+  const [loadingMethods, setLoadingMethods] = useState(true)
+
   // Payment view state (QRIS / WA Invoice)
   const [paymentConfirmed, setPaymentConfirmed] = useState(false)
   const [pollingStatus, setPollingStatus] = useState<'pending' | 'completed' | 'expired'>('pending')
@@ -61,41 +74,83 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
     }
   }, [])
 
+  // Fetch store's enabled payment methods
+  useEffect(() => {
+    async function fetchPaymentMethods() {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('store_id')
+          .eq('auth_id', user.id)
+          .single()
+
+        if (!profile?.store_id) return
+
+        const { data: store } = await supabase
+          .from('stores')
+          .select('payment_methods')
+          .eq('id', profile.store_id)
+          .single()
+
+        if (store?.payment_methods) {
+          setEnabledMethods(store.payment_methods as Record<string, boolean>)
+        }
+      } catch {
+        // If fetch fails, show all methods as fallback
+      } finally {
+        setLoadingMethods(false)
+      }
+    }
+    fetchPaymentMethods()
+  }, [])
+
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
   const changeAmount = selectedMethod === 'cash' ? Math.max(0, cashAmount - total) : 0
   const isCashInsufficient = selectedMethod === 'cash' && cashAmount < total
 
-  const paymentOptions: {
-    method: PaymentMethod
-    label: string
-    description: string
-    icon: typeof CreditCard
-  }[] = [
+  const paymentMethodConfig: PaymentOption[] = [
     {
       method: 'cash',
       label: 'Tunai',
       description: 'Bayar langsung dengan uang tunai',
       icon: Banknote,
+      settingKey: 'cash',
     },
     {
       method: 'qris',
       label: 'QRIS',
       description: 'Scan kode QR untuk pembayaran',
       icon: QrCode,
+      settingKey: 'qris',
     },
     {
       method: 'whatsapp_invoice',
       label: 'WhatsApp Invoice',
       description: 'Kirim tagihan via WhatsApp',
       icon: MessageSquare,
+      settingKey: 'whatsapp',
     },
     {
       method: 'invoice',
       label: 'Buat Tagihan',
       description: 'Catat sebagai piutang pelanggan',
       icon: CalendarDays,
+      settingKey: 'piutang',
     },
   ]
+
+  const paymentOptions = useMemo(
+    () => {
+      // If settings haven't loaded yet, show all methods
+      if (loadingMethods || !enabledMethods) return paymentMethodConfig
+      return paymentMethodConfig.filter((opt) => enabledMethods[opt.settingKey] !== false)
+    },
+    [enabledMethods, loadingMethods]
+  )
 
   const handlePaymentSelect = (method: PaymentMethod) => {
     setSelectedMethod(method)
@@ -135,6 +190,12 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
 
   const handleConfirmPayment = async () => {
     if (!selectedMethod || isProcessing || isCashInsufficient || isInvoiceInvalid) return
+
+    // Defense: check if method is enabled in store settings
+    if (enabledMethods && enabledMethods[paymentMethodConfig.find((o) => o.method === selectedMethod)?.settingKey || ''] === false) {
+      setErrorMessage('Metode pembayaran ini dinonaktifkan oleh pengaturan toko.')
+      return
+    }
 
     const snapshotTotal = total
     const snapshotCash = selectedMethod === 'cash' ? cashAmount : 0

@@ -15,6 +15,7 @@ export interface Profile {
   store_id: string;
   role: Role;
   name: string | null;
+  avatar_url: string | null;
 }
 
 export interface Product {

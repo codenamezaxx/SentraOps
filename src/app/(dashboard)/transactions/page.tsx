@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { TransactionTable, type TransactionWithCashier } from '@/components/transactions/TransactionTable'
 
 export default async function TransactionsPage() {
@@ -15,8 +16,16 @@ export default async function TransactionsPage() {
 
   if (!profile?.store_id || (profile.role !== 'owner' && profile.role !== 'cashier')) return null
 
+  // Use admin client so the profiles(name) join bypasses RLS
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+
   // Requirement 16.1: display all Transactions for the Store ordered by created_at descending
-  const { data: raw, error } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: raw, error } = await (supabaseAdmin as any)
     .from('transactions')
     .select('*, profiles(name)')
     .eq('store_id', profile.store_id)

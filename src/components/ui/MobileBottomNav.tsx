@@ -35,6 +35,7 @@ const cashierMainItems = [
   { href: "/", label: "Beranda", icon: LayoutDashboard },
   { href: "/transactions", label: "Riwayat", icon: ScrollText },
   { href: "/pos", label: "POS", icon: ShoppingCart, isPrimary: true },
+  { href: "/invoices", label: "Tagihan", icon: Receipt },
 ]
 
 const ownerMoreItems = [
@@ -45,7 +46,6 @@ const ownerMoreItems = [
 ]
 
 const cashierMoreItems = [
-  { href: "/invoices", label: "Tagihan", icon: Receipt },
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ]
 

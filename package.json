@@ -1,6 +1,6 @@
 {
   "name": "sentraops",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -13,7 +13,9 @@
     "db:types": "supabase gen types typescript --project-id hvpafhhbzstvtxxzsxvz > src/lib/types/database.ts",
     "db:push": "supabase db push",
     "db:pull": "supabase db pull",
-    "db:migration": "supabase migration new"
+    "db:migration": "supabase migration new",
+    "version": "node scripts/version.js",
+    "version:bump": "node scripts/version.js bump"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

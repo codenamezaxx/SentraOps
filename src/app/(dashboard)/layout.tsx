@@ -11,7 +11,6 @@ import { RealtimeSyncProvider } from "@/components/RealtimeSyncProvider"
 import { OfflineSyncEngine } from "@/components/OfflineSyncEngine"
 import { useUIStore } from "@/lib/stores/uiStore"
 import { cn } from "@/lib/utils"
-import { Store } from "lucide-react"
 
 export default function DashboardLayout({
   children,
@@ -36,9 +35,11 @@ export default function DashboardLayout({
       >
         <div className="flex items-center gap-4">
           <span className="flex gap-2 font-heading text-lg font-bold text-tertiary md:hidden">
-            <span className="p-2 flex items-center justify-center rounded-lg bg-primary text-on-primary-container">
-              <Store className="w-4 h-4 text-primary-foreground" />
-            </span>
+            <img
+              src="/icons/icon-192.svg"
+              alt="SentraOps"
+              className="w-8 h-8"
+            />
             SentraOps
           </span>
           <div className="hidden md:block">

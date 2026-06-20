@@ -19,7 +19,6 @@ import {
   LogOut,
   Plus,
   ChevronLeft,
-  Store,
   Users,
 } from "lucide-react"
 
@@ -82,9 +81,11 @@ export function Navigation() {
     >
       {/* Brand Header */}
       <div className={cn("flex items-center gap-3 px-2 pt-4 pb-6", isSidebarCollapsed && "justify-center")}>
-        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shrink-0">
-          <Store className="w-6 h-6" />
-        </div>
+        <img
+          src="/icons/icon-192.svg"
+          alt="SentraOps"
+          className="w-10 h-10 shrink-0"
+        />
         {!isSidebarCollapsed && (
           <div className="overflow-hidden">
             <h1 className="font-heading text-xl font-bold text-foreground truncate">SentraOps</h1>
