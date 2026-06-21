@@ -197,7 +197,7 @@ export default async function FinancialPage({
             <h1 className="text-2xl font-bold text-foreground">
               Ringkasan Keuangan
             </h1>
-            <p className="text-sm text-muted-foreground" data-period={periodLabel}>
+            <p className="text-sm text-muted-foreground">
               Periode: {periodLabel}
             </p>
           </div>
