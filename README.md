@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/TypeScript-Strict-blue" alt="TypeScript Strict" />
   <img src="https://img.shields.io/badge/Supabase-Realtime-green" alt="Supabase Realtime" />
   <img src="https://img.shields.io/badge/PWA-Enabled-teal" alt="PWA Enabled" />
-  <img src="https://img.shields.io/badge/Version-1.0.0 Release-teal" alt="v1.0.0 Release" />
+  <img src="https://img.shields.io/badge/Version-1.1.0 Release-teal" alt="v1.1.0 Release" />
   <img src="https://img.shields.io/badge/License-MIT-gold" alt="MIT License" />
 </p>
 
@@ -197,7 +197,7 @@ e2e/
          └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
 ```
 
-## ✅ Development Status — v1.0.0
+## ✅ Development Status — v1.1.0
 
 ### Core Platform
 - [x] Project setup & Supabase integration
