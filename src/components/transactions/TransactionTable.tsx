@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 // useEffect is used for fetching transaction items when dialog opens
 import { 
   Table, 
@@ -85,6 +85,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [storeName, setStoreName] = useState('Toko Saya')
   const [receiptFooter, setReceiptFooter] = useState('')
+  const detailContentRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -411,7 +412,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
             <DialogTitle>Detail Transaksi</DialogTitle>
           </DialogHeader>
           {selectedTransaction && (
-            <div className="space-y-4">
+            <div ref={detailContentRef} className="space-y-4">
               <div className="grid grid-cols-2 gap-2 text-sm border-b pb-4">
                 <div className="text-muted-foreground">ID Transaksi:</div>
                 <div className="font-mono text-right">{selectedTransaction.id}</div>
@@ -475,6 +476,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                     storeName={storeName}
                     receiptFooter={receiptFooter}
                     cashierName={selectedTransaction.profiles?.name || undefined}
+                    pdfCaptureRef={detailContentRef}
                   />
                 </div>
               )}

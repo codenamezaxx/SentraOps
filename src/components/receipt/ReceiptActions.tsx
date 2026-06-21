@@ -22,6 +22,8 @@ export interface ReceiptActionsProps {
   storeName: string
   receiptFooter: string
   cashierName?: string
+  /** Ref to the visible success view HTML to capture for PDF download */
+  pdfCaptureRef?: React.RefObject<HTMLDivElement | null>
 }
 
 export function ReceiptActions({
@@ -35,9 +37,9 @@ export function ReceiptActions({
   storeName,
   receiptFooter,
   cashierName,
+  pdfCaptureRef,
 }: ReceiptActionsProps) {
   const receiptRef = useRef<HTMLDivElement>(null)
-  const tempContainerRef = useRef<HTMLDivElement | null>(null)
   const [isPdfLoading, setIsPdfLoading] = useState(false)
 
   const handleThermalPrint = useCallback(() => {
@@ -55,20 +57,17 @@ export function ReceiptActions({
       ])
       const html2canvas = html2canvasModule.default
 
-      // Clone receipt content into a temp offscreen container.
-      // Must remove "hidden" class from clone so html2canvas can render it
-      // (original receipt uses hidden/print:block for thermal print only).
-      const clone = receiptRef.current.cloneNode(true) as HTMLElement
-      clone.classList.remove('hidden')
-      clone.style.display = 'block'
-      clone.setAttribute('data-receipt-clone', 'true')
-      const tempContainer = document.createElement('div')
-      tempContainer.style.cssText = 'position:fixed;left:-9999px;top:0;width:80mm;z-index:-1;background:#ffffff;color:#000000;'
-      tempContainer.appendChild(clone)
-      document.body.appendChild(tempContainer)
-      tempContainerRef.current = tempContainer
+      // PDF captures the visible success view HTML (passed via pdfCaptureRef).
+      // This shows the "Transaksi Berhasil!" screen with transaction details
+      // as the user sees it — not the hidden thermal receipt div.
+      const pdfTarget = pdfCaptureRef?.current
+      if (!pdfTarget) {
+        toast.error('Gagal membuat PDF', { description: 'Target capture tidak ditemukan.' })
+        setIsPdfLoading(false)
+        return
+      }
 
-      const canvas = await html2canvas(clone, {
+      const canvas = await html2canvas(pdfTarget, {
         scale: 2,
         backgroundColor: '#ffffff',
         useCORS: true,
@@ -140,11 +139,6 @@ export function ReceiptActions({
         description: 'Terjadi kesalahan saat membuat PDF. Silakan coba lagi.',
       })
     } finally {
-      // Clean up temp container
-      if (tempContainerRef.current) {
-        tempContainerRef.current.remove()
-        tempContainerRef.current = null
-      }
       setIsPdfLoading(false)
     }
   }, [transactionId, isPdfLoading])

@@ -57,6 +57,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
 
   // Cashier name for receipt
   const [cashierName, setCashierName] = useState('')
+  const successViewRef = useRef<HTMLDivElement>(null)
 
   // Store payment methods (fetched from settings)
   const [enabledMethods, setEnabledMethods] = useState<Record<string, boolean> | null>(null)
@@ -460,7 +461,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
   }
 
   const renderPaidSuccess = () => (
-    <div className="flex flex-col items-center py-8 gap-4">
+    <div ref={successViewRef} className="flex flex-col items-center py-8 gap-4">
       <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center animate-in zoom-in-95 duration-300">
         <CheckCircle2 className="w-8 h-8 text-primary" />
       </div>
@@ -523,6 +524,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
         storeName={storeName}
         receiptFooter={receiptFooter}
         cashierName={cashierName}
+        pdfCaptureRef={successViewRef}
       />
       <Button
         onClick={() => handleOpenChange(false)}
