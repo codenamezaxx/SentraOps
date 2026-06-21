@@ -53,10 +53,13 @@ export function ReceiptActions({
       ])
       const html2canvas = html2canvasModule.default
 
-      // Clone receipt content into a temp offscreen container
-      // so html2canvas doesn't skip it (hidden = display:none) and
-      // so we can inject hex color overrides via onclone
+      // Clone receipt content into a temp offscreen container.
+      // Must remove "hidden" class from clone so html2canvas can render it
+      // (original receipt uses hidden/print:block for thermal print only).
       const clone = receiptRef.current.cloneNode(true) as HTMLElement
+      clone.classList.remove('hidden')
+      clone.style.display = 'block'
+      clone.setAttribute('data-receipt-clone', 'true')
       const tempContainer = document.createElement('div')
       tempContainer.style.cssText = 'position:fixed;left:-9999px;top:0;width:80mm;z-index:-1;background:#ffffff;color:#000000;'
       tempContainer.appendChild(clone)
@@ -71,6 +74,8 @@ export function ReceiptActions({
         onclone: (doc) => {
           // html2canvas v1.4.1 can't parse oklch()/lab() used by Tailwind v4
           // Override all CSS custom properties to hex in the cloned document
+          const receiptClone = doc.querySelector('[data-receipt-clone]') as HTMLElement | null
+          if (receiptClone) receiptClone.style.display = 'block'
           const style = doc.createElement('style')
           style.textContent = `
             :root {
