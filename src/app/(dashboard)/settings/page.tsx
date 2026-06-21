@@ -338,9 +338,6 @@ export default function SettingsPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl md:p-2.5 bg-primary/10 text-primary">
-            <Settings2 className="w-5 h-5 md:w-6 md:h-6" />
-          </div>
           <div>
             <h1 className="text-xl md:text-3xl font-bold text-foreground">Pengaturan</h1>
             <p className="text-xs md:text-sm text-muted-foreground mt-0.5">

@@ -175,11 +175,8 @@ export default async function FinancialPage({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 md:gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <DollarSign className="w-6 h-6 text-primary" />
-          </div>
           <div className="min-w-0">
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            <h1 className="text-2xl font-bold text-foreground">
               Ringkasan Keuangan
             </h1>
             <p className="text-sm text-muted-foreground" data-period={periodLabel}>

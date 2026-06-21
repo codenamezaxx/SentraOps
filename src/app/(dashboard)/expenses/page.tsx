@@ -39,9 +39,6 @@ export default async function ExpensesPage() {
     <div className="flex-1 pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-          <TrendingDown className="w-6 h-6 text-primary" />
-        </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground">Manajemen Pengeluaran</h1>
           <p className="text-sm text-muted-foreground">

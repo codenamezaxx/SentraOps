@@ -9,9 +9,6 @@ export default function InventoryLoading() {
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              ICON
-            </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Manajemen Inventori</h1>
               <p className="text-sm text-muted-foreground">Kelola stok produk dan ambang batas peringatan</p>

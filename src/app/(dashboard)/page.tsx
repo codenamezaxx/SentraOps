@@ -3,7 +3,7 @@ import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import Link from 'next/link'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { OverdueInvoicesCard } from '@/components/dashboard/OverdueInvoicesCard'
-import { TrendingUp, AlertTriangle, ShoppingBag, BarChart3, LayoutDashboard } from 'lucide-react'
+import { TrendingUp, AlertTriangle, ShoppingBag, BarChart3, LayoutDashboard, Package, Clock, TrendingDown } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions'
@@ -217,7 +217,12 @@ export default async function DashboardPage() {
         {/* Left: Restock Needs */}
         <div className="bg-card border border-outline-variant rounded-2xl p-5 shadow-sm flex flex-col gap-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold text-foreground">Perlu Restock</h3>
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-warning/10 text-warning">
+                <Package className="w-5 h-5" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground">Perlu Restock</h3>
+            </div>
             <Link href="/inventory" className="text-sm font-semibold text-muted-foreground hover:underline">
               Lihat Semua
             </Link>
@@ -227,15 +232,20 @@ export default async function DashboardPage() {
             <div className="space-y-3">
               {lowStockItems.slice(0, 3).map((product) => (
                 <div key={product.id} className="flex justify-between items-center p-3 bg-muted rounded-xl border border-outline-variant">
-                  <div className="flex flex-col">
-                    <span className="font-medium text-foreground">
-                      {product.name}
-                    </span>
-                    <span className="text-xs text-error">Stok: {product.stock_quantity}</span>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="p-1.5 rounded-lg bg-warning/10 shrink-0">
+                      <AlertTriangle className="w-4 h-4 text-warning" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="font-medium text-foreground block truncate">
+                        {product.name}
+                      </span>
+                      <span className="text-xs text-error">Stok: {product.stock_quantity}</span>
+                    </div>
                   </div>
                   <Link 
                     href={`/inventory?search=${product.id}`}
-                    className="text-xs bg-card px-3 py-1.5 rounded-lg border border-border font-semibold text-foreground"
+                    className="text-xs px-3 py-1.5 rounded-lg border border-border font-semibold bg-foreground text-background hover:bg-foreground/90 transition"
                   >
                     Update
                   </Link>
@@ -256,7 +266,12 @@ export default async function DashboardPage() {
         {/* Right: Recent Activity */}
         <div className="bg-card border border-outline-variant rounded-2xl p-5 shadow-sm flex flex-col gap-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold text-foreground">Aktivitas Terakhir</h3>
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Clock className="w-5 h-5" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground">Aktivitas Terakhir</h3>
+            </div>
             <Link href="/transactions" className="text-sm font-semibold text-muted-foreground hover:underline">
               Riwayat
             </Link>
@@ -266,14 +281,26 @@ export default async function DashboardPage() {
             <div className="space-y-3">
               {activities.map((act) => (
                 <div key={`${act.type}-${act.id}`} className="flex justify-between items-center p-3 bg-muted rounded-xl border border-outline-variant">
-                  <div className="flex flex-col">
-                    <span className="font-medium text-foreground">
-                      {act.type === 'income' ? act.label : act.label}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(act.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                      {act.type === 'income' ? <> &bull; {act.meta}</> : null}
-                    </span>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`p-1.5 rounded-lg shrink-0 ${
+                      act.type === 'income'
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-destructive/10 text-destructive'
+                    }`}>
+                      {act.type === 'income'
+                        ? <TrendingUp className="w-4 h-4" />
+                        : <TrendingDown className="w-4 h-4" />
+                      }
+                    </div>
+                    <div className="min-w-0">
+                      <span className="font-medium text-foreground block truncate">
+                        {act.label}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(act.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                        {act.type === 'income' ? <> &bull; {act.meta}</> : null}
+                      </span>
+                    </div>
                   </div>
                   <span className={`font-bold ${act.type === 'income' ? 'text-primary' : 'text-destructive'}`}>
                     {act.type === 'income' ? '' : '-'}{formatCurrency(act.amount)}

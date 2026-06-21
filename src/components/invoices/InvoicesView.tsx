@@ -102,7 +102,7 @@ export function InvoicesView({ invoices, storeName }: InvoicesViewProps) {
   return (
     <>
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="w-full md:w-auto overflow-x-auto overflow-y-hidden justify-start scroll-pl-4">
+        <TabsList className="w-full md:w-auto overflow-x-auto overflow-y-hidden justify-start scroll-pl-4 bg-primary/5 dark:bg-primary/10 rounded-xl border border-border">
           {tabs.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value} className="h-10 px-4 whitespace-nowrap shrink-0">
               {tab.label}
