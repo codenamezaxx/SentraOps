@@ -31,7 +31,23 @@ import {
   CheckCircle2,
   AtSign,
   ShieldCheck,
+  Lock,
+  KeyRound,
+  AlertTriangle,
+  LogOut,
 } from "lucide-react"
+
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog"
 
 interface StoreSettings {
   id: string
@@ -108,6 +124,15 @@ export default function SettingsPage() {
   })
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState("akun")
+
+  // Password change state
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [changingPassword, setChangingPassword] = useState(false)
+
+  // Delete account state
+  const [deletePassword, setDeletePassword] = useState("")
+  const [deletingAccount, setDeletingAccount] = useState(false)
 
   // Filter tabs by role
   const visibleTabs = useMemo(
@@ -235,6 +260,58 @@ export default function SettingsPage() {
     } finally {
       setUploading(false)
     }
+  }
+
+  // --- Password change ---
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (newPassword.length < 6) {
+      toast.error("Password minimal 6 karakter.")
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Konfirmasi password tidak cocok.")
+      return
+    }
+    setChangingPassword(true)
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) throw error
+      toast.success("Password berhasil diperbarui.")
+      setNewPassword("")
+      setConfirmPassword("")
+    } catch {
+      toast.error("Gagal memperbarui password. Coba lagi.")
+    } finally {
+      setChangingPassword(false)
+    }
+  }
+
+  // --- Delete account ---
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) return
+    setDeletingAccount(true)
+    try {
+      const res = await fetch('/api/auth/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: deletePassword }),
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Gagal menghapus akun')
+      toast.success("Akun berhasil dihapus.")
+      await supabase.auth.signOut()
+      window.location.assign('/login')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menghapus akun.')
+      setDeletePassword("")
+    } finally {
+      setDeletingAccount(false)
+    }
+  }
+
+  const resetDeleteState = () => {
+    setDeletePassword("")
   }
 
   // --- Save handlers ---
@@ -478,6 +555,142 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </form>
+
+            {/* ====== GANTI PASSWORD ====== */}
+            <div className="pt-6 border-t border-border/50 space-y-4 md:space-y-5">
+              <SectionHeader
+                icon={Lock}
+                title="Ganti Password"
+                description="Perbarui kata sandi akun Anda."
+              />
+
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField id="newPassword" label="Password Baru">
+                    <div className="relative">
+                      <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="newPassword"
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Minimal 6 karakter"
+                        minLength={6}
+                        className="h-12 rounded-xl bg-card border-border pl-10"
+                      />
+                    </div>
+                  </FormField>
+
+                  <FormField id="confirmPassword" label="Konfirmasi Password">
+                    <div className="relative">
+                      <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Ulangi password baru"
+                        minLength={6}
+                        className="h-12 rounded-xl bg-card border-border pl-10"
+                      />
+                    </div>
+                  </FormField>
+                </div>
+
+                <div className="pt-2">
+                  <Button
+                    type="submit"
+                    disabled={changingPassword}
+                    className="h-11 md:h-12 rounded-xl bg-accent-blue hover:bg-accent-blue/90 text-accent-blue-foreground gap-2 w-full md:w-auto text-sm"
+                  >
+                    {changingPassword ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    Perbarui Password
+                  </Button>
+                </div>
+              </form>
+            </div>
+
+            {/* ====== HAPUS AKUN ====== */}
+            <div className="pt-6 border-t border-border/50 space-y-4 md:space-y-5">
+              <SectionHeader
+                icon={AlertTriangle}
+                title="Hapus Akun"
+                description="Hapus akun Anda secara permanen. Tindakan ini tidak dapat dibatalkan."
+              />
+
+              <div className="p-4 md:p-5 rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 shrink-0">
+                    <AlertTriangle className="w-5 h-5" />
+                  </div>
+                  <div className="text-sm text-red-700 dark:text-red-300 space-y-1">
+                    <p className="font-semibold">Yang perlu diketahui:</p>
+                    <ul className="list-disc list-inside text-xs space-y-0.5 opacity-80">
+                      <li>Semua data pribadi dan akses akan dihapus</li>
+                      <li>Data toko tetap tersimpan untuk pengguna lain</li>
+                      {profileRole === "owner" && (
+                        <li>Pastikan sudah ada owner lain sebelum menghapus akun</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      className="h-11 md:h-12 rounded-xl gap-2 w-full md:w-auto text-sm"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Hapus Akun Saya
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-2xl max-w-md">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                        <AlertTriangle className="w-5 h-5" />
+                        Konfirmasi Hapus Akun
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-3 pt-2">
+                        <p>Tindakan ini <strong>tidak dapat dibatalkan</strong>. Semua akses Anda akan dihapus permanen.</p>
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-foreground">Masukkan password untuk konfirmasi</label>
+                          <Input
+                            type="password"
+                            value={deletePassword}
+                            onChange={(e) => setDeletePassword(e.target.value)}
+                            placeholder="Password Anda"
+                            className="h-12 rounded-xl border-border"
+                          />
+                        </div>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2">
+                      <AlertDialogCancel className="rounded-xl h-11" onClick={resetDeleteState}>
+                        Batal
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        className="rounded-xl h-11 bg-red-600 hover:bg-red-700 text-white gap-2"
+                        disabled={deletingAccount || !deletePassword}
+                        onClick={handleDeleteAccount}
+                      >
+                        {deletingAccount ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <LogOut className="h-4 w-4" />
+                        )}
+                        {deletingAccount ? "Menghapus..." : "Hapus Akun Saya"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
           </TabsContent>
 
           {/* ====== PROFIL TOKO TAB ====== */}
