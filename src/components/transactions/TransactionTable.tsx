@@ -474,6 +474,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                     createdAt={selectedTransaction.created_at || new Date().toISOString()}
                     storeName={storeName}
                     receiptFooter={receiptFooter}
+                    cashierName={selectedTransaction.profiles?.name || undefined}
                   />
                 </div>
               )}

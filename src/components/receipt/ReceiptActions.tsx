@@ -21,6 +21,7 @@ export interface ReceiptActionsProps {
   createdAt: string
   storeName: string
   receiptFooter: string
+  cashierName?: string
 }
 
 export function ReceiptActions({
@@ -33,6 +34,7 @@ export function ReceiptActions({
   createdAt,
   storeName,
   receiptFooter,
+  cashierName,
 }: ReceiptActionsProps) {
   const receiptRef = useRef<HTMLDivElement>(null)
   const tempContainerRef = useRef<HTMLDivElement | null>(null)
@@ -157,8 +159,8 @@ export function ReceiptActions({
 
   return (
     <>
-      {/* ── Action Buttons ── */}
-      <div className="flex gap-3 w-full pt-4 border-t border-border">
+      {/* ── Action Buttons (hidden on print) ── */}
+      <div className="flex gap-3 w-full pt-4 border-t border-border print:hidden">
         <button
           onClick={handleThermalPrint}
           className="flex-1 h-12 rounded-xl bg-orange-600 text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-orange-700 transition-colors active:scale-[0.98] cursor-pointer"
@@ -196,85 +198,91 @@ export function ReceiptActions({
         }}
       >
         {/* Force white background for html2canvas capture */}
-        <div style={{ background: '#ffffff', color: '#000000', padding: '8px 4px' }}>
-          {/* Header */}
+        <div style={{ background: '#ffffff', color: '#000000', padding: '10px 6px' }}>
+          {/* ── Header ── */}
           <div style={{ textAlign: 'center', marginBottom: '6px' }}>
-            <div style={{ fontWeight: 'bold', fontSize: '13px' }}>{storeName}</div>
-            <div style={{ fontSize: '11px', fontWeight: 'bold' }}>STRUK BELANJA</div>
-            <div style={{ borderTop: '1px dashed #000', margin: '4px 0' }} />
+            <div style={{ fontWeight: 'bold', fontSize: '13px', letterSpacing: '0.5px', marginBottom: '2px' }}>{storeName}</div>
+            <div style={{ fontSize: '10px', letterSpacing: '2px' }}>STRUK BELANJA</div>
+            <div style={{ borderTop: '1px dashed #888', margin: '8px 0 6px' }} />
           </div>
 
-          {/* Items */}
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '4px' }}>
-            <thead>
-              <tr>
-                <th style={{ textAlign: 'left', fontSize: '9px', borderBottom: '1px solid #000', paddingBottom: '2px' }}>Qty</th>
-                <th style={{ textAlign: 'left', fontSize: '9px', borderBottom: '1px solid #000', paddingBottom: '2px' }}>Item</th>
-                <th style={{ textAlign: 'right', fontSize: '9px', borderBottom: '1px solid #000', paddingBottom: '2px' }}>Harga</th>
-              </tr>
-            </thead>
+          {/* ── Items ── */}
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '6px' }}>
             <tbody>
-              {items.map((item) => (
-                <tr key={item.name}>
-                  <td style={{ textAlign: 'left', paddingRight: '4px', whiteSpace: 'nowrap' }}>{item.quantity}x</td>
-                  <td style={{ textAlign: 'left', paddingRight: '4px', wordBreak: 'break-word' }}>{item.name}</td>
-                  <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>{formatCurrency(item.price)}</td>
-                </tr>
-              ))}
+              {items.map((item) => {
+                const lineTotal = item.quantity * item.price
+                return (
+                  <tr key={item.name}>
+                    <td style={{ textAlign: 'left', paddingRight: '6px', verticalAlign: 'top', whiteSpace: 'nowrap', fontSize: '10px' }}>
+                      {item.quantity}x
+                    </td>
+                    <td style={{ textAlign: 'left', paddingRight: '6px', verticalAlign: 'top', wordBreak: 'break-word', fontSize: '10px' }}>
+                      <div>{item.name}</div>
+                      <div style={{ fontSize: '8px', color: '#666' }}>@ {formatCurrency(item.price)}</div>
+                    </td>
+                    <td style={{ textAlign: 'right', verticalAlign: 'top', whiteSpace: 'nowrap', fontSize: '10px', fontWeight: 'bold' }}>
+                      {formatCurrency(lineTotal)}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
 
-          <div style={{ borderTop: '1px dashed #000', margin: '2px 0 4px' }} />
+          <div style={{ borderTop: '1px dashed #888', margin: '4px 0 6px' }} />
 
-          {/* Summary */}
-          <div style={{ marginBottom: '4px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {/* ── Summary ── */}
+          <div style={{ marginBottom: '4px', fontSize: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
               <span>Total</span>
-              <span style={{ fontWeight: 'bold' }}>{formatCurrency(total)}</span>
+              <span style={{ fontWeight: 'bold', fontSize: '11px' }}>{formatCurrency(total)}</span>
             </div>
             {cashAmount !== undefined && (
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Bayar</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
+                <span>Tunai</span>
                 <span>{formatCurrency(cashAmount)}</span>
               </div>
             )}
             {changeAmount !== undefined && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2563eb' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0', color: '#2563eb' }}>
                 <span>Kembali</span>
                 <span>{formatCurrency(changeAmount)}</span>
               </div>
             )}
           </div>
 
-          <div style={{ borderTop: '1px dashed #000', margin: '2px 0 4px' }} />
+          <div style={{ borderTop: '1px dashed #888', margin: '6px 0' }} />
 
-          {/* Meta */}
-          <div style={{ marginBottom: '4px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {/* ── Meta ── */}
+          <div style={{ marginBottom: '4px', fontSize: '9px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
               <span>Metode</span>
               <span>{paymentMethodLabel}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>ID</span>
-              <span style={{ fontSize: '8px' }}>{transactionId.slice(0, 12)}</span>
+            {cashierName && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
+                <span>Kasir</span>
+                <span>{cashierName}</span>
+              </div>
+            )}
+            <div style={{ padding: '1px 0' }}>
+              <span>ID: {transactionId.slice(0, 8)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>Waktu</span>
+            <div style={{ padding: '1px 0', color: '#555' }}>
               <span>{formattedDate}</span>
             </div>
           </div>
 
-          <div style={{ borderTop: '1px dashed #000', margin: '2px 0 4px' }} />
+          <div style={{ borderTop: '1px dashed #888', margin: '6px 0' }} />
 
-          {/* Footer from store settings */}
+          {/* ── Footer ── */}
           {receiptFooter && (
-            <div style={{ textAlign: 'center', fontSize: '9px', marginBottom: '4px', whiteSpace: 'pre-line' }}>
+            <div style={{ textAlign: 'center', fontSize: '9px', marginBottom: '4px', color: '#555', whiteSpace: 'pre-line' }}>
               {receiptFooter}
             </div>
           )}
 
-          {/* Thank you */}
-          <div style={{ textAlign: 'center', fontSize: '10px', fontWeight: 'bold' }}>
+          <div style={{ textAlign: 'center', fontSize: '11px', fontWeight: 'bold', marginTop: '4px' }}>
             Terima Kasih!
           </div>
         </div>

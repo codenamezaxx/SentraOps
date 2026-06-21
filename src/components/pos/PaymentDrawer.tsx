@@ -55,6 +55,9 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
   const [receiptFooter, setReceiptFooter] = useState('')
   const [receiptSnapshot, setReceiptSnapshot] = useState<{ name: string; quantity: number; price: number }[]>([])
 
+  // Cashier name for receipt
+  const [cashierName, setCashierName] = useState('')
+
   // Store payment methods (fetched from settings)
   const [enabledMethods, setEnabledMethods] = useState<Record<string, boolean> | null>(null)
   const [loadingMethods, setLoadingMethods] = useState(true)
@@ -90,11 +93,12 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('store_id')
+          .select('store_id, name')
           .eq('auth_id', user.id)
           .single()
 
         if (!profile?.store_id) return
+        if (profile?.name) setCashierName(profile.name)
 
         const { data: store } = await supabase
           .from('stores')
@@ -518,6 +522,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
         createdAt={new Date().toISOString()}
         storeName={storeName}
         receiptFooter={receiptFooter}
+        cashierName={cashierName}
       />
       <Button
         onClick={() => handleOpenChange(false)}
