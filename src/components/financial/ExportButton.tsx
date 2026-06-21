@@ -11,12 +11,14 @@ interface ExportButtonProps {
 export function ExportButton({ data }: ExportButtonProps) {
   const handleExport = async () => {
     const pdfMakeModule = await import('pdfmake/build/pdfmake')
-    const pdfFonts = await import('pdfmake/build/vfs_fonts')
-    ;(pdfMakeModule as any).vfs = (pdfFonts as any).default?.vfs ?? (pdfFonts as any).vfs
+    const pdfFontsModule = await import('pdfmake/build/vfs_fonts')
+    const pdfMake = (pdfMakeModule as any).default ?? pdfMakeModule
+    const vfsData = (pdfFontsModule as any).default ?? pdfFontsModule
+    pdfMake.vfs = vfsData
 
     const dd = buildReportDefinition(data)
     const periodSlug = data.periodLabel.replace(/[^a-zA-Z0-9]/g, '-')
-    pdfMakeModule.createPdf(dd).download(`Laporan-Keuangan-${periodSlug}.pdf`)
+    pdfMake.createPdf(dd).download(`Laporan-Keuangan-${periodSlug}.pdf`)
   }
 
   return (
