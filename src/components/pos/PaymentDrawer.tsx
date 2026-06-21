@@ -16,6 +16,7 @@ import {
 import type { PaymentMethod } from '@/lib/types'
 import { formatCurrency, cn } from '@/lib/utils'
 import { db } from '@/lib/offlineDb'
+import { ReceiptActions } from '@/components/receipt/ReceiptActions'
 
 interface PaymentOption {
   method: PaymentMethod
@@ -48,6 +49,11 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
   // Snapshots for success view
   const [paidCash, setPaidCash] = useState(0)
   const [paidChange, setPaidChange] = useState(0)
+
+  // Store info for receipt
+  const [storeName, setStoreName] = useState('Toko Saya')
+  const [receiptFooter, setReceiptFooter] = useState('')
+  const [receiptSnapshot, setReceiptSnapshot] = useState<{ name: string; quantity: number; price: number }[]>([])
 
   // Store payment methods (fetched from settings)
   const [enabledMethods, setEnabledMethods] = useState<Record<string, boolean> | null>(null)
@@ -92,9 +98,14 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
 
         const { data: store } = await supabase
           .from('stores')
-          .select('payment_methods')
+          .select('name, payment_methods, receipt_footer')
           .eq('id', profile.store_id)
           .single()
+
+        if (store) {
+          setStoreName(store.name)
+          setReceiptFooter(store.receipt_footer || '')
+        }
 
         if (store?.payment_methods) {
           setEnabledMethods(store.payment_methods as Record<string, boolean>)
@@ -231,6 +242,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
         setPaidCash(snapshotCash)
         setPaidChange(snapshotChange)
         setPaidMethod(snapshotMethod)
+        setReceiptSnapshot(items.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })))
         clearCart()
         setCompleted(true)
         setPaymentConfirmed(true)
@@ -280,10 +292,12 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
       setPaymentUrl(result.payment_url || null)
 
       if (selectedMethod === 'qris' || selectedMethod === 'whatsapp_invoice') {
+        setReceiptSnapshot(items.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })))
         clearCart()
         setCompleted(true)
         if (result.transaction_id) startPolling(result.transaction_id)
       } else {
+        setReceiptSnapshot(items.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })))
         clearCart()
         setCompleted(true)
         setPaymentConfirmed(true)
@@ -489,6 +503,22 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
           </div>
         )}
       </div>
+      <ReceiptActions
+        transactionId={transactionId || ''}
+        items={receiptSnapshot}
+        total={paidTotal}
+        cashAmount={paidMethod === 'cash' ? paidCash : undefined}
+        changeAmount={paidMethod === 'cash' ? paidChange : undefined}
+        paymentMethodLabel={
+          paidMethod === 'cash' ? 'Tunai' :
+          paidMethod === 'qris' ? 'QRIS' :
+          paidMethod === 'whatsapp_invoice' ? 'WhatsApp' :
+          paidMethod === 'invoice' ? 'Tagihan' : ''
+        }
+        createdAt={new Date().toISOString()}
+        storeName={storeName}
+        receiptFooter={receiptFooter}
+      />
       <Button
         onClick={() => handleOpenChange(false)}
         className="mt-2 bg-primary w-full h-12 rounded-xl"
