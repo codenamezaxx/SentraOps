@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { calculateFinancialMetrics } from '@/lib/financial-utils'
-import { formatCurrency, formatCompactCurrency } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { DollarSign, TrendingUp, ShoppingBag, PieChart, TrendingDown } from 'lucide-react'
 import type { Transaction, TransactionItem } from '@/lib/types'
@@ -9,7 +9,7 @@ import { PaymentMethodBreakdown } from '@/components/financial/PaymentMethodBrea
 import { TopProfitContributors } from '@/components/financial/TopProfitContributors'
 import { ExportButton } from '@/components/financial/ExportButton'
 import { PeriodSelector } from '@/components/financial/PeriodSelector'
-import { PrintStyles } from '@/components/financial/PrintStyles'
+
 
 export default async function FinancialPage({
   searchParams,
@@ -29,6 +29,14 @@ export default async function FinancialPage({
     .single()
 
   if (!profile?.store_id) return null
+
+  // Fetch store name for PDF report
+  const { data: store } = await supabase
+    .from('stores')
+    .select('name')
+    .eq('id', profile.store_id)
+    .single()
+  const storeName = store?.name || 'Toko Saya'
 
   const now = new Date()
   const defaultStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
@@ -136,23 +144,34 @@ export default async function FinancialPage({
 
   const periodLabel = `${new Date(startDate).toLocaleDateString('id-ID')} - ${new Date(endDate).toLocaleDateString('id-ID')}`
 
-  // Detect active period preset
+  // Detect active period preset — compare YYYY-MM-DD strings directly (timezone-safe)
   function detectActivePeriod(s?: string, e?: string): string {
     if (!s && !e) return 'monthly'
+    if (!s) return 'custom'
+
     const now = new Date()
-    const sd = s ? new Date(s + 'T00:00:00') : null
-    if (!sd) return 'custom'
 
     const weekStart = new Date(now); weekStart.setDate(now.getDate() - 7)
-    if (sd.toDateString() === weekStart.toDateString()) return 'weekly'
+    if (s === fmtDate(weekStart)) return 'weekly'
 
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-    if (sd.toDateString() === monthStart.toDateString()) return 'monthly'
+    if (s === fmtDate(monthStart)) return 'monthly'
+
+    const yearAgo = new Date(now); yearAgo.setFullYear(now.getFullYear() - 1)
+    if (s === fmtDate(yearAgo)) return 'yearly'
 
     const yearStart = new Date(now.getFullYear(), 0, 1)
-    if (sd.toDateString() === yearStart.toDateString()) return 'ytd'
+    if (s === fmtDate(yearStart)) return 'ytd'
 
     return 'custom'
+  }
+
+  /** Format Date as local YYYY-MM-DD */
+  function fmtDate(d: Date): string {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
   }
   const activePeriod = detectActivePeriod(start, end)
 
@@ -171,7 +190,6 @@ export default async function FinancialPage({
 
   return (
     <div className="flex-1 pb-24 md:pb-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
-      <PrintStyles />
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 md:gap-4">
         <div className="flex items-center gap-3">
@@ -184,9 +202,18 @@ export default async function FinancialPage({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+        <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-end md:justify-end">
           <PeriodSelector activePeriod={activePeriod} />
-          <ExportButton />
+          <ExportButton
+            data={{
+              storeName,
+              periodLabel,
+              metrics,
+              chartData,
+              paymentMethodData,
+              topProducts,
+            }}
+          />
         </div>
       </div>
 
@@ -194,12 +221,12 @@ export default async function FinancialPage({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <StatCard
           title="Total Pendapatan"
-          value={formatCompactCurrency(metrics.grossRevenue)}
+          value={formatCurrency(metrics.grossRevenue)}
           icon={DollarSign}
         />
         <StatCard
           title="Total Pengeluaran"
-          value={formatCompactCurrency(metrics.totalExpenses)}
+          value={formatCurrency(metrics.totalExpenses)}
           icon={TrendingDown}
           variant="destructive"
         />
@@ -209,12 +236,12 @@ export default async function FinancialPage({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="Harga Pokok Penjualan"
-          value={formatCompactCurrency(metrics.cogs)}
+          value={formatCurrency(metrics.cogs)}
           icon={ShoppingBag}
         />
         <StatCard
           title="Laba Bersih"
-          value={formatCompactCurrency(metrics.netProfit)}
+          value={formatCurrency(metrics.netProfit)}
           icon={TrendingUp}
           variant={metrics.netProfit >= 0 ? 'success' : 'destructive'}
         />
