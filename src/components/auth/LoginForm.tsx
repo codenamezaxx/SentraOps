@@ -109,6 +109,21 @@ export default function LoginForm() {
         </div>
       </div>
 
+      {/* Demo Accounts Info */}
+      <div className="rounded-xl border border-dashed border-outline-variant bg-surface px-4 py-3 space-y-1.5">
+        <p className="text-xs font-semibold text-on-surface-variant tracking-wide uppercase">Akun Demo</p>
+        <div className="space-y-1">
+          <p className="text-xs text-on-surface-variant">
+            <span className="font-mono font-medium text-teal-600 dark:text-teal-400">Pemilik</span>
+            {' — '}owner@demo.com{' / '}owner123
+          </p>
+          <p className="text-xs text-on-surface-variant">
+            <span className="font-mono font-medium text-teal-600 dark:text-teal-400">Kasir</span>
+            {' — '}kasir@demo.com{' / '}kasir123
+          </p>
+        </div>
+      </div>
+
       {/* Primary Action */}
       <button
         className="w-full h-12 mt-4 bg-primary text-primary-foreground rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
