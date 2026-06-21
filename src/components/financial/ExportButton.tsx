@@ -10,10 +10,12 @@ interface ExportButtonProps {
 
 export function ExportButton({ data }: ExportButtonProps) {
   const handleExport = async () => {
-    const pdfMakeModule = await import('pdfmake/build/pdfmake')
-    const pdfFontsModule = await import('pdfmake/build/vfs_fonts')
-    const pdfMake = (pdfMakeModule as any).default ?? pdfMakeModule
-    const vfsData = (pdfFontsModule as any).default ?? pdfFontsModule
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pdfMakeModule: any = await import('pdfmake/build/pdfmake')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pdfFontsModule: any = await import('pdfmake/build/vfs_fonts')
+    const pdfMake = pdfMakeModule.default ?? pdfMakeModule
+    const vfsData = pdfFontsModule.default ?? pdfFontsModule
     pdfMake.vfs = vfsData
 
     const dd = buildReportDefinition(data)

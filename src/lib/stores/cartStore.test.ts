@@ -286,7 +286,7 @@ describe('CartStore', () => {
     });
 
     it('should handle large quantities', () => {
-      const product = createTestProduct({ id: 'p1', price: 1000 });
+      const product = createTestProduct({ id: 'p1', price: 1000, stock_quantity: 1000 });
       
       useCartStore.getState().addItem(product);
       useCartStore.getState().updateQuantity('p1', 1000);

@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { isLowStock, isOutOfStock } from '@/lib/inventory'
 
 interface StockBadgeProps {
   quantity: number
@@ -12,10 +13,10 @@ interface StockBadgeProps {
  * Displays a visual indicator for stock level
  */
 export function StockBadge({ quantity, threshold, className }: StockBadgeProps) {
-  const isLowStock = quantity > 0 && quantity <= threshold
-  const isOutOfStock = quantity <= 0
+  const low = isLowStock(quantity, threshold)
+  const out = isOutOfStock(quantity)
 
-  if (isOutOfStock) {
+  if (out) {
     return (
       <Badge 
         variant="outline" 
@@ -26,7 +27,7 @@ export function StockBadge({ quantity, threshold, className }: StockBadgeProps) 
     )
   }
 
-  if (isLowStock) {
+  if (low) {
     return (
       <Badge 
         variant="outline" 

@@ -1,7 +1,10 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useCartStore } from '@/lib/stores/cartStore'
-import { PaymentDrawer } from './PaymentDrawer'
+const PaymentDrawer = dynamic(() => import('@/components/pos/PaymentDrawer').then(m => m.PaymentDrawer), {
+  loading: () => null,
+})
 import Image from 'next/image'
 import { getProductImageUrl } from '@/lib/utils'
 import { UtensilsCrossed, ShoppingCart, Minus, Plus } from 'lucide-react'
@@ -73,7 +76,6 @@ export function CartSection() {
                     alt={item.name}
                     fill
                     className="object-cover"
-                    unoptimized
                   />
                 ) : (
                   <UtensilsCrossed className="w-6 h-6 text-muted-foreground/40" />

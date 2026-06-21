@@ -1,3 +1,4 @@
+import dynamic from 'next/dynamic'
 import { getUserContext, getOverdueInvoices } from '../../lib/supabase/queries'
 import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import Link from 'next/link'
@@ -7,7 +8,10 @@ import { TrendingUp, AlertTriangle, ShoppingBag, BarChart3, LayoutDashboard, Pac
 import { formatCurrency } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions'
-import { RevenueChart } from '@/components/financial/RevenueChart'
+// Dynamically loaded: RevenueChart (219 lines, SVG chart)
+const RevenueChart = dynamic(() => import('@/components/financial/RevenueChart').then(m => m.RevenueChart), {
+  loading: () => <div className="h-80 rounded-2xl bg-muted animate-pulse" />,
+})
 
 export default async function DashboardPage() {
   const context = await getUserContext()
@@ -218,7 +222,7 @@ export default async function DashboardPage() {
         <div className="bg-card border border-outline-variant rounded-2xl p-5 shadow-sm flex flex-col gap-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-warning/10 text-warning">
+              <div className="p-2 rounded-lg bg-destructive/10 text-destructive">
                 <Package className="w-5 h-5" />
               </div>
               <h3 className="text-xl font-semibold text-foreground">Perlu Restock</h3>
@@ -233,14 +237,14 @@ export default async function DashboardPage() {
               {lowStockItems.slice(0, 3).map((product) => (
                 <div key={product.id} className="flex justify-between items-center p-3 bg-muted rounded-xl border border-outline-variant">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-1.5 rounded-lg bg-warning/10 shrink-0">
-                      <AlertTriangle className="w-4 h-4 text-warning" />
+                    <div className="p-1.5 rounded-lg bg-destructive/10 shrink-0">
+                      <AlertTriangle className="w-4 h-4 text-destructive" />
                     </div>
                     <div className="min-w-0">
                       <span className="font-medium text-foreground block truncate">
                         {product.name}
                       </span>
-                      <span className="text-xs text-error">Stok: {product.stock_quantity}</span>
+                      <span className="text-xs text-destructive">Stok: {product.stock_quantity}</span>
                     </div>
                   </div>
                   <Link 
@@ -284,7 +288,7 @@ export default async function DashboardPage() {
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`p-1.5 rounded-lg shrink-0 ${
                       act.type === 'income'
-                        ? 'bg-primary/10 text-primary'
+                        ? 'bg-accent-blue/10 text-accent-blue'
                         : 'bg-destructive/10 text-destructive'
                     }`}>
                       {act.type === 'income'
@@ -302,8 +306,8 @@ export default async function DashboardPage() {
                       </span>
                     </div>
                   </div>
-                  <span className={`font-bold ${act.type === 'income' ? 'text-primary' : 'text-destructive'}`}>
-                    {act.type === 'income' ? '' : '-'}{formatCurrency(act.amount)}
+                  <span className={`font-bold ${act.type === 'income' ? 'text-accent-blue' : 'text-destructive'}`}>
+                    {act.type === 'income' ? '+' : '-'}{formatCurrency(act.amount)}
                   </span>
                 </div>
               ))}

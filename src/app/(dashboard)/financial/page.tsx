@@ -1,10 +1,14 @@
+import dynamic from 'next/dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { calculateFinancialMetrics } from '@/lib/financial-utils'
 import { formatCurrency } from '@/lib/utils'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { DollarSign, TrendingUp, ShoppingBag, PieChart, TrendingDown } from 'lucide-react'
 import type { Transaction, TransactionItem } from '@/lib/types'
-import { RevenueChart } from '@/components/financial/RevenueChart'
+// Dynamically loaded: RevenueChart (219 lines, SVG chart)
+const RevenueChart = dynamic(() => import('@/components/financial/RevenueChart').then(m => m.RevenueChart), {
+  loading: () => <div className="h-80 rounded-2xl bg-muted animate-pulse" />,
+})
 import { PaymentMethodBreakdown } from '@/components/financial/PaymentMethodBreakdown'
 import { TopProfitContributors } from '@/components/financial/TopProfitContributors'
 import { ExportButton } from '@/components/financial/ExportButton'

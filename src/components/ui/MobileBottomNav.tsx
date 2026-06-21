@@ -34,9 +34,9 @@ const ownerMainItems = [
 
 const cashierMainItems = [
   { href: "/", label: "Beranda", icon: LayoutDashboard },
-  { href: "/transactions", label: "Riwayat", icon: ScrollText },
+  { href: "/inventory", label: "Stok", icon: Package },
   { href: "/pos", label: "POS", icon: ShoppingCart, isPrimary: true },
-  { href: "/invoices", label: "Tagihan", icon: Receipt },
+  { href: "/transactions", label: "Riwayat", icon: ScrollText },
 ]
 
 const ownerMoreItems = [
@@ -82,7 +82,7 @@ export function MobileBottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 h-20 md:hidden">
-      <div className="absolute bottom-0 h-18 w-full border-t rounded-2xl border-zinc-200/60 bg-white/80 backdrop-blur-lg dark:border-zinc-800 dark:bg-zinc-950/80" />
+      <div className="absolute bottom-0 h-18 w-full border-t rounded-2xl border-border/60 bg-background/80 backdrop-blur-lg" />
 
       <div className="relative flex h-full items-end justify-around pb-2">
         {mainItems.map((item) => {
@@ -161,7 +161,7 @@ export function MobileBottomNav() {
                     href={item.href}
                     onClick={handleNavClick}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-md",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl",
                       isActive && "bg-accent font-semibold"
                     )}
                   >

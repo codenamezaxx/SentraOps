@@ -131,7 +131,7 @@ export function NotificationBell() {
       {open && (
         <div
           ref={popoverRef}
-          className="fixed md:absolute inset-x-4 md:inset-x-auto md:right-0 top-20 md:top-12 z-50 md:w-80 rounded-2xl bg-white dark:bg-zinc-900 shadow-xl border border-border overflow-hidden animate-[fadeIn_0.15s_ease-out]"
+          className="fixed md:absolute inset-x-4 md:inset-x-auto md:right-0 top-20 md:top-12 z-50 md:w-80 rounded-2xl bg-card shadow-xl border border-border overflow-hidden animate-[fadeIn_0.15s_ease-out]"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">

@@ -5,30 +5,41 @@
 <p align="center">
   <strong>All-in-One Operations Dashboard untuk UMKM</strong>
   <br />
-  Mobile-first · Offline-ready · Multi-tenant
+  Mobile-first · Offline-ready · Multi-tenant · Open Source
   <br />
   <br />
   <img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js 16" />
   <img src="https://img.shields.io/badge/TypeScript-Strict-blue" alt="TypeScript Strict" />
   <img src="https://img.shields.io/badge/Supabase-Realtime-green" alt="Supabase Realtime" />
   <img src="https://img.shields.io/badge/PWA-Enabled-teal" alt="PWA Enabled" />
-  <img src="https://img.shields.io/badge/Status-Active_Development-yellow" alt="Active Development" />
+  <img src="https://img.shields.io/badge/Version-1.0.0 Release-teal" alt="v1.0.0 Release" />
+  <img src="https://img.shields.io/badge/License-MIT-gold" alt="MIT License" />
+</p>
+
+<p align="center">
+  SentraOps adalah aplikasi dashboard operasional all-in-one yang dirancang khusus untuk UMKM di Indonesia. Mulai dari Point of Sale (POS), manajemen inventaris, laporan keuangan, hingga faktur dan pengeluaran — semua terintegrasi dalam satu platform mobile-first dengan dukungan offline dan real-time sync. Open source, gratis, dan dapat dijalankan di infrastruktur sendiri.
 </p>
 
 ---
 
 ## ✨ Features
 
-- 🔐 **Multi-method authentication** (email/password + magic links)
-- 🛒 **Mobile POS system** — tap-and-go cashier with barcode scanner support
-- 📦 **Inventory management** with low-stock alerts and stock adjustments
-- 💰 **Financial reports** — auto-generated P&L with payment method breakdown
-- 📄 **Invoice management** — create, edit, mark paid, WhatsApp reminders
-- 📱 **PWA support** — installable on mobile home screen, offline-capable
-- 📡 **Offline mode** — Dexie.js IndexedDB cache + offline transaction queue
-- 🔄 **Real-time sync** — Supabase Realtime silently syncs product changes
-- 🎨 **Dual theme** — light/dark mode with consistent design tokens
-- 🔒 **Multi-tenant** — RLS isolation per store_id
+| Area | Fitur |
+|------|-------|
+| 🔐 **Auth** | Email/password login, signup, forgot/reset password, role-based access (owner/staff) |
+| 🛒 **POS** | Product grid, barcode scanner, category filter, payment drawer (cash, QRIS, debit/credit), invoice/piutang |
+| 📦 **Inventory** | CRUD produk, stock adjustments, stock alerts (badge), barcode/SKU search |
+| 💰 **Financial** | P&L report, payment method breakdown, top profit contributors, period selector, PDF export |
+| 📄 **Invoices** | Buat faktur, edit, mark paid, overdue tracking, WhatsApp reminder |
+| 📊 **Transactions** | Riwayat transaksi lengkap, bulk delete, status filter |
+| 💸 **Expenses** | Catat pengeluaran per kategori (operational, restock, utility, dll) |
+| 👥 **Staff** | Manajemen staf (tambah, edit, hapus) — owner only |
+| ⚙️ **Settings** | Pengaturan toko (nama, alamat, telepon) |
+| 📱 **PWA** | Installable, offline-capable dengan IndexedDB + service worker |
+| 📡 **Offline** | Dexie.js cache, offline transaction queue, auto-sync saat online |
+| 🔄 **Real-time** | Supabase Realtime untuk sinkronisasi produk |
+| 🎨 **Theme** | Light/dark mode dengan design token konsisten |
+| 🔒 **Security** | RLS per `store_id`, CSRF protection, rate limiting, input sanitasi |
 
 ## 🛠️ Tech Stack
 
@@ -45,41 +56,51 @@
 | **Theme** | next-themes (class strategy) |
 | **Forms** | react-hook-form + zod |
 | **Toasts** | sonner |
+| **Testing** | Vitest (unit/integration) + Playwright (E2E) |
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
 
 - Node.js 20+
 - npm / yarn / pnpm
-- Supabase project (credentials in `.env.local`)
+- Supabase project (free tier)
 
 ### Installation
 
 ```bash
+git clone https://github.com/your-username/sentraops.git
+cd sentraops
 npm install
-npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-### Environment
+Buat file `.env.local`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-## 📦 Available Scripts
+Jalankan:
+
+```bash
+npm run dev
+```
+
+Buka [http://localhost:3000](http://localhost:3000).
+
+## 📦 Scripts
 
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Start dev server (localhost:3000) |
 | `npm run build` | Production build + TypeScript check |
+| `npm start` | Start production server |
 | `npm run lint` | ESLint |
 | `npm run test` | Vitest watch mode |
-| `npm run test:run` | Vitest single run |
+| `npm run test:run` | Vitest single run (CI) |
+| `npm run test:e2e` | Playwright E2E headless |
+| `npm run test:e2e:ui` | Playwright E2E with UI mode |
 | `npm run db:types` | Regenerate Supabase TypeScript types |
 | `npm run db:push` | Push migrations to remote |
 | `npm run db:pull` | Pull schema from remote |
@@ -90,35 +111,60 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 src/
 ├── app/
-│   ├── (auth)/login/          # Login page
-│   ├── (dashboard)/           # Authenticated routes
-│   │   ├── pos/               # Point of Sale
-│   │   ├── inventory/         # Product management (owner)
-│   │   ├── financial/         # Financial reports (owner)
-│   │   ├── transactions/      # Transaction history
-│   │   ├── invoices/          # Invoice management
-│   │   └── settings/          # Store settings
-│   ├── api/                   # API routes (checkout, webhooks, etc.)
-│   └── layout.tsx             # Root layout with PWA + offline init
+│   ├── (auth)/
+│   │   ├── login/               # Halaman login
+│   │   ├── signup/              # Halaman registrasi
+│   │   ├── forgot-password/     # Lupa password
+│   │   └── reset-password/      # Reset password
+│   ├── (dashboard)/             # Layout sidebar + topbar
+│   │   ├── page.tsx             # Dashboard utama
+│   │   ├── pos/                 # Point of Sale
+│   │   ├── inventory/           # Manajemen produk (owner)
+│   │   ├── financial/           # Laporan keuangan (owner)
+│   │   ├── transactions/        # Riwayat transaksi
+│   │   ├── expenses/            # Pengeluaran (owner)
+│   │   ├── invoices/            # Faktur/piutang
+│   │   ├── staff/               # Manajemen staf (owner)
+│   │   └── settings/            # Pengaturan toko (owner)
+│   ├── api/                     # API routes
+│   ├── auth/callback/           # Supabase auth callback
+│   └── access-denied/           # Halaman akses ditolak
 ├── components/
-│   ├── ui/                    # shadcn/ui primitives
-│   ├── pos/                   # POS components (ProductGrid, PaymentDrawer, etc.)
-│   ├── inventory/             # ProductTable, StockUpdateForm, etc.
-│   ├── financial/             # PaymentMethodBreakdown, TopProfitContributors
-│   ├── transactions/          # TransactionTable
-│   └── invoices/              # InvoicesView, InvoiceRow, EditInvoiceDialog
+│   ├── ui/                      # shadcn/ui primitives (30+ komponen)
+│   ├── auth/                    # LoginForm, SignupForm, RequireOwner, dll
+│   ├── dashboard/               # StatCard, GlobalSearch, NotificationBell, dll
+│   ├── pos/                     # ProductGrid, Cart, PaymentDrawer, dll
+│   ├── inventory/               # ProductTable, ProductForm, StockBadge, dll
+│   ├── financial/               # RevenueChart, PaymentMethodBreakdown, dll
+│   ├── transactions/            # TransactionTable
+│   ├── invoices/                # InvoicesView, EditInvoiceDialog, dll
+│   ├── expenses/                # ExpensesView
+│   ├── staff/                   # StaffTable, AddStaffDialog, dll
+│   └── receipt/                 # ReceiptActions
 ├── lib/
-│   ├── stores/                # Zustand stores (cartStore, uiStore, syncStore)
-│   ├── supabase/              # client.ts, server.ts, queries.ts
-│   ├── types/                 # Shared types + generated database.ts
-│   ├── offlineDb.ts           # Dexie.js IndexedDB schema
-│   └── utils.ts               # cn(), formatCurrency(), etc.
-public/
-├── favicon.svg                # Website favicon
-├── banner.png                 # README banner
-├── manifest.json              # PWA manifest
-├── sw.js                      # Service worker
-└── icons/                     # PWA app icons (SVG)
+│   ├── stores/                  # Zustand (cartStore, uiStore, dll)
+│   ├── supabase/                # client.ts, server.ts, queries.ts
+│   ├── types/                   # Shared types + auto-generated database.ts
+│   ├── utils.ts                 # cn(), formatCurrency(), helpers
+│   ├── sanitize.ts              # Input sanitization (6 functions)
+│   ├── csrf.ts                  # CSRF protection
+│   ├── rateLimit.ts             # Rate limiting
+│   ├── fetchWithRetry.ts        # Network retry dengan exponential backoff
+│   ├── inventory.ts             # Inventory utility functions
+│   ├── financial-utils.ts       # Financial calculations
+│   └── offlineDb.ts             # Dexie.js IndexedDB schema
+├── test/                        # 109 tests (16 files)
+│   ├── factories.ts             # Test data factories
+│   ├── setup.ts                 # Vitest setup (mock Supabase)
+│   ├── validation.test.ts       # Property-based validation tests
+│   ├── error-messages.test.ts   # Property-based error message tests
+│   ├── fk-integrity.test.ts     # Property-based FK integrity tests
+│   ├── api-integration.test.ts  # API integration tests
+│   ├── db-integration.test.ts   # Database integration tests
+│   └── ...                      # Unit tests per feature
+e2e/
+├── login.spec.ts                # E2E login flow
+└── performance.spec.ts          # Performance budget tests
 ```
 
 ## 🔄 Sync Architecture
@@ -151,9 +197,9 @@ public/
          └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
 ```
 
-## 📊 Development Status
+## ✅ Development Status — v1.0.0
 
-### ✅ Completed
+### Core Platform
 - [x] Project setup & Supabase integration
 - [x] Authentication & role-based routing
 - [x] Database schema, migrations, RLS policies
@@ -161,49 +207,82 @@ public/
 - [x] Theme system (light/dark)
 - [x] Mobile-first responsive layout
 - [x] Sidebar + bottom navigation
-- [x] POS system (product grid, cart, barcode scanner)
-- [x] Checkout flow (cash, QRIS, WA invoice, invoice/piutang)
-- [x] Inventory management (CRUD, stock updates)
-- [x] Transaction history with bulk delete
-- [x] Invoice management (mark paid, edit, WA reminder)
-- [x] Financial page (P&L, payment breakdown, top products)
-- [x] Pagination (POS 25, inventory 30, invoices 10, transactions 15)
 - [x] Navigation progress bar + prefetching
 - [x] PWA support (manifest, service worker, iOS meta tags)
-- [x] **Offline mode** (Dexie.js cache, offline transaction queue)
-- [x] **Real-time sync** (Supabase Realtime for products)
-- [x] **Offline queue auto-sync** (on `online` event)
 
-### 🚧 In Progress
-- [ ] Enhanced real-time sync for transactions & invoices
-- [ ] Sales analytics dashboard
-- [ ] Receipt printing
+### Features
+- [x] POS system (product grid, cart, barcode scanner, category filter)
+- [x] Checkout flow (cash, QRIS, debit/credit, invoice/piutang)
+- [x] Inventory management (CRUD, stock updates, stock badges)
+- [x] Financial page (P&L, payment breakdown, top products, PDF export)
+- [x] Transaction history with bulk delete
+- [x] Invoice management (create, edit, mark paid, WA reminder)
+- [x] Expense tracking per kategori
+- [x] Staff management (CRUD)
+- [x] Store settings
+- [x] Pagination (POS 25, inventory 30, invoices 10, transactions 15)
 
-### 📋 Planned
-- [ ] WhatsApp Business API integration
-- [ ] Barcode label printing
-- [ ] Multi-store management
-- [ ] Export reports (CSV/Excel)
-- [ ] Supplier management
+### Offline & Real-time
+- [x] Offline mode (Dexie.js cache, offline transaction queue)
+- [x] Real-time sync (Supabase Realtime for products)
+- [x] Offline queue auto-sync on `online` event
+
+### Security
+- [x] Input sanitization (6 functions)
+- [x] CSRF protection (token-based)
+- [x] Rate limiting (in-memory sliding window)
+- [x] Network retry (exponential backoff)
+- [x] RLS policies on all tables
+- [x] Server-side role verification
+
+### Testing
+- [x] Test data factories (9 factories)
+- [x] Unit tests (stores, utils, checkout logic)
+- [x] Property-based tests (validation, error messages, FK integrity)
+- [x] API integration tests (5 test suites)
+- [x] Database integration tests (15 test suites)
+- [x] E2E tests (login flow, performance budget)
+- [x] Build zero errors
 
 ## 📖 Documentation
 
-- [AGENTS.md](./AGENTS.md) — Development conventions & commands
-- [Supabase README](./supabase/README.md) — Database schema & policies
-- [Supabase SETUP GUIDE](./supabase/SETUP_GUIDE.md) — Initial setup
+Dokumentasi lengkap tersedia di folder [`doc/`](./doc):
+
+| File | Isi |
+|------|-----|
+| [01-ARSITEKTUR.md](doc/01-ARSITEKTUR.md) | Tech stack, folder structure, routing |
+| [02-DATABASE.md](doc/02-DATABASE.md) | Tabel, relasi, RLS, migrasi |
+| [03-AUTH.md](doc/03-AUTH.md) | Alur auth, middleware, role-based access |
+| [04-API.md](doc/04-API.md) | Endpoint API route |
+| [05-KOMPONEN.md](doc/05-KOMPONEN.md) | UI component library, design system |
+| [06-STATE.md](doc/06-STATE.md) | Zustand stores |
+| [07-SECURITY.md](doc/07-SECURITY.md) | Sanitasi, rate limit, CSRF |
+| [08-TESTING.md](doc/08-TESTING.md) | Unit test, property test, E2E |
+| [09-PERFORMANCE.md](doc/09-PERFORMANCE.md) | SSR, lazy loading, optimasi |
+| [10-DEPLOYMENT.md](doc/10-DEPLOYMENT.md) | Environment, build, hosting |
+
+Juga lihat: [AGENTS.md](./AGENTS.md) — Development conventions.
 
 ## 🤝 Contributing
 
-1. Read `AGENTS.md` for conventions
-2. Maintain database schema with migrations
-3. Run `npm run db:types` after schema changes
-4. Test both light & dark mode
-5. Run `npm run build` before committing
+SentraOps adalah proyek open source. Siapa pun dipersilakan untuk **fork, clone, dan memodifikasi**.
+
+1. Fork repository
+2. Buat branch fitur: `git checkout -b fitur-keren`
+3. Ikuti konvensi di `AGENTS.md`
+4. Pastikan `npm run build` tidak error
+5. Jalankan `npm run test:run` untuk verifikasi tes
+6. Push: `git push origin fitur-keren`
+7. Buat Pull Request
+
+## 📄 License
+
+[MIT](./LICENSE) © SentraOps
 
 ---
 
 <p align="center">
-  Built with ❤️ for UMKM Indonesia
+  Dibangun untuk UMKM Indonesia.
   <br />
-  <strong>SentraOps</strong> — MIT License · All Rights Reserved
+  Open source · Bebas dimodifikasi · Tanpa biaya lisensi
 </p>

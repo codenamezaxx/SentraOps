@@ -23,12 +23,12 @@ import {
   TrendingDown,
 } from "lucide-react"
 
-const ownerOnlyRoutes = ['/inventory', '/financial', '/staff', '/expenses']
+const ownerOnlyRoutes = ['/financial', '/staff', '/expenses']
 
 const navItems = [
   { href: "/", label: "Beranda", icon: LayoutDashboard },
   { href: "/pos", label: "POS", icon: ShoppingCart },
-  { href: "/inventory", label: "Stok Barang", icon: Package, ownerOnly: true },
+  { href: "/inventory", label: "Stok Barang", icon: Package },
   { href: "/invoices", label: "Manajemen Tagihan", icon: Receipt },
   { href: "/financial", label: "Laporan Keuangan", icon: DollarSign, ownerOnly: true },
   { href: "/transactions", label: "Riwayat Transaksi", icon: ScrollText },

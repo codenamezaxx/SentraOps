@@ -3,6 +3,14 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
+/** Format date as YYYY-MM-DD in LOCAL timezone (no UTC shift) */
+function fmt(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 const periods = [
   { key: 'weekly', label: 'Mingguan' },
   { key: 'monthly', label: 'Bulanan' },
@@ -22,24 +30,28 @@ export function PeriodSelector({ activePeriod }: { activePeriod: string }) {
       case 'weekly': {
         const d = new Date(now)
         d.setDate(d.getDate() - 7)
-        start = d.toISOString().split('T')[0]
+        start = fmt(d)
         break
       }
       case 'monthly':
-        start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+        start = fmt(new Date(now.getFullYear(), now.getMonth(), 1))
         break
-      case 'yearly':
+      case 'yearly': {
+        const d = new Date(now)
+        d.setFullYear(d.getFullYear() - 1)
+        start = fmt(d)
+        break
+      }
       case 'ytd':
-        start = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0]
+        start = fmt(new Date(now.getFullYear(), 0, 1))
         break
       default:
         return
     }
 
-    const end = now.toISOString().split('T')[0]
     const params = new URLSearchParams(searchParams.toString())
     params.set('start', start)
-    params.set('end', end)
+    params.delete('end')
     router.push(`/financial?${params.toString()}`)
   }
 

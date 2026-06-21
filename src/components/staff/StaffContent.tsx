@@ -13,7 +13,7 @@ export function StaffContent() {
     <>
       <button
         onClick={() => setOpenAdd(true)}
-        className="h-12 bg-accent-blue text-accent-blue-foreground rounded-xl font-semibold text-sm px-5 flex items-center gap-2 hover:opacity-90 transition-colors active:scale-95"
+        className="h-12 bg-foreground text-background rounded-xl font-semibold text-sm px-5 flex items-center gap-2 hover:opacity-90 transition-colors active:scale-95"
       >
         <Plus className="w-5 h-5" />
         Tambah Staf Baru

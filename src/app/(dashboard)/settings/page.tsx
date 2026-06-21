@@ -12,8 +12,6 @@ import { UserAvatar } from "@/components/ui/UserAvatar"
 import { Badge } from "@/components/ui/badge"
 import {
   Store,
-  CreditCard,
-  AlertTriangle,
   Loader2,
   User,
   Camera,
@@ -33,7 +31,6 @@ import {
   CheckCircle2,
   AtSign,
   ShieldCheck,
-  ChevronRight,
 } from "lucide-react"
 
 interface StoreSettings {
@@ -118,12 +115,12 @@ export default function SettingsPage() {
     [profileRole]
   )
 
-  // Reset tab if current one becomes hidden
-  useEffect(() => {
-    const tabStillVisible = visibleTabs.some((t) => t.value === activeTab)
-    if (!tabStillVisible && visibleTabs.length > 0) {
-      setActiveTab(visibleTabs[0].value)
+  // Derive safe active tab — corrects if current tab becomes hidden (e.g. role change)
+  const safeActiveTab = useMemo(() => {
+    if (!visibleTabs.some((t) => t.value === activeTab) && visibleTabs.length > 0) {
+      return visibleTabs[0].value
     }
+    return activeTab
   }, [visibleTabs, activeTab])
 
   useEffect(() => {
@@ -347,7 +344,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={safeActiveTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full flex flex-row bg-zinc-100 dark:bg-zinc-900/50 rounded-xl p-1 gap-2 h-auto border-none shadow-none overflow-x-auto overflow-y-hidden no-scrollbar flex-nowrap justify-start">
           {visibleTabs.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value} className={tabTriggerClass}>
@@ -470,7 +467,7 @@ export default function SettingsPage() {
                 <Button
                   type="submit"
                   disabled={saving}
-                  className="h-11 md:h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground w-full md:w-auto gap-2 text-sm"
+                  className="h-11 md:h-12 rounded-xl bg-accent-blue hover:bg-accent-blue/90 text-accent-blue-foreground w-full md:w-auto gap-2 text-sm"
                 >
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -552,7 +549,7 @@ export default function SettingsPage() {
                 <Button
                   type="submit"
                   disabled={saving}
-                  className="h-11 md:h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground gap-2 w-full md:w-auto text-sm"
+                  className="h-11 md:h-12 rounded-xl bg-accent-blue hover:bg-accent-blue/90 text-accent-blue-foreground gap-2 w-full md:w-auto text-sm"
                 >
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -678,7 +675,7 @@ export default function SettingsPage() {
                           setDefaultStockThreshold(parseInt(e.target.value || "0"))
                         }
                         placeholder="5"
-                        className="h-12 rounded-xl bg-card border-border max-w-[140px] md:max-w-[160px] text-center text-base md:text-lg font-semibold"
+                        className="h-12 rounded-xl bg-card border-border max-w-35 md:max-w-40 text-center text-base md:text-lg font-semibold"
                       />
                       <span className="text-sm text-muted-foreground">unit</span>
                     </div>
@@ -697,7 +694,7 @@ export default function SettingsPage() {
               <Button
                 onClick={handleSaveStockThreshold}
                 disabled={saving}
-                className="h-11 md:h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground gap-2 w-full md:w-auto text-sm"
+                className="h-11 md:h-12 rounded-xl bg-accent-blue hover:bg-accent-blue/90 text-accent-blue-foreground gap-2 w-full md:w-auto text-sm"
               >
                 {saving ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

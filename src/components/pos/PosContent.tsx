@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useScannerListener } from '@/lib/hooks/useScannerListener'
 import { ProductGrid } from './ProductGrid'
 import { BarcodeSearch } from './BarcodeSearch'
 import { CartSection } from './CartSection'
@@ -18,6 +19,9 @@ export function PosContent({ serverProducts }: PosContentProps) {
   const [products, setProducts] = useState<Product[]>(serverProducts)
   const [isOffline, setIsOffline] = useState(false)
   const syncedRef = useRef(false)
+
+  // Global hardware barcode scanner listener
+  useScannerListener(products)
 
   useEffect(() => {
     if (syncedRef.current) return
@@ -59,7 +63,7 @@ export function PosContent({ serverProducts }: PosContentProps) {
       )}
 
       <div className="md:hidden w-full mb-4">
-        <BarcodeSearch />
+        <BarcodeSearch products={products} />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
@@ -69,7 +73,7 @@ export function PosContent({ serverProducts }: PosContentProps) {
 
         <div className="hidden lg:block lg:w-95 xl:w-105">
           <div className="sticky top-5 space-y-6">
-            <BarcodeSearch />
+            <BarcodeSearch products={products} />
             <CartSection />
           </div>
         </div>

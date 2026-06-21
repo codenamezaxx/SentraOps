@@ -54,7 +54,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Owner-only routes
-  const ownerOnlyRoutes = ['/inventory', '/financial', '/staff']
+  const ownerOnlyRoutes = ['/financial', '/staff', '/expenses']
   const isOwnerOnlyRoute = ownerOnlyRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
   )

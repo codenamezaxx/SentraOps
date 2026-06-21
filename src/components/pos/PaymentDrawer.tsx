@@ -16,7 +16,10 @@ import {
 import type { PaymentMethod } from '@/lib/types'
 import { formatCurrency, cn } from '@/lib/utils'
 import { db } from '@/lib/offlineDb'
-import { ReceiptActions } from '@/components/receipt/ReceiptActions'
+import dynamic from 'next/dynamic'
+const ReceiptActions = dynamic(() => import('@/components/receipt/ReceiptActions').then(m => m.ReceiptActions), {
+  loading: () => null,
+})
 
 interface PaymentOption {
   method: PaymentMethod
@@ -372,7 +375,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
           <p className="text-base font-bold text-foreground text-center">Scan QRIS untuk Membayar</p>
 
           {qrCodeUrl && (
-            <div className="bg-white p-3 rounded-2xl shadow-sm border border-border">
+            <div className="bg-card p-3 rounded-2xl shadow-sm border border-border">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={qrCodeUrl} alt="QRIS Payment" className="w-60 h-60" />
             </div>

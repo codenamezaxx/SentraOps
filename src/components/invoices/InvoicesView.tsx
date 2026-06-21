@@ -102,9 +102,9 @@ export function InvoicesView({ invoices, storeName }: InvoicesViewProps) {
   return (
     <>
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="w-full md:w-auto overflow-x-auto overflow-y-hidden justify-start scroll-pl-4 bg-primary/5 dark:bg-primary/10 rounded-xl border border-border">
+        <TabsList className="w-full md:w-auto overflow-x-auto overflow-y-hidden justify-start scroll-pl-4 bg-zinc-100 dark:bg-zinc-900/50 rounded-xl p-1 gap-2 h-auto border-none shadow-none">
           {tabs.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value} className="h-10 px-4 whitespace-nowrap shrink-0">
+            <TabsTrigger key={tab.value} value={tab.value} className="h-10 px-4 whitespace-nowrap shrink-0 rounded-xl border-none! transition-all duration-200 data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground! data-[state=active]:shadow-md text-muted-foreground hover:text-foreground hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50">
               {tab.label}
             </TabsTrigger>
           ))}

@@ -3,7 +3,7 @@ import { getUserProfile } from '@/lib/supabase/queries'
 import { ExpensesView } from '@/components/expenses/ExpensesView'
 import { TrendingDown, Building2, Wallet, Package, MoreHorizontal } from 'lucide-react'
 import type { Expense } from '@/lib/types'
-import { formatCompactCurrency } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 
 export default async function ExpensesPage() {
   const supabase = await createClient()
@@ -55,7 +55,7 @@ export default async function ExpensesPage() {
         <div className="min-w-0">
           <p className="text-sm text-on-surface-variant font-medium">Total Pengeluaran</p>
           <p className="text-3xl font-bold text-on-surface truncate">
-            {formatCompactCurrency(totalExpenses)}
+            {formatCurrency(totalExpenses)}
           </p>
         </div>
       </div>
@@ -72,7 +72,7 @@ export default async function ExpensesPage() {
               <div className="min-w-0">
                 <p className="text-xs text-on-surface-variant font-medium">{cat.label}</p>
                 <p className="text-xl font-bold text-on-surface truncate">
-                  {formatCompactCurrency(categoryTotals[cat.key] || 0)}
+                  {formatCurrency(categoryTotals[cat.key] || 0)}
                 </p>
               </div>
             </div>

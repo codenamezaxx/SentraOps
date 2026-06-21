@@ -22,12 +22,12 @@ export function DesktopSearch() {
         placeholder="Cari nama produk atau barcode..."
         value={posSearchQuery}
         onChange={(e) => setPosSearchQuery(e.target.value)}
-        className="w-full h-full pl-11 pr-11 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 font-medium outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all shadow-sm"
+        className="w-full h-full pl-11 pr-11 bg-background border border-input rounded-xl text-foreground font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
       />
       {posSearchQuery && (
         <button
           onClick={() => setPosSearchQuery('')}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
         >
           <X className="w-5 h-5" />
         </button>

@@ -4,12 +4,14 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useCartStore } from '@/lib/stores/cartStore'
 import { useUIStore } from '@/lib/stores/uiStore'
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import { Barcode, X, Search, Package } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, getProductImageUrl } from '@/lib/utils'
 import { db } from '@/lib/offlineDb'
+import { CameraScanner } from './CameraScanner'
 import type { Product } from '@/lib/types'
 
-export function BarcodeSearch() {
+export function BarcodeSearch({ products }: { products: Product[] }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [isSearching, setIsSearching] = useState(false)
@@ -188,13 +190,16 @@ export function BarcodeSearch() {
                 <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={toggleExpand}
-                className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                <CameraScanner products={products} />
+                <button
+                  type="button"
+                  onClick={toggleExpand}
+                  className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             )}
           </form>
 
@@ -218,7 +223,14 @@ export function BarcodeSearch() {
                 >
                   <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
                     {product.image_url ? (
-                      <img src={product.image_url} alt="" className="w-full h-full object-cover" />
+                      <Image
+                        src={getProductImageUrl(product.image_url) ?? ''}
+                        alt={product.name}
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 rounded-lg object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      />
                     ) : (
                       <Package className="w-4 h-4 text-muted-foreground" />
                     )}
@@ -237,13 +249,16 @@ export function BarcodeSearch() {
           )}
         </div>
       ) : (
-        <button
-          onClick={toggleExpand}
-          className="w-full flex items-center gap-2 p-3 bg-card rounded-xl border border-border hover:bg-muted transition-colors text-sm text-muted-foreground h-12"
-        >
-          <Search className="w-4 h-4 text-muted-foreground" />
-          <span>Cari produk via barcode atau nama...</span>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={toggleExpand}
+            className="flex-1 flex items-center gap-2 p-3 bg-card rounded-xl border border-border hover:bg-muted transition-colors text-sm text-muted-foreground h-12"
+          >
+            <Search className="w-4 h-4 text-muted-foreground" />
+            <span>Cari produk via barcode atau nama...</span>
+          </button>
+          <CameraScanner products={products} />
+        </div>
       )}
     </div>
   )

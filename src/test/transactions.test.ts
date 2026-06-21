@@ -11,7 +11,8 @@ describe('Transaction Correctness Properties', () => {
       fc.property(
         fc.array(fc.record({
           id: fc.uuid(),
-          created_at: fc.date().map(d => d.toISOString())
+          // Use integer timestamps to avoid toISOString() range errors
+          created_at: fc.integer({ min: 946684800000, max: 1893456000000 }).map(ts => new Date(ts).toISOString())
         }), { minLength: 2 }),
         (transactions) => {
           // Simulate sorting logic used in the page

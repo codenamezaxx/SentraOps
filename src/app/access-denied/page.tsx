@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { ShieldAlert } from 'lucide-react'
 
+export const dynamic = 'force-static'
+
 export default function AccessDenied() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">

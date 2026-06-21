@@ -1,8 +1,11 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import { useCartStore } from '@/lib/stores/cartStore'
-import { PaymentDrawer } from './PaymentDrawer'
+const PaymentDrawer = dynamic(() => import('@/components/pos/PaymentDrawer').then(m => m.PaymentDrawer), {
+  loading: () => null,
+})
 import { ChevronUp, Minus, Plus, ShoppingCart } from 'lucide-react'
 import Image from 'next/image'
 import { getProductImageUrl } from '@/lib/utils'
@@ -69,7 +72,6 @@ export function MobileCartBar() {
                         alt={item.name}
                         fill
                         className="object-cover"
-                        unoptimized
                       />
                     ) : (
                       <ShoppingCart className="w-4 h-4 text-muted-foreground/40" />

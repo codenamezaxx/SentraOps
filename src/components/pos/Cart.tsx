@@ -64,7 +64,6 @@ export function Cart() {
                       alt={item.name}
                       fill
                       className="object-cover"
-                      unoptimized
                     />
                   ) : (
                     <UtensilsCrossed className="w-6 h-6 text-outline-variant" />

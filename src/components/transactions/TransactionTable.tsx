@@ -50,9 +50,12 @@ export interface TransactionWithCashier {
   } | null
 }
 
+import dynamic from 'next/dynamic'
+const ReceiptActions = dynamic(() => import('@/components/receipt/ReceiptActions').then(m => m.ReceiptActions), {
+  loading: () => null,
+})
 import { createClient } from '@/lib/supabase/client'
 import { TransactionItem } from '@/lib/types'
-import { ReceiptActions } from '@/components/receipt/ReceiptActions'
 
 interface TransactionItemWithProduct extends Omit<TransactionItem, 'transaction_id' | 'product_id'> {
   transaction_id: string | null

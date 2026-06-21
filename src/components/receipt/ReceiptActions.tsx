@@ -22,7 +22,7 @@ export interface ReceiptActionsProps {
   storeName: string
   receiptFooter: string
   cashierName?: string
-  /** Ref to the visible success view HTML to capture for PDF download */
+  /** @deprecated No longer used — PDF now renders programmatically via jsPDF */
   pdfCaptureRef?: React.RefObject<HTMLDivElement | null>
 }
 
@@ -37,7 +37,6 @@ export function ReceiptActions({
   storeName,
   receiptFooter,
   cashierName,
-  pdfCaptureRef,
 }: ReceiptActionsProps) {
   const receiptRef = useRef<HTMLDivElement>(null)
   const [isPdfLoading, setIsPdfLoading] = useState(false)
@@ -84,77 +83,137 @@ export function ReceiptActions({
   }, [])
 
   const handlePdfDownload = useCallback(async () => {
-    if (!receiptRef.current || isPdfLoading) return
+    if (isPdfLoading) return
 
     setIsPdfLoading(true)
     try {
-      const [html2canvasModule, { jsPDF }] = await Promise.all([
-        import('html2canvas'),
-        import('jspdf'),
-      ])
-      const html2canvas = html2canvasModule.default
+      const { jsPDF } = await import('jspdf')
 
-      // PDF captures the visible success view HTML (passed via pdfCaptureRef).
-      // This shows the "Transaksi Berhasil!" screen with transaction details
-      // as the user sees it — not the hidden thermal receipt div.
-      const pdfTarget = pdfCaptureRef?.current
-      if (!pdfTarget) {
-        toast.error('Gagal membuat PDF', { description: 'Target capture tidak ditemukan.' })
-        setIsPdfLoading(false)
-        return
+      // ── Receipt-style PDF, same layout as thermal print ──
+      // 80mm wide × up to 297mm tall (A4 height)
+      const doc = new jsPDF({ unit: 'mm', format: [80, 297] })
+      const LM = 4     // left margin
+      const RM = 4     // right margin
+      const CW = 72    // content width (80 - LM - RM)
+      const RX = 76    // right x (80 - RM)
+
+      let y = 12
+
+      const dash = () => {
+        doc.setDrawColor(136, 136, 136)
+        doc.setLineWidth(0.3)
+        doc.setLineDashPattern([1.5, 1.5], 0)
+        doc.line(LM, y, RX, y)
+        doc.setLineDashPattern([], 0)
       }
 
-      // Inject color override into the LIVE document BEFORE cloning,
-      // so the html2canvas clone captures our hex overrides atomically.
-      // Remove immediately after — the clone already has the fix.
-      const COLOR_OVERRIDE_ID = '__pdf_hex_override'
-      const existingOverride = document.getElementById(COLOR_OVERRIDE_ID)
-      if (!existingOverride) {
-        const s = document.createElement('style')
-        s.id = COLOR_OVERRIDE_ID
-        s.textContent = `
-          :root {
-            --background: #ffffff !important; --foreground: #000000 !important;
-            --border: #e5e7eb !important; --primary: #ea580c !important;
-            --muted: #f4f4f5 !important; --card: #ffffff !important;
-            --accent: #fff7ed !important; --accent-blue: #3b82f6 !important;
-            --ring: #ea580c !important; --surface: #fafafa !important;
-            --surface-container: #f4f4f5 !important; --on-surface: #000000 !important;
-            --on-surface-variant: #52525b !important; --muted-foreground: #71717a !important;
-            --secondary: #52525b !important; --destructive: #ef4444 !important;
-            --input: #e4e4e7 !important; --error: #ef4444 !important;
-            --tertiary: #d97706 !important; --outline-variant: #e5e7eb !important;
-            --primary-container: #fff7ed !important; --on-background: #000000 !important;
-            --on-primary: #ffffff !important; --on-primary-container: #431407 !important;
-            --accent-blue-foreground: #ffffff !important; --popover: #ffffff !important;
-            --popover-foreground: #000000 !important; --primary-foreground: #ffffff !important;
-            --secondary-foreground: #ffffff !important; --card-foreground: #000000 !important;
-            --chart-1: #ea580c !important; --chart-2: #0891b2 !important;
-            --chart-3: #7c3aed !important; --chart-4: #f59e0b !important;
-            --chart-5: #10b981 !important; --sidebar: #f8fafc !important;
-            --sidebar-foreground: #000000 !important; --sidebar-primary: #ea580c !important;
-            --sidebar-accent: #f1f5f9 !important; --sidebar-border: #e2e8f0 !important;
-            --sidebar-ring: #ea580c !important;
-          }`
-        document.head.appendChild(s)
+      const ensureSpace = (mm: number) => {
+        if (y + mm > 282) { doc.addPage(); y = 10 }
       }
 
-      const canvas = await html2canvas(pdfTarget, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-        useCORS: true,
-        logging: false,
+      // ── Header ──
+      doc.setFont('Courier', 'bold')
+      doc.setFontSize(12)
+      doc.text(storeName, LM + CW / 2, y, { align: 'center' })
+      y += 5
+      doc.setFont('Courier', 'normal')
+      doc.setFontSize(10)
+      doc.text('STRUK BELANJA', LM + CW / 2, y, { align: 'center' })
+      y += 4
+      dash(); y += 4
+
+      // ── Items ──
+      doc.setFontSize(10)
+      for (const item of items) {
+        const lineTotal = item.quantity * item.price
+        ensureSpace(8)
+
+        // "2x Nama Item" (left)  //  RpXX.XXX (right)
+        doc.setFont('Courier', 'normal')
+        doc.text(`${item.quantity}x ${item.name}`, LM, y)
+        doc.setFont('Courier', 'bold')
+        doc.text(formatCurrency(lineTotal), RX, y, { align: 'right' })
+        y += 3.5
+
+        // Unit price sub-text
+        doc.setFont('Courier', 'normal')
+        doc.setFontSize(8)
+        doc.setTextColor(102, 102, 102)
+        doc.text(`@ ${formatCurrency(item.price)}`, LM + 3, y)
+        doc.setTextColor(0, 0, 0)
+        doc.setFontSize(10)
+        y += 4
+      }
+
+      // ── Summary ──
+      ensureSpace(3)
+      dash(); y += 5
+
+      doc.setFont('Courier', 'bold')
+      doc.setFontSize(11)
+      doc.text('Total', LM, y)
+      doc.text(formatCurrency(total), RX, y, { align: 'right' })
+      y += 5
+
+      doc.setFont('Courier', 'normal')
+      doc.setFontSize(10)
+      if (cashAmount !== undefined) {
+        ensureSpace(4)
+        doc.text('Tunai', LM, y)
+        doc.text(formatCurrency(cashAmount), RX, y, { align: 'right' })
+        y += 4
+      }
+      if (changeAmount !== undefined) {
+        ensureSpace(4)
+        doc.setTextColor(37, 99, 235)
+        doc.text('Kembali', LM, y)
+        doc.text(formatCurrency(changeAmount), RX, y, { align: 'right' })
+        doc.setTextColor(0, 0, 0)
+        y += 4
+      }
+
+      // ── Meta ──
+      ensureSpace(3)
+      dash(); y += 5
+
+      doc.setFontSize(9)
+      doc.text(`Metode  : ${paymentMethodLabel}`, LM, y); y += 3.5
+      if (cashierName) {
+        doc.text(`Kasir   : ${cashierName}`, LM, y); y += 3.5
+      }
+      doc.text(`ID      : ${transactionId.slice(0, 8)}`, LM, y); y += 3.5
+
+      const formattedDate = new Date(createdAt).toLocaleDateString('id-ID', {
+        day: 'numeric', month: 'long', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
       })
+      doc.text(`Tanggal : ${formattedDate}`, LM, y); y += 3.5
 
-      // Remove override immediately — the clone was already captured with hex values
-      document.getElementById(COLOR_OVERRIDE_ID)?.remove()
-      const imgData = canvas.toDataURL('image/png')
-      const imgWidth = 210 // A4 width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      // ── Footer ──
+      ensureSpace(3)
+      dash(); y += 5
 
-      const pdf = new jsPDF('p', 'mm', 'a4')
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
-      pdf.save(`SentraOps-Receipt-${transactionId.slice(0, 8)}.pdf`)
+      if (receiptFooter) {
+        doc.setFontSize(9)
+        doc.setTextColor(85, 85, 85)
+        const footerLines = doc.splitTextToSize(receiptFooter, CW)
+        for (const line of footerLines) {
+          ensureSpace(4)
+          doc.text(line, LM + CW / 2, y, { align: 'center' })
+          y += 3.5
+        }
+        doc.setTextColor(0, 0, 0)
+        y += 2
+      }
+
+      ensureSpace(6)
+      doc.setFont('Courier', 'bold')
+      doc.setFontSize(11)
+      doc.text('Terima Kasih!', LM + CW / 2, y, { align: 'center' })
+      y += 5
+
+      // ── Save ──
+      doc.save(`SentraOps-Receipt-${transactionId.slice(0, 8)}.pdf`)
     } catch (err) {
       console.error('PDF generation failed:', err)
       toast.error('Gagal membuat PDF', {
@@ -163,7 +222,7 @@ export function ReceiptActions({
     } finally {
       setIsPdfLoading(false)
     }
-  }, [transactionId, isPdfLoading])
+  }, [transactionId, isPdfLoading, storeName, items, total, cashAmount, changeAmount, paymentMethodLabel, cashierName, receiptFooter, createdAt])
 
   const formattedDate = new Date(createdAt).toLocaleDateString('id-ID', {
     day: 'numeric', month: 'long', year: 'numeric',
@@ -213,7 +272,7 @@ export function ReceiptActions({
           padding: '0',
         }}
       >
-        {/* Force white background for html2canvas capture */}
+        {/* Force white background for print */}
         <div style={{ background: '#ffffff', color: '#000000', padding: '10px 6px' }}>
           {/* ── Header ── */}
           <div style={{ textAlign: 'center', marginBottom: '6px' }}>

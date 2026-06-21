@@ -1,5 +1,3 @@
-'use client'
-
 import { PhantomSkeleton } from '@/components/ui/PhantomSkeleton'
 import { BarChart3 } from 'lucide-react'
 
