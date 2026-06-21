@@ -35,6 +35,7 @@ export function ReceiptActions({
   receiptFooter,
 }: ReceiptActionsProps) {
   const receiptRef = useRef<HTMLDivElement>(null)
+  const tempContainerRef = useRef<HTMLDivElement | null>(null)
   const [isPdfLoading, setIsPdfLoading] = useState(false)
 
   const handleThermalPrint = useCallback(() => {
@@ -52,11 +53,72 @@ export function ReceiptActions({
       ])
       const html2canvas = html2canvasModule.default
 
-      const canvas = await html2canvas(receiptRef.current, {
+      // Clone receipt content into a temp offscreen container
+      // so html2canvas doesn't skip it (hidden = display:none) and
+      // so we can inject hex color overrides via onclone
+      const clone = receiptRef.current.cloneNode(true) as HTMLElement
+      const tempContainer = document.createElement('div')
+      tempContainer.style.cssText = 'position:fixed;left:-9999px;top:0;width:80mm;z-index:-1;background:#ffffff;color:#000000;'
+      tempContainer.appendChild(clone)
+      document.body.appendChild(tempContainer)
+      tempContainerRef.current = tempContainer
+
+      const canvas = await html2canvas(clone, {
         scale: 2,
         backgroundColor: '#ffffff',
         useCORS: true,
         logging: false,
+        onclone: (doc) => {
+          // html2canvas v1.4.1 can't parse oklch()/lab() used by Tailwind v4
+          // Override all CSS custom properties to hex in the cloned document
+          const style = doc.createElement('style')
+          style.textContent = `
+            :root {
+              --background: #ffffff !important;
+              --foreground: #000000 !important;
+              --border: #e5e7eb !important;
+              --primary: #ea580c !important;
+              --muted: #f4f4f5 !important;
+              --card: #ffffff !important;
+              --accent: #fff7ed !important;
+              --accent-blue: #3b82f6 !important;
+              --ring: #ea580c !important;
+              --surface: #fafafa !important;
+              --surface-container: #f4f4f5 !important;
+              --on-surface: #000000 !important;
+              --on-surface-variant: #52525b !important;
+              --muted-foreground: #71717a !important;
+              --secondary: #52525b !important;
+              --destructive: #ef4444 !important;
+              --input: #e4e4e7 !important;
+              --chart-1: #ea580c !important;
+              --chart-2: #0891b2 !important;
+              --chart-3: #7c3aed !important;
+              --chart-4: #f59e0b !important;
+              --chart-5: #10b981 !important;
+              --sidebar: #f8fafc !important;
+              --sidebar-foreground: #000000 !important;
+              --sidebar-primary: #ea580c !important;
+              --sidebar-accent: #f1f5f9 !important;
+              --sidebar-border: #e2e8f0 !important;
+              --sidebar-ring: #ea580c !important;
+              --error: #ef4444 !important;
+              --tertiary: #d97706 !important;
+              --outline-variant: #e5e7eb !important;
+              --primary-container: #fff7ed !important;
+              --on-background: #000000 !important;
+              --on-primary: #ffffff !important;
+              --on-primary-container: #431407 !important;
+              --accent-blue-foreground: #ffffff !important;
+              --popover: #ffffff !important;
+              --popover-foreground: #000000 !important;
+              --primary-foreground: #ffffff !important;
+              --secondary-foreground: #ffffff !important;
+              --card-foreground: #000000 !important;
+            }
+          `
+          doc.head.appendChild(style)
+        },
       })
       const imgData = canvas.toDataURL('image/png')
       const imgWidth = 210 // A4 width in mm
@@ -71,6 +133,11 @@ export function ReceiptActions({
         description: 'Terjadi kesalahan saat membuat PDF. Silakan coba lagi.',
       })
     } finally {
+      // Clean up temp container
+      if (tempContainerRef.current) {
+        tempContainerRef.current.remove()
+        tempContainerRef.current = null
+      }
       setIsPdfLoading(false)
     }
   }, [transactionId, isPdfLoading])
