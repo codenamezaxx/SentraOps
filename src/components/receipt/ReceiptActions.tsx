@@ -1,8 +1,9 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
-import { Printer, FileDown } from 'lucide-react'
+import { useRef, useCallback, useState } from 'react'
+import { Printer, FileDown, Loader2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
+import { toast } from 'sonner'
 
 export interface ReceiptItem {
   name: string
@@ -34,46 +35,50 @@ export function ReceiptActions({
   receiptFooter,
 }: ReceiptActionsProps) {
   const receiptRef = useRef<HTMLDivElement>(null)
+  const [isPdfLoading, setIsPdfLoading] = useState(false)
 
   const handleThermalPrint = useCallback(() => {
     window.print()
   }, [])
 
   const handlePdfDownload = useCallback(async () => {
-    if (!receiptRef.current) return
+    if (!receiptRef.current || isPdfLoading) return
 
-    const [html2canvasModule, { jsPDF }] = await Promise.all([
-      import('html2canvas'),
-      import('jspdf'),
-    ])
-    const html2canvas = html2canvasModule.default
+    setIsPdfLoading(true)
+    try {
+      const [html2canvasModule, { jsPDF }] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf'),
+      ])
+      const html2canvas = html2canvasModule.default
 
-    const canvas = await html2canvas(receiptRef.current, {
-      scale: 2,
-      backgroundColor: '#ffffff',
-      useCORS: true,
-      logging: false,
-    })
-    const imgData = canvas.toDataURL('image/png')
-    const imgWidth = 210 // A4 width in mm
-    const pageHeight = 297 // A4 height in mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width
+      const canvas = await html2canvas(receiptRef.current, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+      })
+      const imgData = canvas.toDataURL('image/png')
+      const imgWidth = 210 // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
 
-    const pdf = new jsPDF('p', 'mm', 'a4')
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
-    pdf.save(`SentraOps-Receipt-${transactionId.slice(0, 8)}.pdf`)
-  }, [transactionId])
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+      pdf.save(`SentraOps-Receipt-${transactionId.slice(0, 8)}.pdf`)
+    } catch (err) {
+      console.error('PDF generation failed:', err)
+      toast.error('Gagal membuat PDF', {
+        description: 'Terjadi kesalahan saat membuat PDF. Silakan coba lagi.',
+      })
+    } finally {
+      setIsPdfLoading(false)
+    }
+  }, [transactionId, isPdfLoading])
 
   const formattedDate = new Date(createdAt).toLocaleDateString('id-ID', {
     day: 'numeric', month: 'long', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   })
-
-  // Build receipt items lines
-  const itemLines = items.map(
-    (item) =>
-      `${String(item.quantity).padStart(3)}  ${item.name.padEnd(18).slice(0, 18)} ${formatCurrency(item.price).padStart(10)}`
-  )
 
   // Receipt width for printing
   const receiptWidth = '80mm'
@@ -91,10 +96,15 @@ export function ReceiptActions({
         </button>
         <button
           onClick={handlePdfDownload}
-          className="flex-1 h-12 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-sm flex items-center justify-center gap-2 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors active:scale-[0.98] cursor-pointer"
+          disabled={isPdfLoading}
+          className="flex-1 h-12 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-sm flex items-center justify-center gap-2 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <FileDown className="w-4 h-4" />
-          Unduh PDF
+          {isPdfLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <FileDown className="w-4 h-4" />
+          )}
+          {isPdfLoading ? 'Memproses...' : 'Unduh PDF'}
         </button>
       </div>
 
@@ -132,8 +142,8 @@ export function ReceiptActions({
               </tr>
             </thead>
             <tbody>
-              {items.map((item, i) => (
-                <tr key={i}>
+              {items.map((item) => (
+                <tr key={item.name}>
                   <td style={{ textAlign: 'left', paddingRight: '4px', whiteSpace: 'nowrap' }}>{item.quantity}x</td>
                   <td style={{ textAlign: 'left', paddingRight: '4px', wordBreak: 'break-word' }}>{item.name}</td>
                   <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>{formatCurrency(item.price)}</td>
