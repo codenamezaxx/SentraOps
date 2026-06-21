@@ -43,7 +43,44 @@ export function ReceiptActions({
   const [isPdfLoading, setIsPdfLoading] = useState(false)
 
   const handleThermalPrint = useCallback(() => {
-    window.print()
+    if (!receiptRef.current) return
+    // Print only the receipt content in a dedicated iframe,
+    // isolated from page CSS so no extra HTML bleeds into the print.
+    const iframe = document.createElement('iframe')
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:80mm;height:1px;border:none'
+    document.body.appendChild(iframe)
+    const doc = iframe.contentDocument || iframe.contentWindow?.document
+    if (!doc) {
+      // Fallback
+      window.print()
+      iframe.remove()
+      return
+    }
+    doc.open()
+    doc.write(`
+      <html>
+        <head>
+          <style>
+            @page { margin: 0; }
+            body { margin:0; padding:10px 6px; background:#fff; color:#000;
+                   font-family:monospace; font-size:10px; line-height:1.3;
+                   width:80mm; }
+            table { width:100%; border-collapse:collapse; }
+            td { padding:0 6px 2px 0; vertical-align:top; }
+            .hidden { display:none; }
+          </style>
+        </head>
+        <body>${receiptRef.current.innerHTML}</body>
+      </html>
+    `)
+    doc.close()
+    // Focus the iframe so the print dialog targets it
+    iframe.contentWindow?.focus()
+    iframe.contentWindow?.print()
+    // Remove iframe after print dialog closes
+    iframe.contentWindow?.addEventListener('afterprint', () => iframe.remove())
+    // Fallback cleanup
+    setTimeout(() => { if (iframe.parentNode) iframe.remove() }, 10000)
   }, [])
 
   const handlePdfDownload = useCallback(async () => {
@@ -67,65 +104,50 @@ export function ReceiptActions({
         return
       }
 
+      // Inject color override into the LIVE document BEFORE cloning,
+      // so the html2canvas clone captures our hex overrides atomically.
+      // Remove immediately after — the clone already has the fix.
+      const COLOR_OVERRIDE_ID = '__pdf_hex_override'
+      const existingOverride = document.getElementById(COLOR_OVERRIDE_ID)
+      if (!existingOverride) {
+        const s = document.createElement('style')
+        s.id = COLOR_OVERRIDE_ID
+        s.textContent = `
+          :root {
+            --background: #ffffff !important; --foreground: #000000 !important;
+            --border: #e5e7eb !important; --primary: #ea580c !important;
+            --muted: #f4f4f5 !important; --card: #ffffff !important;
+            --accent: #fff7ed !important; --accent-blue: #3b82f6 !important;
+            --ring: #ea580c !important; --surface: #fafafa !important;
+            --surface-container: #f4f4f5 !important; --on-surface: #000000 !important;
+            --on-surface-variant: #52525b !important; --muted-foreground: #71717a !important;
+            --secondary: #52525b !important; --destructive: #ef4444 !important;
+            --input: #e4e4e7 !important; --error: #ef4444 !important;
+            --tertiary: #d97706 !important; --outline-variant: #e5e7eb !important;
+            --primary-container: #fff7ed !important; --on-background: #000000 !important;
+            --on-primary: #ffffff !important; --on-primary-container: #431407 !important;
+            --accent-blue-foreground: #ffffff !important; --popover: #ffffff !important;
+            --popover-foreground: #000000 !important; --primary-foreground: #ffffff !important;
+            --secondary-foreground: #ffffff !important; --card-foreground: #000000 !important;
+            --chart-1: #ea580c !important; --chart-2: #0891b2 !important;
+            --chart-3: #7c3aed !important; --chart-4: #f59e0b !important;
+            --chart-5: #10b981 !important; --sidebar: #f8fafc !important;
+            --sidebar-foreground: #000000 !important; --sidebar-primary: #ea580c !important;
+            --sidebar-accent: #f1f5f9 !important; --sidebar-border: #e2e8f0 !important;
+            --sidebar-ring: #ea580c !important;
+          }`
+        document.head.appendChild(s)
+      }
+
       const canvas = await html2canvas(pdfTarget, {
         scale: 2,
         backgroundColor: '#ffffff',
         useCORS: true,
         logging: false,
-        onclone: (doc) => {
-          // html2canvas v1.4.1 can't parse oklch()/lab() used by Tailwind v4
-          // Override all CSS custom properties to hex in the cloned document
-          const receiptClone = doc.querySelector('[data-receipt-clone]') as HTMLElement | null
-          if (receiptClone) receiptClone.style.display = 'block'
-          const style = doc.createElement('style')
-          style.textContent = `
-            :root {
-              --background: #ffffff !important;
-              --foreground: #000000 !important;
-              --border: #e5e7eb !important;
-              --primary: #ea580c !important;
-              --muted: #f4f4f5 !important;
-              --card: #ffffff !important;
-              --accent: #fff7ed !important;
-              --accent-blue: #3b82f6 !important;
-              --ring: #ea580c !important;
-              --surface: #fafafa !important;
-              --surface-container: #f4f4f5 !important;
-              --on-surface: #000000 !important;
-              --on-surface-variant: #52525b !important;
-              --muted-foreground: #71717a !important;
-              --secondary: #52525b !important;
-              --destructive: #ef4444 !important;
-              --input: #e4e4e7 !important;
-              --chart-1: #ea580c !important;
-              --chart-2: #0891b2 !important;
-              --chart-3: #7c3aed !important;
-              --chart-4: #f59e0b !important;
-              --chart-5: #10b981 !important;
-              --sidebar: #f8fafc !important;
-              --sidebar-foreground: #000000 !important;
-              --sidebar-primary: #ea580c !important;
-              --sidebar-accent: #f1f5f9 !important;
-              --sidebar-border: #e2e8f0 !important;
-              --sidebar-ring: #ea580c !important;
-              --error: #ef4444 !important;
-              --tertiary: #d97706 !important;
-              --outline-variant: #e5e7eb !important;
-              --primary-container: #fff7ed !important;
-              --on-background: #000000 !important;
-              --on-primary: #ffffff !important;
-              --on-primary-container: #431407 !important;
-              --accent-blue-foreground: #ffffff !important;
-              --popover: #ffffff !important;
-              --popover-foreground: #000000 !important;
-              --primary-foreground: #ffffff !important;
-              --secondary-foreground: #ffffff !important;
-              --card-foreground: #000000 !important;
-            }
-          `
-          doc.head.appendChild(style)
-        },
       })
+
+      // Remove override immediately — the clone was already captured with hex values
+      document.getElementById(COLOR_OVERRIDE_ID)?.remove()
       const imgData = canvas.toDataURL('image/png')
       const imgWidth = 210 // A4 width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width
