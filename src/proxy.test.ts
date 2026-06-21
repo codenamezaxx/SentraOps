@@ -16,7 +16,7 @@ vi.mock('@supabase/ssr', () => ({
   })),
 }))
 
-describe('Middleware Role-Based Authorization', () => {
+describe('Proxy Role-Based Authorization', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     
@@ -37,9 +37,9 @@ describe('Middleware Role-Based Authorization', () => {
       error: null,
     })
 
-    // Since we can't easily test the actual middleware function,
+    // Since we can't easily test the actual proxy function,
     // we're documenting the expected behavior:
-    // 1. Middleware checks if route is in ownerOnlyRoutes
+    // 1. Proxy checks if route is in ownerOnlyRoutes
     // 2. Fetches user profile to check role
     // 3. If role is 'owner', allows access
     // 4. If role is 'cashier', redirects to /access-denied
@@ -59,7 +59,7 @@ describe('Middleware Role-Based Authorization', () => {
     })
 
     // Expected behavior:
-    // 1. Middleware detects /inventory is owner-only route
+    // 1. Proxy detects /inventory is owner-only route
     // 2. Fetches user profile
     // 3. Sees role is 'cashier'
     // 4. Redirects to /access-denied
@@ -80,7 +80,7 @@ describe('Middleware Role-Based Authorization', () => {
 
     // Expected behavior:
     // 1. /pos is not in ownerOnlyRoutes
-    // 2. Middleware allows access without role check
+    // 2. Proxy allows access without role check
     
     expect(mockGetUser).not.toHaveBeenCalled()
   })

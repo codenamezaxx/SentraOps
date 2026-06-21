@@ -61,7 +61,7 @@ User-friendly error page displayed when cashiers attempt to access owner-only fe
 
 ### 3. Middleware Authorization
 
-**Location**: `src/middleware.ts`
+**Location**: `src/proxy.ts`
 
 Server-side route protection that runs before pages load.
 
@@ -115,7 +115,7 @@ const ownerOnlyRoutes = ['/inventory', '/financial']
 **Run Tests**:
 ```bash
 npm test -- RequireOwner.test.tsx --run
-npm test -- middleware.test.ts --run
+npm test -- proxy.test.ts --run
 ```
 
 ### Manual Testing Scenarios

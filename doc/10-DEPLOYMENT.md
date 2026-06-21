@@ -118,7 +118,7 @@ npm run build  # Coba lagi
 
 ### Auth Not Working
 - Verifikasi callback URL di Supabase Auth settings
-- Pastikan cookie handling benar (middleware.ts)
+- Pastikan cookie handling benar (proxy.ts)
 - Cek bahwa `@supabase/ssr` versi kompatibel
 
 ### RLS Blocking Queries

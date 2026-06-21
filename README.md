@@ -252,7 +252,7 @@ Dokumentasi lengkap tersedia di folder [`doc/`](./doc):
 |------|-----|
 | [01-ARSITEKTUR.md](doc/01-ARSITEKTUR.md) | Tech stack, folder structure, routing |
 | [02-DATABASE.md](doc/02-DATABASE.md) | Tabel, relasi, RLS, migrasi |
-| [03-AUTH.md](doc/03-AUTH.md) | Alur auth, middleware, role-based access |
+| [03-AUTH.md](doc/03-AUTH.md) | Alur auth, proxy, role-based access |
 | [04-API.md](doc/04-API.md) | Endpoint API route |
 | [05-KOMPONEN.md](doc/05-KOMPONEN.md) | UI component library, design system |
 | [06-STATE.md](doc/06-STATE.md) | Zustand stores |

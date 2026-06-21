@@ -92,7 +92,7 @@ Semua komponen lain default ke **Server Component** untuk performa lebih baik.
 
 ## Middleware
 
-File `src/middleware.ts` menangani:
+File `src/proxy.ts` menangani:
 1. **Autentikasi** — Redirect ke `/login` jika session tidak valid
 2. **Role-based access** — Owner-only routes (`/inventory`, `/financial`, `/staff`, `/expenses`, `/settings`) dicek via `profiles.role`
 3. **Auth route loop** — User sudah login diarahkan ke `/` jika mengakses halaman auth

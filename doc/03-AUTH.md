@@ -7,7 +7,7 @@ SentraOps menggunakan **Supabase SSR** untuk autentikasi dengan cookie-based ses
 ```
 Browser ──► Next.js ──► Supabase Auth
              │
-             ├── middleware.ts (cookie refresh + role check)
+             ├── proxy.ts (cookie refresh + role check)
              ├── server.ts (Server Components / API Routes)
              └── client.ts (Client Components)
 ```
@@ -20,7 +20,7 @@ Browser ──► Next.js ──► Supabase Auth
 4. Middleware mendeteksi session cookie di request berikutnya
 5. User diarahkan ke halaman dashboard (`/`)
 
-## Middleware (`src/middleware.ts`)
+## Proxy (`src/proxy.ts`)
 
 Middleware berjalan di setiap request (kecuali API routes dan static files) dan melakukan:
 
@@ -107,5 +107,5 @@ Role disimpan di tabel `profiles.role` dan diverifikasi di:
 
 - Semua session menggunakan **httpOnly cookies**
 - Refresh token rotation otomatis oleh Supabase
-- Role dicek di **server-side** (middleware + API routes), tidak hanya UI
+- Role dicek di **server-side** (proxy + API routes), tidak hanya UI
 - `auth.getUser()` (bukan `getSession`) digunakan untuk verifikasi token di server

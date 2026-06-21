@@ -83,7 +83,7 @@ doc/                            — comprehensive documentation (10 files)
 ## Key Patterns
 
 - **Path alias:** `@/*` maps to `./src/*`
-- **Auth:** Supabase SSR with cookie-based sessions. Middleware (`src/middleware.ts`) handles redirects and role checks.
+- **Auth:** Supabase SSR with cookie-based sessions. Proxy (`src/proxy.ts`) handles redirects and role checks.
 - **Role-based routes:** `/inventory`, `/financial`, `/staff`, `/expenses`, `/settings` are owner-only. Middleware queries `profiles.role` and redirects non-owners to `/access-denied`.
 - **State:** Zustand for client-side state (cart, UI, notifications, sync). No Redux.
 - **Server vs Client:** Use `"use client"` only for interactivity (hooks, event handlers, Zustand). Default to Server Components.
