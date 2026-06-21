@@ -52,6 +52,7 @@ export interface TransactionWithCashier {
 
 import { createClient } from '@/lib/supabase/client'
 import { TransactionItem } from '@/lib/types'
+import { ReceiptActions } from '@/components/receipt/ReceiptActions'
 
 interface TransactionItemWithProduct extends Omit<TransactionItem, 'transaction_id' | 'product_id'> {
   transaction_id: string | null
@@ -82,6 +83,8 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [storeName, setStoreName] = useState('Toko Saya')
+  const [receiptFooter, setReceiptFooter] = useState('')
   const supabase = createClient()
 
   useEffect(() => {
@@ -109,6 +112,31 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
 
     fetchItems()
   }, [selectedTransactionId, supabase])
+
+  useEffect(() => {
+    async function fetchStore() {
+      if (!selectedTransactionId) return
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('store_id')
+        .eq('auth_id', user.id)
+        .single()
+      if (!profile?.store_id) return
+      const { data: store } = await supabase
+        .from('stores')
+        .select('name, receipt_footer')
+        .eq('id', profile.store_id)
+        .single()
+      if (store) {
+        setStoreName(store.name)
+        setReceiptFooter(store.receipt_footer || '')
+      }
+    }
+    fetchStore()
+  }, [selectedTransactionId])
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-'
@@ -138,6 +166,12 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
 
 
   const selectedTransaction = transactions.find(t => t.id === selectedTransactionId)
+
+  const receiptItems = transactionItems.map((item) => ({
+    name: item.products?.name || 'Produk',
+    quantity: item.quantity,
+    price: item.price_at_time,
+  }))
 
   // Select all / deselect all on current page
   const allSelectedOnPage = paginatedTransactions.length > 0 &&
@@ -428,6 +462,21 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                   {formatCurrency(selectedTransaction.total_amount)}
                 </span>
               </div>
+              {receiptItems.length > 0 && (
+                <div className="pt-2 border-t">
+                  <ReceiptActions
+                    transactionId={selectedTransaction.id}
+                    items={receiptItems}
+                    total={selectedTransaction.total_amount}
+                    cashAmount={selectedTransaction.payment_method === 'cash' ? selectedTransaction.cash_amount ?? undefined : undefined}
+                    changeAmount={selectedTransaction.payment_method === 'cash' ? selectedTransaction.change_amount ?? undefined : undefined}
+                    paymentMethodLabel={selectedTransaction.payment_method.replace('_', ' ')}
+                    createdAt={selectedTransaction.created_at || new Date().toISOString()}
+                    storeName={storeName}
+                    receiptFooter={receiptFooter}
+                  />
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
