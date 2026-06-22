@@ -32,6 +32,7 @@ export async function createInvoiceForTransaction(params: {
       store_id: params.storeId,
       customer_name: params.customerName,
       customer_phone: params.customerPhone || null,
+      transaction_id: params.transactionId ?? null,
       amount: params.amount,
       due_date: dueDate.toISOString(),
       status: 'UNPAID',
