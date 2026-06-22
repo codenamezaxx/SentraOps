@@ -44,6 +44,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
   const [completed, setCompleted] = useState(false)
   const [transactionId, setTransactionId] = useState<string | null>(null)
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null)
+  const [qrString, setQrString] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [paidTotal, setPaidTotal] = useState(0)
@@ -298,6 +299,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
       setPaidMethod(snapshotMethod)
       setTransactionId(result.transaction_id)
       setPaymentUrl(result.payment_url || null)
+      setQrString(result.qr_string || null)
 
       if (selectedMethod === 'qris' || selectedMethod === 'whatsapp_invoice') {
         setReceiptSnapshot(items.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })))
@@ -318,6 +320,10 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  const handleQRISRedirect = () => {
+    if (paymentUrl) window.open(paymentUrl, '_blank')
   }
 
   const handleWAInvoice = () => {
@@ -349,6 +355,7 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
         setCompleted(false)
         setTransactionId(null)
         setPaymentUrl(null)
+        setQrString(null)
         setErrorMessage(null)
         setPaidTotal(0)
         setPaidMethod(null)
@@ -359,8 +366,10 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
     }
   }
 
-  const qrCodeUrl = paymentUrl
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(paymentUrl)}`
+  // Use real QRIS string from Xendit if available, otherwise fall back to invoice URL
+  const qrCodeData = qrString || paymentUrl
+  const qrCodeUrl = qrCodeData
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(qrCodeData)}`
     : null
 
   // --- Render helpers ---
@@ -374,11 +383,25 @@ export function PaymentDrawer({ onOpenChange: onOpenChangeProp }: PaymentDrawerP
           </div>
           <p className="text-base font-bold text-foreground text-center">Scan QRIS untuk Membayar</p>
 
+          <p className="text-xs text-muted-foreground text-center -mt-3">
+            Scan dengan {qrString ? 'aplikasi perbankan Anda' : 'kode QR di bawah'}
+          </p>
+
           {qrCodeUrl && (
             <div className="bg-card p-3 rounded-2xl shadow-sm border border-border">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={qrCodeUrl} alt="QRIS Payment" className="w-60 h-60" />
             </div>
+          )}
+
+          {paymentUrl && (
+            <button
+              onClick={handleQRISRedirect}
+              className="flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              <ExternalLink className="w-3 h-3" />
+              Bayar melalui halaman Xendit
+            </button>
           )}
 
           <div className="bg-muted rounded-xl p-3 w-full space-y-2 text-sm">

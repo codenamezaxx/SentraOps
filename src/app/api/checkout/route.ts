@@ -22,6 +22,7 @@ export interface CheckoutResponse {
   success: boolean
   transaction_id?: string
   payment_url?: string
+  qr_string?: string
   error?: string
   code?: string
   product_name?: string
@@ -330,10 +331,51 @@ export async function POST(request: Request) {
       })
     }
 
-    // 9. Handle Xendit Invoice creation if payment method is gateway
+    // 9. Handle Xendit payment gateway
     let paymentUrl: string | undefined
+    let qrString: string | undefined
 
-    if (body.payment_method === 'qris' || body.payment_method === 'whatsapp_invoice') {
+    if (body.payment_method === 'qris') {
+      // ── Real QRIS via Xendit QR Code API ──
+      try {
+        const auth = Buffer.from(`${process.env.XENDIT_SECRET_KEY}:`).toString('base64')
+        const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString() // 1 hour
+
+        const qrRes = await fetch('https://api.xendit.co/qr_codes', {
+          method: 'POST',
+          headers: {
+            Authorization: `Basic ${auth}`,
+            'Content-Type': 'application/json',
+            'api-version': '2022-07-31',
+          },
+          body: JSON.stringify({
+            reference_id: transaction.id,
+            type: 'DYNAMIC',
+            currency: 'IDR',
+            amount: transaction.total_amount,
+            expires_at: expiresAt,
+          }),
+        })
+
+        const qrData = await qrRes.json()
+
+        if (!qrRes.ok) {
+          throw new Error(qrData.message || 'Gagal membuat QRIS')
+        }
+
+        qrString = qrData.qr_string
+      } catch (err) {
+        console.error('Xendit QRIS creation failed:', err)
+        return NextResponse.json(
+          {
+            success: false,
+            transaction_id: transaction.id,
+            error: 'Gagal membuat QRIS. Silakan cek riwayat transaksi.',
+          },
+          { status: 500 }
+        )
+      }
+    } else if (body.payment_method === 'whatsapp_invoice') {
       try {
         const xenditClient = new Xendit({
           secretKey: process.env.XENDIT_SECRET_KEY || '',
@@ -383,6 +425,7 @@ export async function POST(request: Request) {
       success: true,
       transaction_id: transaction.id,
       payment_url: paymentUrl,
+      qr_string: qrString,
     })
   } catch (error) {
     console.error('Checkout error:', {

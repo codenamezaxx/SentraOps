@@ -2,6 +2,41 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { createNotification } from '@/lib/notifications'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function markTransactionCompleted(supabaseAdmin: any, transactionId: string) {
+  const { error: txnError } = await supabaseAdmin
+    .from('transactions')
+    .update({ status: 'completed' })
+    .eq('id', transactionId)
+
+  if (!txnError) {
+    console.log(`Webhook: Transaction ${transactionId} marked as completed.`)
+
+    // ── Get store info & send notification ──
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: txn } = await (supabaseAdmin as any)
+      .from('transactions')
+      .select('store_id, total_amount, payment_method')
+      .eq('id', transactionId)
+      .single()
+
+    if (txn) {
+      const methodLabel =
+        txn.payment_method === 'qris' ? 'QRIS' :
+        txn.payment_method === 'whatsapp_invoice' ? 'WhatsApp Invoice' :
+        'Online'
+      await createNotification({
+        storeId: txn.store_id,
+        title: 'Pembayaran Diterima',
+        message: `Pembayaran ${methodLabel} sebesar ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(txn.total_amount)} telah dikonfirmasi.`,
+        type: 'payment',
+      })
+    }
+  } else {
+    console.error('Webhook: Failed to update transaction:', txnError)
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const callbackToken = request.headers.get('x-callback-token')
@@ -11,14 +46,24 @@ export async function POST(request: Request) {
     }
 
     const payload = await request.json()
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+    )
+
+    // ── Handle QR Code paid callback (QRIS) ──
+    if (payload.event === 'qr_codes.paid') {
+      const transactionId = payload.data?.reference_id
+      if (transactionId) {
+        await markTransactionCompleted(supabaseAdmin, transactionId)
+      }
+      return NextResponse.json({ received: true })
+    }
+
+    // ── Handle Invoice callback (WhatsApp Invoice) ──
     const { status, external_id } = payload
 
     if (status === 'PAID' || status === 'SETTLED') {
-      const supabaseAdmin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-      )
-
       // Try to mark invoice as PAID if external_id is an invoice ID
       const { data: invoice, error: invoiceFetchError } = await supabaseAdmin
         .from('invoices')
@@ -38,45 +83,11 @@ export async function POST(request: Request) {
 
         // Also mark the linked transaction as completed
         if (invoice.transaction_id) {
-          await supabaseAdmin
-            .from('transactions')
-            .update({ status: 'completed' })
-            .eq('id', invoice.transaction_id)
-          console.log(`Webhook: Transaction ${invoice.transaction_id} marked as completed.`)
+          await markTransactionCompleted(supabaseAdmin, invoice.transaction_id)
         }
       } else {
         // Fallback: treat external_id as transaction ID (legacy)
-        const { error: txnError } = await supabaseAdmin
-          .from('transactions')
-          .update({ status: 'completed' })
-          .eq('id', external_id)
-
-        if (!txnError) {
-          console.log(`Webhook: Transaction ${external_id} marked as completed.`)
-        } else {
-          console.error('Webhook: Failed to update transaction:', txnError)
-        }
-      }
-
-      // Get store_id from the transaction to create notification
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: txn } = await (supabaseAdmin as any)
-        .from('transactions')
-        .select('store_id, total_amount, payment_method')
-        .eq('id', external_id)
-        .single()
-
-      if (txn) {
-        const methodLabel =
-          txn.payment_method === 'qris' ? 'QRIS' :
-          txn.payment_method === 'whatsapp_invoice' ? 'WhatsApp Invoice' :
-          'Online'
-        await createNotification({
-          storeId: txn.store_id,
-          title: 'Pembayaran Diterima',
-          message: `Pembayaran ${methodLabel} sebesar ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(txn.total_amount)} telah dikonfirmasi.`,
-          type: 'payment',
-        })
+        await markTransactionCompleted(supabaseAdmin, external_id)
       }
     }
 
