@@ -85,6 +85,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const [showAllItems, setShowAllItems] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [storeName, setStoreName] = useState('Toko Saya')
   const [receiptFooter, setReceiptFooter] = useState('')
@@ -321,7 +322,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => setSelectedTransactionId(t.id)}
+                          onClick={() => { setSelectedTransactionId(t.id); setShowAllItems(false) }}
                           className="h-10 w-10 rounded-lg hover:bg-muted"
                         >
                           <Eye className="w-4 h-4" />
@@ -366,7 +367,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                   aria-label={`Pilih transaksi ${t.id}`}
                 />
                 <button
-                  onClick={() => setSelectedTransactionId(t.id)}
+                  onClick={() => { setSelectedTransactionId(t.id); setShowAllItems(false) }}
                   className="flex-1 min-w-0 text-left"
                 >
                   <div className="flex items-center gap-2">
@@ -409,7 +410,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
       />
 
       {/* Transaction Details Dialog */}
-      <Dialog open={!!selectedTransactionId} onOpenChange={(open) => !open && setSelectedTransactionId(null)}>
+      <Dialog open={!!selectedTransactionId} onOpenChange={(open) => { if (!open) { setSelectedTransactionId(null); setShowAllItems(false) }}}>
         <DialogContent className="sm:max-w-md sm:rounded-2xl">
           <DialogHeader>
             <DialogTitle>Detail Transaksi</DialogTitle>
@@ -432,8 +433,8 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                 {isLoadingItems ? (
                   <div className="text-center py-4 text-muted-foreground">Memuat item...</div>
                 ) : (
-                  <div className="space-y-2">
-                    {transactionItems.map((item) => (
+                  <div className="max-h-36 overflow-y-auto space-y-2">
+                    {transactionItems.slice(0, showAllItems ? transactionItems.length : 3).map((item) => (
                       <div key={item.id} className="flex justify-between text-sm">
                         <div className="flex flex-col">
                           <span className="font-medium">{item.products?.name || 'Produk'}</span>
@@ -444,6 +445,17 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                         </div>
                       </div>
                     ))}
+                    {transactionItems.length > 3 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllItems(!showAllItems)}
+                        className="w-full text-xs text-primary font-medium hover:underline pt-1"
+                      >
+                        {showAllItems
+                          ? `Tampilkan lebih sedikit`
+                          : `Tampilkan ${transactionItems.length - 3} item lainnya`}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

@@ -193,24 +193,17 @@ export function ReceiptActions({
       ensureSpace(3)
       dash(); y += 5
 
-      if (receiptFooter) {
-        doc.setFontSize(9)
-        doc.setTextColor(85, 85, 85)
-        const footerLines = doc.splitTextToSize(receiptFooter, CW)
-        for (const line of footerLines) {
-          ensureSpace(4)
-          doc.text(line, LM + CW / 2, y, { align: 'center' })
-          y += 3.5
-        }
-        doc.setTextColor(0, 0, 0)
-        y += 2
+      const footerText = receiptFooter || 'Terima kasih'
+      doc.setFontSize(9)
+      doc.setTextColor(85, 85, 85)
+      const footerLines = doc.splitTextToSize(footerText, CW)
+      for (const line of footerLines) {
+        ensureSpace(4)
+        doc.text(line, LM + CW / 2, y, { align: 'center' })
+        y += 3.5
       }
-
-      ensureSpace(6)
-      doc.setFont('Courier', 'bold')
-      doc.setFontSize(11)
-      doc.text('Terima Kasih!', LM + CW / 2, y, { align: 'center' })
-      y += 5
+      doc.setTextColor(0, 0, 0)
+      y += 2
 
       // ── Save ──
       doc.save(`SentraOps-Receipt-${transactionId.slice(0, 8)}.pdf`)
@@ -351,14 +344,8 @@ export function ReceiptActions({
           <div style={{ borderTop: '1px dashed #888', margin: '6px 0' }} />
 
           {/* ── Footer ── */}
-          {receiptFooter && (
-            <div style={{ textAlign: 'center', fontSize: '9px', marginBottom: '4px', color: '#555', whiteSpace: 'pre-line' }}>
-              {receiptFooter}
-            </div>
-          )}
-
-          <div style={{ textAlign: 'center', fontSize: '11px', fontWeight: 'bold', marginTop: '4px' }}>
-            Terima Kasih!
+          <div style={{ textAlign: 'center', fontSize: '10px', color: '#555', whiteSpace: 'pre-line' }}>
+            {receiptFooter || 'Terima kasih'}
           </div>
         </div>
       </div>
