@@ -48,6 +48,7 @@ const ownerMoreItems = [
 ]
 
 const cashierMoreItems = [
+  { href: "/invoices", label: "Tagihan", icon: Receipt },
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ]
 
