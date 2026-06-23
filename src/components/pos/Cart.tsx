@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useCartStore } from '@/lib/stores/cartStore'
 import Image from 'next/image'
 import { getProductImageUrl } from '@/lib/utils'
@@ -16,6 +17,102 @@ import { ShoppingCart, UtensilsCrossed, X, Minus, Plus } from 'lucide-react'
  * Requirements: 6.4, 6.5, 7.1, 7.2, 7.3
  * Task: 9.4 - Implement cart display component
  */
+/**
+ * Editable quantity input with increment/decrement buttons.
+ * Keeps local state for smooth typing, syncs to store on blur/Enter.
+ */
+function QuantityInput({
+  value,
+  stock,
+  onChange,
+}: {
+  value: number
+  stock: number
+  onChange: (qty: number) => void
+}) {
+  const [local, setLocal] = useState(String(value))
+  const inputRef = useRef<HTMLInputElement>(null)
+  const isDirty = useRef(false)
+
+  // Sync from parent when not being edited
+  useEffect(() => {
+    if (!isDirty.current) {
+      setLocal(String(value))
+    }
+  }, [value])
+
+  const commit = useCallback(() => {
+    isDirty.current = false
+    const raw = local.trim()
+    if (raw === '') {
+      setLocal(String(value))
+      return
+    }
+    const parsed = parseInt(raw, 10)
+    if (isNaN(parsed) || parsed < 1) {
+      setLocal(String(value))
+      return
+    }
+    const capped = Math.min(parsed, stock)
+    setLocal(String(capped))
+    if (capped !== value) {
+      onChange(capped)
+    }
+  }, [local, value, stock, onChange])
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        inputRef.current?.blur()
+      }
+    },
+    [],
+  )
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only allow digits
+    const cleaned = e.target.value.replace(/\D/g, '')
+    setLocal(cleaned)
+    isDirty.current = true
+  }, [])
+
+  return (
+    <div className="flex items-center gap-2 bg-surface-container-high dark:bg-inverse-surface rounded-xl p-1 shadow-sm">
+      {/* Decrement Button */}
+      <button
+        onClick={() => onChange(value - 1)}
+        className="w-8 h-8 flex items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-on-surface hover:dark:text-surface active:scale-90 transition-transform rounded-lg hover:bg-surface-container-low"
+        aria-label="Kurangi jumlah"
+      >
+        <Minus className="w-4 h-4" />
+      </button>
+
+      {/* Editable Quantity Input */}
+      <input
+        ref={inputRef}
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        value={local}
+        onChange={handleChange}
+        onBlur={commit}
+        onKeyDown={handleKeyDown}
+        className="w-8 h-8 font-semibold text-sm text-on-surface dark:text-surface text-center bg-transparent border-none outline-none ring-0 focus:ring-1 focus:ring-accent-blue/40 rounded-md p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        aria-label="Jumlah item"
+      />
+
+      {/* Increment Button */}
+      <button
+        onClick={() => onChange(value + 1)}
+        className="w-8 h-8 flex items-center justify-center text-accent-blue active:scale-90 transition-transform bg-surface-container-lowest dark:bg-surface-dark rounded-lg shadow-sm hover:bg-accent-blue/10"
+        aria-label="Tambah jumlah"
+      >
+        <Plus className="w-4 h-4" />
+      </button>
+    </div>
+  )
+}
+
 export function Cart() {
   const { items, total, updateQuantity, removeItem } = useCartStore()
 
@@ -102,30 +199,11 @@ export function Cart() {
                     </div>
 
                     {/* Quantity Increment/Decrement Controls (Requirement 7.1, 7.2) */}
-                    <div className="flex items-center gap-2 bg-surface-container-high dark:bg-inverse-surface rounded-xl p-1 shadow-sm">
-                      {/* Decrement Button */}
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-8 h-8 flex items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-on-surface hover:dark:text-surface active:scale-90 transition-transform rounded-lg hover:bg-surface-container-low"
-                        aria-label="Kurangi jumlah"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-
-                      {/* Quantity Display (Requirement 6.4) */}
-                      <span className="font-semibold text-sm text-on-surface dark:text-surface w-6 text-center">
-                        {item.quantity}
-                      </span>
-
-                      {/* Increment Button */}
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center text-accent-blue active:scale-90 transition-transform bg-surface-container-lowest dark:bg-surface-dark rounded-lg shadow-sm hover:bg-accent-blue/10"
-                        aria-label="Tambah jumlah"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <QuantityInput
+                      value={item.quantity}
+                      stock={item.stock_quantity}
+                      onChange={(qty) => updateQuantity(item.id, qty)}
+                    />
                   </div>
                 </div>
               </div>
