@@ -59,3 +59,7 @@ next-env.d.ts
 
 # opencode artifacts
 .slim/
+
+# serwist
+public/sw*
+public/swe-worker*
