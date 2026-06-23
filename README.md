@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/TypeScript-Strict-blue" alt="TypeScript Strict" />
   <img src="https://img.shields.io/badge/Supabase-Realtime-green" alt="Supabase Realtime" />
   <img src="https://img.shields.io/badge/PWA-Enabled-teal" alt="PWA Enabled" />
-  <img src="https://img.shields.io/badge/Version-1.1.1 Release-teal" alt="v1.1.1 Release" />
+  <img src="https://img.shields.io/badge/Version-1.1.2 Release-teal" alt="v1.1.2 Release" />
   <img src="https://img.shields.io/badge/License-MIT-gold" alt="MIT License" />
 </p>
 
@@ -88,6 +88,56 @@ npm run dev
 ```
 
 Buka [http://localhost:3000](http://localhost:3000).
+
+## 💳 Payment Gateway (Xendit)
+
+Secara opsional, SentraOps dapat terintegrasi dengan **Xendit** untuk menerima pembayaran digital (QRIS, Virtual Account, Credit Card) secara otomatis.
+
+### Setup Xendit
+
+1. **Daftar akun Xendit** di [https://dashboard.xendit.co](https://dashboard.xendit.co) (Development mode gratis untuk testing).
+2. **Buat API Key:**
+   - Dashboard Xendit → **Settings** → **API Keys** → **Generate Secret Key**
+   - Salin **Development Secret Key** (mulai dengan `xnd_development_...`)
+3. **Buat Webhook Verification Token:**
+   - Dashboard Xendit → **Settings** → **Webhooks** → **Verification Token**
+   - Generate atau salin token yang ada
+4. **Setup Webhook URL:**
+   - Dashboard Xendit → **Settings** → **Webhooks**
+   - Tambah webhook untuk event **`Invoice Paid`** dengan URL:
+     ```
+     https://domain-anda.com/api/webhooks/payment
+     ```
+     > **Catatan:** Saat development dengan `ngrok`, kamu bisa expose localhost: `ngrok http 3000` lalu gunakan URL ngrok sebagai base webhook.
+
+### Environment Variables
+
+Tambahkan ke file `.env.local`:
+
+```env
+XENDIT_SECRET_KEY=xnd_development_...
+XENDIT_WEBHOOK_VERIFICATION_TOKEN=token_dari_xendit
+```
+
+> **Development:** Kedua variabel ini sudah otomatis tersedia di `.env.local` proyek ini untuk development (dengan kunci development Xendit). Untuk production, ganti dengan **Production Secret Key** dari dashboard Xendit.
+
+### Cara Kerja
+
+| Skenario | Alur |
+|----------|------|
+| **QRIS** | POS → checkout → generate QRIS via Xendit QR Code API → tampilkan QR → customer scan → bayar |
+| **Invoice (VA/Kartu)** | POS → checkout → buat invoice Xendit → redirect ke halaman pembayaran Xendit → customer bayar |
+| **Webhook** | Xendit kirim notifikasi `Invoice Paid` ke `/api/webhooks/payment` → update status transaksi |
+| **Pengingat Faktur** | Buat faktur → kirim WA reminder → Xendit buat link pembayaran → customer bayar langsung |
+
+### Fitur Tersedia
+
+- ✅ **QRIS** — Pembayaran QR statis/dinamis via Xendit QR Code API
+- ✅ **Virtual Account** — BCA, Mandiri, BRI, dan lainnya (via Xendit Invoice)
+- ✅ **Credit/Debit Card** — Via Xendit Invoice
+- ✅ **Invoice Link** — Link pembayaran untuk dibagikan ke pelanggan
+- ✅ **Webhook** — Update status otomatis saat pembayaran masuk
+- ✅ **Xendit Dashboard** — Semua transaksi tercatat otomatis di dashboard Xendit
 
 ## 📦 Scripts
 
@@ -197,7 +247,7 @@ e2e/
          └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
 ```
 
-## ✅ Development Status — v1.1.1
+## ✅ Development Status — v1.1.2
 
 ### Core Platform
 - [x] Project setup & Supabase integration
