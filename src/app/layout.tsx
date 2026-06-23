@@ -3,7 +3,7 @@ import { Plus_Jakarta_Sans, Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../components/theme-provider";
 import { Toaster } from "../components/ui/sonner";
-import { PwaRegister } from "../components/PwaRegister";
+import { SerwistProvider } from "@serwist/turbopack/react";
 import { OfflineDbInit } from "../components/OfflineDbInit";
 import Script from "next/script";
 import "@aejkatappaja/phantom-ui/ssr.css";
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/favicon.svg",
-    apple: "/icons/icon-512.svg",
+    apple: "/icons/icon-512x512.png",
   },
 }
 
@@ -80,7 +80,7 @@ export default function RootLayout({
             document.head.appendChild(style);
           `}
         </Script>
-        <PwaRegister />
+        <SerwistProvider swUrl="/serwist/sw.js" />
         <OfflineDbInit />
       </body>
     </html>

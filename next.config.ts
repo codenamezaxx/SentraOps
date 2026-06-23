@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSerwist } from "@serwist/turbopack";
 
 const nextConfig: NextConfig = {
   images: {
@@ -22,4 +23,4 @@ const withBundleAnalyzer =
       require("@next/bundle-analyzer")({ enabled: true })
     : (config: NextConfig) => config;
 
-export default withBundleAnalyzer(nextConfig);
+export default withBundleAnalyzer(withSerwist(nextConfig));
