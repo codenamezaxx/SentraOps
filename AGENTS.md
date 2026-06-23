@@ -1,4 +1,4 @@
-# AGENTS.md — SentraOps v1.1.1
+# AGENTS.md — SentraOps v1.1.3
 
 All-in-One Operations Dashboard for UMKM (Indonesian micro-businesses).
 Next.js 16 App Router + Supabase + Tailwind CSS v4.

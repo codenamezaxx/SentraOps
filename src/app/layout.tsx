@@ -80,7 +80,11 @@ export default function RootLayout({
             document.head.appendChild(style);
           `}
         </Script>
-        <SerwistProvider swUrl="/serwist/sw.js" />
+        <SerwistProvider
+          swUrl="/serwist/sw.js"
+          reloadOnOnline={false}
+          disable={process.env.NODE_ENV === 'development'}
+        />
         <OfflineDbInit />
       </body>
     </html>
