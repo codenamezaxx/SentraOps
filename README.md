@@ -69,8 +69,8 @@
 ### Installation
 
 ```bash
-git clone https://github.com/your-username/sentraops.git
-cd sentraops
+git clone https://github.com/codenamezaxx/SentraOps.git
+cd SentraOps
 npm install
 ```
 
