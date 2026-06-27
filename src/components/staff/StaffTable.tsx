@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Pencil, Trash2, Loader2 } from 'lucide-react'
+import Image from 'next/image'
+import { Pencil, Trash2, Loader2, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { EditStaffDialog } from '@/components/staff/EditStaffDialog'
 import {
@@ -22,6 +23,7 @@ interface StaffMember {
   name: string | null
   role: string
   email: string
+  avatar_url: string | null
 }
 
 interface StaffTableProps {
@@ -80,7 +82,16 @@ export function StaffTable({ staff, currentUserId }: StaffTableProps) {
               staff.map((s) => (
                 <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors min-h-12">
                   <td className="px-5 py-3.5">
-                    <span className="font-medium text-foreground">{s.name || '-'}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+                        {s.avatar_url ? (
+                          <Image src={s.avatar_url} alt="" width={32} height={32} className="object-cover w-full h-full" />
+                        ) : (
+                          <User className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </div>
+                      <span className="font-medium text-foreground">{s.name || '-'}</span>
+                    </div>
                   </td>
                   <td className="px-5 py-3.5">
                     <span className="text-muted-foreground">{s.email}</span>
@@ -128,8 +139,12 @@ export function StaffTable({ staff, currentUserId }: StaffTableProps) {
         ) : (
           staff.map((s) => (
             <div key={s.id} className="flex items-center gap-3 px-4 py-3.5 border-b border-border last:border-0 min-h-12">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                <span className="text-sm font-bold">{(s.name || '?')[0]?.toUpperCase()}</span>
+              <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+                {s.avatar_url ? (
+                  <Image src={s.avatar_url} alt="" width={36} height={36} className="object-cover w-full h-full" />
+                ) : (
+                  <span className="text-sm font-bold text-primary">{(s.name || '?')[0]?.toUpperCase()}</span>
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">{s.name || '-'}</p>

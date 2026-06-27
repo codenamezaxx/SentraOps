@@ -2,7 +2,7 @@
  * SentraOps version — updated by `node scripts/version.js bump`
  * Do not edit manually.
  */
-export const VERSION = '1.1.3'
+export const VERSION = '1.1.4'
 export const APP_NAME = 'SentraOps'
 export const APP_DESCRIPTION = 'Dashboard operasional all-in-one untuk UMKM'
 export const VERSION_MAJOR = 1

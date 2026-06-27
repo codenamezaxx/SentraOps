@@ -71,7 +71,7 @@ export function AddStaffDialog({ open, onOpenChange, onAdded }: AddStaffDialogPr
             <div className="relative">
               <User className="absolute left-3 top-3 h-5 w-5 text-muted-foreground pointer-events-none" />
               <Input id="staffName" value={fullName} onChange={(e) => setFullName(e.target.value)}
-                placeholder="John Doe" className="pl-10 h-12 rounded-xl" />
+                placeholder="Nama Staff" className="pl-10 h-12 rounded-xl" />
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
@@ -121,11 +121,11 @@ export function AddStaffDialog({ open, onOpenChange, onAdded }: AddStaffDialogPr
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving} className="h-12">
             Batal
           </Button>
           <Button onClick={handleSave} disabled={saving}
-            className="bg-accent-blue text-accent-blue-foreground hover:bg-accent-blue/90">
+            className="h-12 bg-accent-blue text-accent-blue-foreground hover:bg-accent-blue/90">
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : null}
             Tambah Staf
           </Button>

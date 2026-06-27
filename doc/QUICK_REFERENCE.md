@@ -366,4 +366,4 @@ supabase db push
 ---
 
 **Last Updated:** 2026-06-08
-**Version:** 1.1.3
+**Version:** 1.1.4

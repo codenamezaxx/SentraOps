@@ -72,7 +72,7 @@ export default function SignupForm() {
           <input
             className="w-full h-12 pl-12 pr-4 rounded-xl border border-outline-variant bg-card text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
             id="fullName"
-            placeholder="John Doe"
+            placeholder="Nama Kamu"
             {...register("fullName")}
           />
         </div>

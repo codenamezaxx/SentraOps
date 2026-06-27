@@ -53,7 +53,7 @@ export default function LoginForm() {
       {/* Email Field */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-semibold text-on-surface" htmlFor="email">
-          Email atau Nomor HP
+          Email
         </label>
         <div className="relative flex items-center">
           <span className="material-symbols-outlined absolute left-4 text-on-surface-variant pointer-events-none">
@@ -62,7 +62,7 @@ export default function LoginForm() {
           <input
             className="w-full h-12 pl-12 pr-4 rounded-xl border border-outline-variant bg-card text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
             id="email"
-            placeholder="contoh@usaha.com"
+            placeholder="nama@email.com"
             required
             type="email"
             value={email}

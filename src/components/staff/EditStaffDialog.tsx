@@ -96,11 +96,11 @@ export function EditStaffDialog({ open, onOpenChange, staff, onUpdated }: EditSt
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving} className="h-12">
             Batal
           </Button>
           <Button onClick={handleSave} disabled={saving}
-            className="bg-accent-blue text-accent-blue-foreground hover:bg-accent-blue/90">
+            className="h-12 bg-accent-blue text-accent-blue-foreground hover:bg-accent-blue/90">
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : null}
             Simpan
           </Button>

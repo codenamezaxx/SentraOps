@@ -48,8 +48,12 @@ export default async function StaffPage() {
   }
 
   const staffWithEmail = staffList.map((s) => ({
-    ...s,
+    id: s.id,
+    auth_id: s.auth_id,
+    name: s.name,
+    role: s.role,
     email: emailMap.get(s.auth_id) || '-',
+    avatar_url: (s.avatar_url as string | null) ?? null,
   }))
 
   return (
